@@ -16,16 +16,28 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, '/public/')));
-app.use(express.static(path.join(__dirname, '/public/build')));
-app.use(express.static(path.join(__dirname, '/public/build/static')));
-app.use('/', indexRouter);
+
+// Serve static files from the React app
+app.use(express.static(path.join(__dirname, 'client/build')));
+
+// Serve any other static files if needed
+// app.use(express.static(path.join(__dirname, '/public/')));
+// app.use(express.static(path.join(__dirname, '/public/build')));
+// app.use(express.static(path.join(__dirname, '/public/build/static')));
+// app.use('/', indexRouter);
+
 //Public Directories
 app.use('/css', express.static(path.join(__dirname, '/public/build/static/css')));
 app.use('/js', express.static(path.join(__dirname, '/public/build/static/js')));
 app.use('/img', express.static(path.join(__dirname, '/public/build/img')));
 app.use('/fly_templates', express.static(path.join(__dirname, '/public/build/fly_templates')));
 app.use('/plasmid_folder', express.static(path.join(__dirname, '/public/build/plasmid_folder')));
+
+// Catch-all handler for any requests that don't match
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
+});
+
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   next(createError(404));

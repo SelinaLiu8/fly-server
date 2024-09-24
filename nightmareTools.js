@@ -29,7 +29,7 @@ async function searchForGene(gene) {
       }
       return obj;
     }).catch(err=>console.log(err));
-    //console.log('response',res);
+    console.log('Response',res);
     const fastaUrl = !res['fastaUrl']?'':res['fastaUrl'];
     const jbrowseUrl = !res['jbrowseUrl']?'':res['jbrowseUrl'];
     const geneName = !res['jbrowseUrl']?'':res['geneName'];
