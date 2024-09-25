@@ -11,6 +11,7 @@ import landing2 from './assets/logo-1.png';
 import hamburger from './assets/hamburger-menu.png';
 import loading from './assets/logo-1.png';
 import { saveAs } from 'file-saver';
+import { Buffer } from 'buffer';
 
 const urlBase = 'http://142.93.118.6'; //'http://localhost:8080'; 
 export default class App extends React.Component  {
@@ -54,7 +55,7 @@ export default class App extends React.Component  {
   }
   changeScreens(e) {
     let screen = e.target.dataset.screen;  
-    console.log(screen);
+    console.log("Screen: ", screen);
     let menu = null;
     if(screen==1){
       menu=1;
@@ -62,7 +63,7 @@ export default class App extends React.Component  {
     this.setState({screen:parseInt(screen)||screen,hamburger:false,menu:menu},()=>{
       console.log(this.state);
       if(screen==3){
-        this.setState({mutatePam:true});
+        this.setState({mutatePam:false});
       }
     });
   }
@@ -134,7 +135,7 @@ export default class App extends React.Component  {
       return <div><b>{prop}:</b> {this.state.targets[0][prop]}</div>;
     });
     let primerKeys = Object.keys(this.state.primers);
-      //console.log('primer keys',primerKeys);
+      console.log('primer keys',primerKeys);
       let primerHTML = primerKeys.map((key)=>{
         let primerOptions = this.state.primers[key];
         //console.log('this primer',primerOptions);
@@ -438,6 +439,11 @@ export default class App extends React.Component  {
       screen:3,
       mutatePam:true,
     });
+    // to set the primers
+    if(!this.state.primers||!this.state.primers.length==0){
+      this.getPrimers();
+      console.log("primer has been set")
+    }
   }
   chooseTerminal(e,terminalInput=null){
     if(e){
@@ -523,6 +529,7 @@ export default class App extends React.Component  {
     console.log(targetArea); 
     //console.log(targetGenes);
     let url = urlBase+'/api/?type=targetSearch&targetArea='+targetGenes;
+
     this.setState({popup:{
       show:true,
       message:<h2>Finding Potential Targets</h2>,
@@ -596,7 +603,7 @@ export default class App extends React.Component  {
       console.log(urlBase+'/api/?type=primers&primerSections='+primerSectionsString);
       fetch(urlBase+'/api/?type=primers&primerSections='+primerSectionsString).then(res =>{return res.json();}).then((res)=>{
         console.log(res);
-        this.setState({primers:res,menu:4,popup:{
+        this.setState({primers:res,menu:3,popup:{
           show:false,
           message:<h2>Retreiving Homology Arm Primers</h2>,
           image:loading,
@@ -608,6 +615,7 @@ export default class App extends React.Component  {
       })
     });
   }
+
   mutatePam(e){
     e.preventDefault();
     let newPam = e.target.elements.newPam.value;
@@ -620,6 +628,7 @@ export default class App extends React.Component  {
       }
     });
   }
+
   selectHomologyArm(selection,arm){
     let currentArms = JSON.parse(JSON.stringify(!this.state.selectedArms?{}:this.state.selectedArms));
     currentArms[arm] = selection;
@@ -644,14 +653,14 @@ export default class App extends React.Component  {
               console.log(res);
               if(!res.sense){
                 this.setState({
-                  menu:5,
+                  menu:4,
                   popup: {
                     show:false,
                   }
                 });
               }
               this.setState({
-                  menu:5,
+                  menu:4,
                   oligos:res,
                   popup: {
                   show:false,
@@ -922,6 +931,7 @@ export default class App extends React.Component  {
       this.chooseTerminal(null,geneTerminal);
     })
   }
+
   selectStartCodon(e) {
     e.preventDefault();
     console.log('start select');
@@ -955,6 +965,7 @@ export default class App extends React.Component  {
       console.log(this.state.highlights);
     });
   }
+
   selectStopCodon(e) {
     e.preventDefault();
     console.log('stop select');
@@ -984,6 +995,7 @@ export default class App extends React.Component  {
     }
     this.setState({highlights:highlights});
   }
+
   componentDidUpdate(){
     let options = {
       root: document.querySelector('.screen-4'),
@@ -1105,6 +1117,7 @@ export default class App extends React.Component  {
         <div><span>Off Targets: </span>{target.offtarget}</div>
       </div>;
     });
+
     const pamBoxReadingFrames = () => {
       if(!this.state.highlights.cutsite){
         return;
@@ -1176,6 +1189,7 @@ export default class App extends React.Component  {
       
       return <div className="pam-string">{string}</div>;
     }
+
     const pamBox = <div className="pam-wrapper">
        <h3>Amino Acid Chart</h3>
        <div>Target: {pamBoxReadingFrames()}</div>
@@ -1353,7 +1367,9 @@ export default class App extends React.Component  {
         <div><h4>3rd<br/>Letter</h4></div>
        </div>
     </div>;
+
     const HomologyList = () => {
+      console.log("homology menu: ", this.state.primers);
       if(!this.state.primers){
         return;
       }
@@ -1385,6 +1401,7 @@ export default class App extends React.Component  {
       });
       return <div>{primerHTML}</div>;
     }
+
     const popup = () => {
       if(!this.state.popup){
         return null;
@@ -1421,6 +1438,7 @@ export default class App extends React.Component  {
         <div><button className="btn" onMouseDown={this.downloadPlasmidTemplate.bind(this)}>Download</button></div>
       </div>;
     }
+    
     const customDataUpload = () => {
       return <div>
         <h2>Enter your custom data below</h2>
@@ -1474,21 +1492,23 @@ export default class App extends React.Component  {
               <div className="menu-image-wrapper" style={{pointerEvents:this.state.screen>1?'':'none'}} onClick={this.changeMenus.bind(this)} data-menu="2" alt="sidebar2"><img src={sidebar3} /></div>
               <label onClick={this.changeScreens.bind(this)} data-screen="2"><div className="arrow-down">&#94;</div>Select Cut Site</label>
               {!targetList?null:<div className="target-list" style={{display:this.state.menu==2?'flex':'none'}}>{targetList}</div>}
-            </div>            
-            <div className={(this.state.menu==3?'active':'')+' menu-icon'} data-menu="3" >
+            </div>       
+            {/* This is for mutate pam, currently not needed */}
+            {/* <div className={(this.state.menu==3?'active':'')+' menu-icon'} data-menu="3" >
               <div className="menu-image-wrapper" style={{pointerEvents:this.state.screen>2?'':'none'}} onClick={this.changeMenus.bind(this)} data-menu="3" alt="sidebar3"><img src={sidebar4} alt="sidebar3"/></div>
               <label onClick={this.changeScreens.bind(this)} data-screen="3">Mutate Pam</label>
               {this.state.screen<3?null:<div className="pam-box" style={{display:!this.state.mutatePam?'none':'flex'}}>{pamBox}</div>}
-            </div>            
-            <div className={(this.state.menu==4?'active':'')+' menu-icon'} data-menu="4" >
-              <div className="menu-image-wrapper" style={{pointerEvents:this.state.screen>3?'':'none'}} onClick={this.changeMenus.bind(this)} data-menu="4" alt="sidebar4"><img src={sidebar2}  alt="sidebar4"/></div>
-              <label onClick={this.changeScreens.bind(this)} data-screen="4">Homology Arm Primers</label>
-              <div className="target-list homology-list" style={{display:this.state.menu==4?'flex':'none'}}>{HomologyList()}</div>
+            </div>             */}
+            <div className={(this.state.menu==3?'active':'')+' menu-icon'} data-menu="3" >
+              <div className="menu-image-wrapper" style={{pointerEvents:this.state.screen>2?'':'none'}} onClick={this.changeMenus.bind(this)} data-menu="3" alt="sidebar4"><img src={sidebar2} alt="sidebar4"/></div>
+              <label onClick={this.changeScreens.bind(this)} data-screen="3">Homology Arm Primers</label>
+              <div className="target-list homology-list" style={{display:this.state.menu==3?'flex':'none'}}>{HomologyList()}</div>
             </div>
-            <div className={(this.state.menu==5?'active':'')+' menu-icon'} data-menu="5" >
-              <div className="menu-image-wrapper sidebar-5" style={{pointerEvents:this.state.screen>3?'':'none'}} onClick={this.changeMenus.bind(this)} data-menu="5" alt="sidebar5"><img src={documentIcon}  alt="sidebar5"/></div>
-              <label onClick={this.changeScreens.bind(this)} data-screen="5">Download Data</label>
-              {this.state.menu==5?downloadOptions():null}
+
+            <div className={(this.state.menu==4?'active':'')+' menu-icon'} data-menu="4" >
+              <div className="menu-image-wrapper sidebar-5" style={{pointerEvents:this.state.screen>3?'':'none'}} onClick={this.changeMenus.bind(this)} data-menu="4" alt="sidebar5"><img src={documentIcon} alt="sidebar5"/></div>
+              <label onClick={this.changeScreens.bind(this)} data-screen="4">Download Data</label>
+              {this.state.menu==4?downloadOptions():null}
             </div>
         </div>
         <div className={"main "+(this.state.themeColor===false?'light':'dark')}>
