@@ -1,15 +1,15 @@
 import React, { Fragment } from 'react';
 import './App.css';
-import logo from './assets/logo-1.png';
-import sidebar1 from './assets/logo-1.png';
-import sidebar2 from './assets/logo-1.png';
-import sidebar3 from './assets/logo-1.png';
+import logo from './assets/head_logo.png';
+import sidebar1 from './assets/search.png';
+import sidebar2 from './assets/cutcite.png';
+import sidebar3 from './assets/homology.png';
 import sidebar4 from './assets/logo-1.png';
-import documentIcon from './assets/logo-1.png';
+import documentIcon from './assets/download.png';
 import landing1 from './assets/logo-1.png'; 
 import landing2 from './assets/logo-1.png';
 import hamburger from './assets/hamburger-menu.png';
-import loading from './assets/logo-1.png';
+import loading from './assets/loading.png';
 import { saveAs } from 'file-saver';
 import { Buffer } from 'buffer';
 
@@ -1507,7 +1507,7 @@ export default class App extends React.Component  {
               <label onClick={this.changeScreens.bind(this)} data-screen="1">Search For Gene</label>
             </div>            
             <div className={(this.state.menu==2?'active':'')+' menu-icon'} >
-              <div className="menu-image-wrapper" style={{pointerEvents:this.state.screen>1?'':'none'}} onClick={this.changeMenus.bind(this)} data-menu="2" alt="sidebar2"><img src={sidebar3} /></div>
+              <div className="menu-image-wrapper" style={{pointerEvents:this.state.screen>1?'':'none'}} onClick={this.changeMenus.bind(this)} data-menu="2" alt="sidebar2"><img src={sidebar2} /></div>
               <label onClick={this.changeScreens.bind(this)} data-screen="2"><div className="arrow-down">&#94;</div>Select Cut Site</label>
               {!targetList?null:<div className="target-list" style={{display:this.state.menu==2?'flex':'none'}}>{targetList}</div>}
             </div>       
@@ -1518,7 +1518,7 @@ export default class App extends React.Component  {
               {this.state.screen<3?null:<div className="pam-box" style={{display:!this.state.mutatePam?'none':'flex'}}>{pamBox}</div>}
             </div>             */}
             <div className={(this.state.menu==3?'active':'')+' menu-icon'} data-menu="3" >
-              <div className="menu-image-wrapper" style={{pointerEvents:this.state.screen>2?'':'none'}} onClick={this.changeMenus.bind(this)} data-menu="3" alt="sidebar4"><img src={sidebar2} alt="sidebar4"/></div>
+              <div className="menu-image-wrapper" style={{pointerEvents:this.state.screen>2?'':'none'}} onClick={this.changeMenus.bind(this)} data-menu="3" alt="sidebar4"><img src={sidebar3} alt="sidebar4"/></div>
               <label onClick={this.changeScreens.bind(this)} data-screen="3">Homology Arm Primers</label>
               <div className="target-list homology-list" style={{display:this.state.menu==3?'flex':'none'}}>{HomologyList()}</div>
             </div>
