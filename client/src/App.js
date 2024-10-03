@@ -1377,10 +1377,28 @@ export default class App extends React.Component  {
       //console.log('primer keys',primerKeys);
       let primerHTML = primerKeys.map((key)=>{
         let primerOptions = this.state.primers[key];
-        //console.log('this primer',primerOptions);
+
+        console.log("key: ", key)
+
+        let primerLabelName = ""
+        if (key == "hom5") {
+          primerLabelName = "Homology 5";
+        } else if (key == "hom3") {
+          primerLabelName = "Homology 3";
+        } else if (key == "seq5") {
+          primerLabelName = "Sequence 5";
+        } else if (key == "seq3") {
+          primerLabelName = "Sequence 3";
+        } else {
+          primerLabelName = "";
+          console.log("primer label name didn't get set");
+        }
+        console.log("Primer Label Name: ", primerLabelName)
+
         if(this.state.selectedArms&&this.state.selectedArms[key]){
           let primerSingle = this.state.selectedArms[key];
-          return <div><div className="homology-label">{key}</div>
+
+          return <div><div className="homology-label">{primerLabelName}</div>
             <div className="single-target" onMouseDown={this.selectHomologyArm.bind(this,primerSingle,key)} onMouseLeave={this.clearHighlight.bind(this)}>
             <div >{primerSingle[7]}</div>
             <div ><div>Tm: </div><div>{primerSingle[3]}</div></div>
@@ -1389,7 +1407,7 @@ export default class App extends React.Component  {
             <div ><div>3' (Self Complementarity): </div><div>{primerSingle[6]}</div></div>
           </div></div>;
         } else {
-          return <div><div className="homology-label">{key}</div>{primerOptions.map((primerSingle)=>{
+          return <div><div className="homology-label">{primerLabelName}</div>{primerOptions.map((primerSingle)=>{
             return <div className="single-target" onMouseEnter={this.highlightString.bind(this,primerSingle[7],'rgba(86, 64, 155,0.3)','homology')} onMouseDown={this.selectHomologyArm.bind(this,primerSingle,key)} onMouseLeave={this.clearHighlight.bind(this)}>
             <div >{primerSingle[7]}</div>
             <div ><div>Tm: </div><div>{primerSingle[3]}</div></div>
