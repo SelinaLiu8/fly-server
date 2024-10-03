@@ -704,14 +704,14 @@ export default class App extends React.Component  {
         const stop = 1+parseInt(this.state.highlights.stop.location); 
         gene = !this.state.currentPam?gene:gene.substr(0,pamStart-1)+this.state.currentPam+gene.substr(pamStart+2,gene.length);
         const featureArr = [
-          newFeature(start+'..'+(start+2),'Start Codon','#df2935'),
+          newFeature(start+'..'+(start+2),'Start Codon','#35df29'),
           newFeature(stop+'..'+(stop+2),'Stop Codon','#df2935'),
           newFeature((parseInt(1+this.state.highlights['hom5']['location']))+'..'+(parseInt(1+this.state.highlights['hom5']['location'])+this.state.highlights['hom5']['length']),"5' Homology Arm Primer",'#fdca40'),
           newFeature((parseInt(1+this.state.highlights['hom3']['location']))+'..'+(parseInt(1+this.state.highlights['hom3']['location'])+this.state.highlights['hom3']['length']),"3' Homology Arm Primer",'#fdca40'),
           newFeature((parseInt(1+this.state.highlights['seq5']['location']))+'..'+(parseInt(1+this.state.highlights['seq5']['location'])+this.state.highlights['seq5']['length']),"5' Sequence Primer",'#fdca40'),
           newFeature((parseInt(1+this.state.highlights['seq3']['location']))+'..'+(parseInt(1+this.state.highlights['seq3']['location'])+this.state.highlights['seq3']['length']),"3' Sequence Primer",'#fdca40'),
-          newFeature(targetI+'..'+(parseInt(targetI)+20),"Target",'#136F5E'),
-          newFeature(pamStart+'..'+(parseInt(pamStart)+2),"Pam",'#42ED5E'),
+          newFeature(targetI+'..'+(parseInt(targetI)+20),"Target",'#77d1e1'),
+          newFeature(pamStart+'..'+(parseInt(pamStart)+2),"Pam",'#0000FF'),
         ];
         const makeGeneArr = () => {
 
