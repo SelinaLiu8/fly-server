@@ -288,7 +288,7 @@ export default class App extends React.Component  {
       image:loading,
       stayOpen:true,
     }}, ()=>{
-      fetch(url).then((res) =>{return res.body.json()}).then((geneInfo)=>{
+      fetch(url).then((res) =>{return res.json()}).then((geneInfo)=>{
         console.log('response',geneInfo);
         let currentState = this.state;
         if(!geneInfo){
