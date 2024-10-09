@@ -281,7 +281,7 @@ export default class App extends React.Component  {
       e.stopPropagation();
     }
     //console.log(e.target.elements.geneName.value);
-    let url = urlBase+'/api?type=search&gene='+e.target.elements.geneName.value;
+    let url = urlBase+'/api/?type=search&gene='+e.target.elements.geneName.value;
     this.setState({popup:{
       show:true,
       message:<h2>Searching For Gene</h2>,
@@ -382,7 +382,7 @@ export default class App extends React.Component  {
       //console.log('same isoForm');
       this.makeIsoFormHighlights();
     } else {
-      let url = urlBase+'/api?type=isoform&isoform='+isoForm;
+      let url = urlBase+'/api/?type=isoform&isoform='+isoForm;
       fetch(url).then((res) =>{return res.json()}).then((geneInfo)=>{
         //console.log('response',geneInfo);
         let currentState = this.state;
@@ -460,7 +460,7 @@ export default class App extends React.Component  {
     //console.log('start',i-26,i+26);
     let targetGenes = this.state.sequence.substring(i-50,i+50); 
     //console.log(targetGenes);
-    let url = urlBase+'/api?type=targetSearch&targetArea='+targetGenes;
+    let url = urlBase+'/api/?type=targetSearch&targetArea='+targetGenes;
     //console.log(url);
     this.setState({popup:{
       show:true,
@@ -484,7 +484,7 @@ export default class App extends React.Component  {
           },
           targets:response.results
         },function(){
-          let url = urlBase+'/api?type=targetEfficiency&targets='+encodeURIComponent(efficiencyString.join('\n'));
+          let url = urlBase+'/api/?type=targetEfficiency&targets='+encodeURIComponent(efficiencyString.join('\n'));
           fetch(url).then((res)=>{return res.json()}).then((response)=>{
             //console.log(response);
             let targets = [];
@@ -528,7 +528,7 @@ export default class App extends React.Component  {
     let targetGenes = this.state.sequence.substr(targetArea-50,100);
     console.log(targetArea); 
     //console.log(targetGenes);
-    let url = urlBase+'/api?type=targetSearch&targetArea='+targetGenes;
+    let url = urlBase+'/api/?type=targetSearch&targetArea='+targetGenes;
 
     this.setState({popup:{
       show:true,
@@ -551,7 +551,7 @@ export default class App extends React.Component  {
           },
           targets:response.results
         },function(){
-          let url = urlBase+'/api?type=targetEfficiency&targets='+encodeURIComponent(efficiencyString.join('\n'));
+          let url = urlBase+'/api/?type=targetEfficiency&targets='+encodeURIComponent(efficiencyString.join('\n'));
           fetch(url).then((res)=>{return res.json()}).then((response)=>{
             //console.log(response);
             //console.log('got response');
@@ -600,8 +600,8 @@ export default class App extends React.Component  {
         stayOpen:true,
         },
     },()=>{
-      console.log(urlBase+'/api?type=primers&primerSections='+primerSectionsString);
-      fetch(urlBase+'/api?type=primers&primerSections='+primerSectionsString).then(res =>{return res.json();}).then((res)=>{
+      console.log(urlBase+'/api/?type=primers&primerSections='+primerSectionsString);
+      fetch(urlBase+'/api/?type=primers&primerSections='+primerSectionsString).then(res =>{return res.json();}).then((res)=>{
         console.log(res);
         this.setState({primers:res,menu:3,popup:{
           show:false,
@@ -640,7 +640,7 @@ export default class App extends React.Component  {
         if(totalSelected.length&&totalSelected.length==4){
           // GET OLIGO INFO
           console.log('searching');
-          console.log(urlBase+'/api?type=oligos&target='+this.state.targets[0].distal+this.state.targets[0].proximal+this.state.targets[0].pam);
+          console.log(urlBase+'/api/?type=oligos&target='+this.state.targets[0].distal+this.state.targets[0].proximal+this.state.targets[0].pam);
           this.setState({
             popup:{
               show:true,
@@ -649,7 +649,7 @@ export default class App extends React.Component  {
               stayOpen:true,
               },
           },()=>{
-            fetch(urlBase+'/api?type=oligos&target='+this.state.targets[0].distal+this.state.targets[0].proximal+this.state.targets[0].pam).then(res =>{return res.json();}).then((res)=>{
+            fetch(urlBase+'/api/?type=oligos&target='+this.state.targets[0].distal+this.state.targets[0].proximal+this.state.targets[0].pam).then(res =>{return res.json();}).then((res)=>{
               console.log(res);
               if(!res.sense){
                 this.setState({
