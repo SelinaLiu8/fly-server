@@ -7,10 +7,10 @@ var nightmare = require('../nightmareTools.js');
 var puppet = require('../puppeteer.js');
 var flyApi = require('../api.js');
 
-// router.get('/', (req, res) => {
-//   console.log(`Request URL: ${req.url}`);
-//   res.send('API is working!');
-// });
+router.get('/', (req, res) => {
+  console.log(`Request URL: ${req.url}`);
+  res.send('API is working!');
+});
 
 router.get('/api', async (req, res) => {
   req.socket.setTimeout(3600e3);
