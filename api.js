@@ -5,11 +5,11 @@ const fetch =  require("node-fetch");
 
 async function getIdFromSearch(searchTerm){
     const pool = await mysql.createPool({
-        host: local.dbhost,
-        port:local.dbport,
-        user: local.dbuser,
-        password: local.dbpassword,
-        database: local.database,
+        host: local.dbhost | "http://142.93.118.6/",
+        port:local.dbport | "3306",
+        user: local.dbuser | "root",
+        password: local.dbpassword | "flyserver123456",
+        database: local.database | "fly_cache",
         waitForConnections: true,
         connectionLimit: 100,
         queueLimit: 0
