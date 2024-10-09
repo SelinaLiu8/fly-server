@@ -3,17 +3,18 @@ const mysql = require('mysql2/promise');
 const local = require('./.env.js');
 const fetch =  require("node-fetch");
 
+const pool = mysql.createPool({
+    host: "142.93.118.6",
+    port: 3306,
+    user: "root",
+    password: "flyserver123456",
+    database: "fly_cache",
+    waitForConnections: true,
+    connectionLimit: 100,
+    queueLimit: 0
+});
+
 async function getIdFromSearch(searchTerm){
-    const pool = mysql.createPool({
-        host: "142.93.118.6",
-        port: 3306,
-        user: "root",
-        password: "flyserver123456",
-        database: "fly_cache",
-        waitForConnections: true,
-        connectionLimit: 100,
-        queueLimit: 0
-    });
     let data = await fs.readFileSync('./fb_synonyms.tsv', 'utf8');
     let lines = data.split('\n');
     let relevantData = [];
@@ -61,16 +62,6 @@ async function getIdFromSearch(searchTerm){
 async function getGeneticInfoFromId(id){
     let url = 'https://api.flybase.org/api/1.0/sequence/id/'+id+'/CDS';
     console.log(url);
-    const pool = await mysql.createPool({
-        host: local.dbhost,
-        port:local.dbport,
-        user: local.dbuser,
-        password: local.dbpassword,
-        database: local.database,
-        waitForConnections: true,
-        connectionLimit: 100,
-        queueLimit: 0
-    });
     let response = await fetch(url);
     let data = await response.json();
     
@@ -102,16 +93,6 @@ async function getGeneticInfoFromId(id){
     return JSON.stringify(isoForms);
 }
 async function getIsoFormSequence(isoForm){
-    const pool = await mysql.createPool({
-        host: local.dbhost,
-        port:local.dbport,
-        user: local.dbuser,
-        password: local.dbpassword,
-        database: local.database,
-        waitForConnections: true,
-        connectionLimit: 100,
-        queueLimit: 0
-    });
     let isoformQuery = "SELECT * FROM gene_info WHERE isoForm = ?";
     let geneInfoQuery = await pool.execute(isoformQuery,[
     isoForm
