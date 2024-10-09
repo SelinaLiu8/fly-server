@@ -12,6 +12,10 @@ router.get('/', (req, res) => {
   res.send('API is working!');
 });
 
+app.get('/test', (req, res) => {
+  res.send('Test route is working!');
+});
+
 router.get('/api', async (req, res) => {
   req.socket.setTimeout(3600e3);
   console.log('query', req.query);

@@ -13,46 +13,46 @@ const cors = require('cors');
 app.use(cors());
 
 // API routes
-//app.use('/', apiRoutes);
-app.get('/api', async (req, res) => {
-  req.socket.setTimeout(3600e3);
-  console.log('query', req.query);
+app.use('/', apiRoutes);
+// app.get('/api', async (req, res) => {
+//   req.socket.setTimeout(3600e3);
+//   console.log('query', req.query);
 
-  // Set CORS headers
-  res.header("Access-Control-Allow-Origin", "*");
+//   // Set CORS headers
+//   res.header("Access-Control-Allow-Origin", "*");
   
-  let response = { 'error': 'no valid query' };
+//   let response = { 'error': 'no valid query' };
   
-  console.log("request went through, here's the request: ", req);
+//   console.log("request went through, here's the request: ", req);
 
-  if (req.query) { 
-    console.log(req.query.type); 
-  }
+//   if (req.query) { 
+//     console.log(req.query.type); 
+//   }
 
-  // Process various types of queries
-  if (req.query.type === 'new') {
-    res.json(['you did it']);
-    return; // End response here
-  } else if (req.query.type === 'search') {
-    response = await flyApi.getIdFromSearch(req.query.gene);
-    console.log('res', response);
-  } else if (req.query.type === 'isoform') {
-    response = await flyApi.getIsoFormSequence(req.query.isoform);
-  } else if (req.query.type === 'targetSearch') {
-    response = await puppet.searchForTargets(req.query.targetArea);
-  } else if (req.query.type === 'targetEfficiency') {
-    response = await puppet.checkTargetEfficiency(req.query.targets);
-  } else if (req.query.type === 'oligos') {
-    response = await puppet.getOligos(req.query.target);
-  } else if (req.query.type === 'primers') {
-    response = await puppet.getPrimers(JSON.parse(Buffer.from(req.query.primerSections, 'base64').toString('ascii')));
-  }
+//   // Process various types of queries
+//   if (req.query.type === 'new') {
+//     res.json(['you did it']);
+//     return; // End response here
+//   } else if (req.query.type === 'search') {
+//     response = await flyApi.getIdFromSearch(req.query.gene);
+//     console.log('res', response);
+//   } else if (req.query.type === 'isoform') {
+//     response = await flyApi.getIsoFormSequence(req.query.isoform);
+//   } else if (req.query.type === 'targetSearch') {
+//     response = await puppet.searchForTargets(req.query.targetArea);
+//   } else if (req.query.type === 'targetEfficiency') {
+//     response = await puppet.checkTargetEfficiency(req.query.targets);
+//   } else if (req.query.type === 'oligos') {
+//     response = await puppet.getOligos(req.query.target);
+//   } else if (req.query.type === 'primers') {
+//     response = await puppet.getPrimers(JSON.parse(Buffer.from(req.query.primerSections, 'base64').toString('ascii')));
+//   }
 
-  console.log('response: ', response);
-  res.json(response); // Send the response as JSON
-  const used = process.memoryUsage().heapUsed / 1024 / 1024;
-  console.log(`The script uses approximately ${Math.round(used * 100) / 100} MB`);
-});
+//   console.log('response: ', response);
+//   res.json(response); // Send the response as JSON
+//   const used = process.memoryUsage().heapUsed / 1024 / 1024;
+//   console.log(`The script uses approximately ${Math.round(used * 100) / 100} MB`);
+// });
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
