@@ -15,6 +15,7 @@ const pool = mysql.createPool({
 });
 
 async function getIdFromSearch(searchTerm){
+    console.log("It went into getidfromsearch function");
     let data = await fs.readFileSync('./fb_synonyms.tsv', 'utf8');
     let lines = data.split('\n');
     let relevantData = [];
