@@ -6,8 +6,8 @@ const fetch =  require("node-fetch");
 const pool = mysql.createPool({
     host: "142.93.118.6",
     port: 3306,
-    user: "root",
-    password: "flyserver123456",
+    user: "local",
+    password: "StrongPassw0rd!",
     database: "fly_cache",
     waitForConnections: true,
     connectionLimit: 100,
