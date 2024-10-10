@@ -30,6 +30,7 @@ router.get('/api', async (req, res) => {
   // Process various types of queries
   if (req.query.type === 'new') {
     res.json(['you did it']);
+    console.log('Request Query:', req.query);
     return; // End response here
   } else if (req.query.type === 'search') {
     response = await flyApi.getIdFromSearch(req.query.gene);
