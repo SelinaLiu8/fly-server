@@ -29,7 +29,7 @@ router.get('/api', async (req, res) => {
 
   // Process various types of queries
   if (req.query.type === 'new') {
-    res.json(['you did it']);
+    res.json([req.query]);
     console.log('Request Query:', req.query);
     return; // End response here
   } else if (req.query.type === 'search') {
