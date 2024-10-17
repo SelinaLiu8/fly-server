@@ -35,7 +35,7 @@ app.use(express.static(path.join(__dirname, 'client/build')));
 // app.use('/', indexRouter);
 
 //Public Directories
-app.use('/css', express.static(path.join(__dirname, '/public/build/static/css')));
+// app.use('/css', express.static(path.join(__dirname, '/public/build/static/css')));
 app.use('/js', express.static(path.join(__dirname, '/public/build/static/js')));
 app.use('/img', express.static(path.join(__dirname, '/public/build/img')));
 app.use('/fly_templates', express.static(path.join(__dirname, '/public/build/fly_templates')));
