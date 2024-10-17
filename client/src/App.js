@@ -833,7 +833,9 @@ export default class App extends React.Component  {
   }
   downloadGuideRna(){
     const url = window.location.origin+'/templates/pU6.txt';
+    console.log("RNA url: ", url);
     fetch(url).then((res)=>{return res.text()}).then((data)=>{
+      console.log(data);
       let preSplit = data.split('**injection_start**')[0];
       let postSplit = data.split('**injection_end**')[1];
       let sense = this.state.oligos.sense.substring(0,7)+' '+this.state.oligos.sense.substring(7,17)+' '+this.state.oligos.sense.substring(17);

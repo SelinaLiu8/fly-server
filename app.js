@@ -40,6 +40,7 @@ app.use('/js', express.static(path.join(__dirname, '/public/build/static/js')));
 app.use('/img', express.static(path.join(__dirname, '/public/build/img')));
 app.use('/fly_templates', express.static(path.join(__dirname, '/public/build/fly_templates')));
 app.use('/plasmid_folder', express.static(path.join(__dirname, '/public/build/plasmid_folder')));
+app.use('/templates', express.static(path.join(__dirname, '/public/build/templates')))
 
 // Catch-all handler for any requests that don't match
 // app.get('*', (req, res) => {
