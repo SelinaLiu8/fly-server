@@ -545,7 +545,7 @@ form.search-form label {
 }
 
 .target-list .single-target {
-  font-size: 12px;
+  font-size: 14px;
   padding: 20px;
   display: flex;
   flex-direction: column;
