@@ -912,3 +912,7 @@ div[class*=" potentialStop-"],div[class^=potentialStop-] {
   cursor: pointer;
   z-index: 999
 }
+
+.warning-message {
+  color: rgb(255, 98, 0);
+}

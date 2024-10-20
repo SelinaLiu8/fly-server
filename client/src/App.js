@@ -314,11 +314,15 @@ export default class App extends React.Component  {
           let isoForms = JSON.parse(geneInfo.results.isoforms);
           if(isoForms.length) {
             
-            let options = <div className="isoform-form"><h2>Choose Your IsoForm</h2><form onSubmit={this.pickIsoForm.bind(this)}><select name="isoform">{
+            let options = <div className="isoform-form">
+              <h2>Choose Your IsoForm</h2>
+              <p className='warning-message'>This step takes a few seconds, please only click the button once.</p>
+              <form onSubmit={this.pickIsoForm.bind(this)}><select name="isoform">{
               isoForms.map(isoForm=>{
                 return <option value={isoForm} key={isoForm}>{isoForm}</option>
               })
-            }</select><input type="submit" value="Search" /></form></div>;
+              }</select><input type="submit" value="Search" /></form>
+            </div>;
             
             currentState.popup = {
               show:true,
