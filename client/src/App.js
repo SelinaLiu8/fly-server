@@ -158,7 +158,41 @@ export default class App extends React.Component  {
           </div>})}<br/></div>;
         }
     });
-    let message = <div>
+
+    const handlePrint = () => {
+      const printContents = document.getElementById("printableArea").innerHTML;
+      const printWindow = window.open('', '_blank');
+
+      // Write the printable content to the new tab
+      printWindow.document.write(`
+          <html>
+              <head>
+                  <title>Print</title>
+                  <style>
+                      /* Add any styling here to ensure it looks correct when printed */
+                      body {
+                          font-family: sans-serif;
+                          margin: 20px;
+                      }
+                  </style>
+              </head>
+              <body>
+                  ${printContents}
+              </body>
+          </html>
+      `);
+  
+      // Close the document to finish loading content in the new tab
+      printWindow.document.close();
+  
+      // Wait for the new window to finish loading, then print
+      printWindow.onload = () => {
+          printWindow.print();
+          printWindow.onafterprint = () => printWindow.close();  // Automatically close the tab after printing
+      };
+    };
+
+    let message = <div id='printableArea'>
       <h2>Design Info</h2>
       <div><h3>Target Info</h3>{targetHTML}</div>
       <div><h3>Homology Info</h3>
@@ -169,7 +203,9 @@ export default class App extends React.Component  {
         <div><b>Sense: </b>{this.state.oligos.sense}</div>
         <div><b>Antisense: </b>{this.state.oligos.antisense}</div>
       </div>
+      <button onClick={handlePrint}>Print</button>
     </div>;
+
     this.setState({popup:{
       show:true,
       message:message,
@@ -177,6 +213,7 @@ export default class App extends React.Component  {
       stayOpen:false,
     }});
   }
+  
   saveCurrentHighlight(color=null,name=null){
     let highlight = JSON.parse(JSON.stringify(this.state.currentHighlight));
     //console.log('highlight',highlight);
@@ -321,7 +358,7 @@ export default class App extends React.Component  {
               isoForms.map(isoForm=>{
                 return <option value={isoForm} key={isoForm}>{isoForm}</option>
               })
-              }</select><input type="submit" value="Search" /></form>
+              }</select><input className='btn' type="submit" value="Search" /></form>
             </div>;
             
             currentState.popup = {
@@ -358,7 +395,7 @@ export default class App extends React.Component  {
     };
     let popupForm = <div className="isoform-form"><h2>Choose Your Tag</h2><form onSubmit={this.chooseTerminal.bind(this)}>
       <select name="tag"><option value="n">N Terminal</option><option value="c">C Terminal</option></select>
-      <input type="submit" value="Search" />
+      <input className='btn' type="submit" value="Search" />
     </form></div>;
     this.setState({
       screen:2,
@@ -410,7 +447,7 @@ export default class App extends React.Component  {
         currentState.highlights = highlights;
         let popupForm = <div className="isoform-form"><h2>Choose Your Tag</h2><form onSubmit={this.chooseTerminal.bind(this)}>
           <select name="tag"><option value="n">N Terminal</option><option value="c">C Terminal</option></select>
-          <input type="submit" value="Search" />
+          <input className='btn' type="submit" value="Search" />
           </form></div>;
        
         currentState.popup = {
@@ -1476,7 +1513,7 @@ export default class App extends React.Component  {
           </select>
         </label>
         <label>Data<textarea name="geneData" /></label>
-        <button >Submit</button>
+        <button className='btn'>Submit</button>
         </form>
       </div>
     }
