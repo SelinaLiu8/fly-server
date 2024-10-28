@@ -1575,7 +1575,7 @@ export default class App extends React.Component  {
               <div className="landing-icon" onClick={this.changeScreens.bind(this)} data-screen="1"><img src={landing1} alt=""/><div>Search Flybase</div></div>
             </div>
             <div className="screen screen-1"  style={{display:this.state.screen===1?'flex':'none',}}>
-              <form className="search-form" onSubmit={this.searchForGene.bind(this)} ><label>Search for a gene by name</label><input type="text" name="geneName" /><input type="submit" value="Search"/></form>
+              <form className="search-form" onSubmit={this.searchForGene.bind(this)} ><label>Search for a gene by name</label><input type="text" name="geneName" /><input className='btn' type="submit" value="Search"/></form>
             </div>
             <div className="screen screen-custom"  style={{display:this.state.screen==='custom'?'flex':'none',}}>
               {customDataUpload()}
