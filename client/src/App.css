@@ -33,6 +33,20 @@ body {
   overflow: hidden
 }
 
+button:hover, .btn:hover {
+  transition: 0.3s;
+  transform: scale(1.05);
+}
+
+button:focus, .btn:focus {
+  transform: scale(0.95);
+}
+
+button, .btn {
+  transition: 0.3s;
+  transform: scale(1);
+}
+
 .App {
   display: flex;
   flex-direction: column;
