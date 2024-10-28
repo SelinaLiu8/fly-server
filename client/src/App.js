@@ -276,7 +276,7 @@ export default class App extends React.Component  {
     }
     let length = string.length;
     if(!color){
-      color = 'rgba(252, 210, 126, 0.3)';
+      color = 'rgb(255, 255, 97)';
     }
     //console.log('mousenter');
     //console.log(location,length,color);
@@ -471,7 +471,7 @@ export default class App extends React.Component  {
     }
   }
   pickCutSite(target){
-    this.saveCurrentHighlight('rgba(252, 210, 126, 0.3)');
+    this.saveCurrentHighlight('rgb(255, 255, 97)');
     this.setState({
       targets:[target],
       menu:3,
@@ -879,7 +879,7 @@ export default class App extends React.Component  {
       let postSplit = data.split('**injection_end**')[1];
       let sense = this.state.oligos.sense.substring(0,7)+' '+this.state.oligos.sense.substring(7,17)+' '+this.state.oligos.sense.substring(17);
       const design = preSplit+sense+postSplit;
-      var filename = "pu6-guidernavector.ape";
+      var filename = "rna-" + this.state.geneName+".ape";
  
       var blob = new Blob([design], {
        type: "text/plain;charset=utf-8"
@@ -1151,7 +1151,7 @@ export default class App extends React.Component  {
       return <div  className={highlightClasses.join(' ')+' single-letter'} data-highlight-location={highlightLocation} onClick={isStartSelect?this.selectStartCodon.bind(this):isStopSelect?this.selectStopCodon.bind(this):null} >{letter}</div>;
     });
     const targetList = !this.state.targets?null:this.state.targets.map((target)=>{
-      return <div className={"single-target "+(!currentHighlightLocation?'disabled':currentHighlightLocation)} onClick={!currentHighlightLocation?null:this.pickCutSite.bind(this,target)} onMouseEnter={this.highlightString.bind(this,target.distal+target.proximal+target.pam,'rgba(252, 210, 126, 0.3)',null)} onMouseLeave={this.clearHighlight.bind(this)}>
+      return <div className={"single-target "+(!currentHighlightLocation?'disabled':currentHighlightLocation)} onClick={!currentHighlightLocation?null:this.pickCutSite.bind(this,target)} onMouseEnter={this.highlightString.bind(this,target.distal+target.proximal+target.pam,'rgb(255, 255, 97)',null)} onMouseLeave={this.clearHighlight.bind(this)}>
         <div>{target.distal+target.proximal+target.pam}</div>
         <div><span>Efficiency: </span>{!target.score?'-':target.score}</div>
         <div><span>Strand: </span>{target.strand}</div>
@@ -1488,7 +1488,7 @@ export default class App extends React.Component  {
       
       return <div className="download-list">
         <div><button className="btn" onMouseDown={this.viewFinishedDesign.bind(this)}>View All Data</button></div>
-        <div className="download-label">Ape File</div>
+        <div className="download-label">Genomic Template</div>
         <div><button className="btn" onMouseDown={this.downloadApeFile.bind(this)}>Download</button></div>
         <div className="download-label">Guide Rna Vector</div>
         <div><button className="btn" onMouseDown={this.downloadGuideRna.bind(this)}>Download</button></div>

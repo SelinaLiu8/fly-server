@@ -824,7 +824,7 @@ form.search-form label {
 }
 
 .single-letter.current-highlight {
-  background-color: rgba(252,210,126,.3)
+  background-color: rgba(255, 97, 129, 0.5)
 }
 
 .single-letter.current-highlight.homology {
