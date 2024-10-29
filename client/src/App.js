@@ -484,6 +484,7 @@ export default class App extends React.Component  {
       console.log("primer has been set")
     }
   }
+
   chooseTerminal(e,terminalInput=null){
     if(e){
       e.preventDefault();
@@ -543,16 +544,17 @@ export default class App extends React.Component  {
               let terminal = this.state.terminal;
               let scrollTop;
               let windowHeight = window.innerHeight;
-              if(terminal=='n'){
+              if (terminal === 'n') {
                 scrollTop = document.getElementsByClassName('start')[0].getBoundingClientRect().top;
-
               } else {
-                scrollTop = document.getElementsByClassName('stop')[0].getBoundingClientRect().top;
+                  const screen2 = document.getElementsByClassName('screen-2')[0];
+                  scrollTop = screen2.scrollHeight; // Scroll to the bottom
               }
-              console.log('scroll top: ',scrollTop,windowHeight);
+              
+              console.log('scroll top: ', scrollTop, windowHeight);
               document.getElementsByClassName('screen-2')[0].scrollTo({
-                top: scrollTop-(windowHeight/2),
-                behavior: 'smooth'
+                  top: scrollTop - (windowHeight / 2),
+                  behavior: 'smooth'
               });
             });
           });
