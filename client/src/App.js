@@ -633,6 +633,7 @@ export default class App extends React.Component  {
       "3' Homology":this.state.sequence.slice(targetSearch+1000, targetSearch+1200)        
     }
     let primerSectionsString = Buffer.from(JSON.stringify(primerSections)).toString('base64');
+
     this.setState({
       popup:{
         show:true,
@@ -652,6 +653,20 @@ export default class App extends React.Component  {
           },
         },()=>{
           console.log(this.state);
+          console.log("terminal: " + this.state.terminal);
+          if (this.state.terminal == 'c') {
+            const screen = document.getElementsByClassName('screen-3')[0];
+            if (screen) {
+              const scrollTop = screen.scrollHeight;
+              console.log("scrollTop: ", scrollTop);
+              screen.scrollTo({
+                top: scrollTop - (window.innerHeight / 2),
+                behavior: 'smooth'
+            });
+            } else {
+              console.log("screen-3 element not found.");
+            }
+          }
         });
       })
     });
@@ -674,6 +689,7 @@ export default class App extends React.Component  {
     let currentArms = JSON.parse(JSON.stringify(!this.state.selectedArms?{}:this.state.selectedArms));
     currentArms[arm] = selection;
     this.saveCurrentHighlight('rgba(86, 64, 155,0.3)',arm);
+
     this.setState({selectedArms:currentArms},()=>{
       //console.log(this.state);
       this.setState({currentHighlight:null},()=>{
@@ -1420,7 +1436,7 @@ export default class App extends React.Component  {
 
       let primerKeys = Object.keys(this.state.primers);
       const order = ["hom5", "hom3", "seq5", "seq3"];
-      
+
       primerKeys.sort((a, b) => order.indexOf(a) - order.indexOf(b));
 
       let primerHTML = primerKeys.map((key)=>{
