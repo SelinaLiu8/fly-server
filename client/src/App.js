@@ -1413,11 +1413,16 @@ export default class App extends React.Component  {
 
     const HomologyList = () => {
       console.log("homology menu: ", this.state.primers);
+
       if(!this.state.primers){
         return;
       }
+
       let primerKeys = Object.keys(this.state.primers);
-      //console.log('primer keys',primerKeys);
+      const order = ["hom5", "hom3", "seq5", "seq3"];
+      
+      primerKeys.sort((a, b) => order.indexOf(a) - order.indexOf(b));
+
       let primerHTML = primerKeys.map((key)=>{
         let primerOptions = this.state.primers[key];
 
