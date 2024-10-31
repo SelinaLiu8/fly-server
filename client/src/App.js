@@ -43,7 +43,10 @@ export default class App extends React.Component  {
   // UI
   changeMenus(e) {
     let menu = parseInt(e.target.dataset.menu); 
-    //console.log(menu);
+    console.log(menu);
+    if (menu == 1) {
+      window.location.reload();
+    }
     if(menu===this.state.menu){
       menu = null;
     }
@@ -421,9 +424,10 @@ export default class App extends React.Component  {
       //console.log('same isoForm');
       this.makeIsoFormHighlights();
     } else {
+      console.log("isoForm: ", isoForm)
       let url = urlBase+'/api/?type=isoform&isoform='+isoForm;
       fetch(url).then((res) =>{return res.json()}).then((geneInfo)=>{
-        //console.log('response',geneInfo);
+        console.log('response',geneInfo);
         let currentState = this.state;
         currentState.isoForm = geneInfo.isoForm;
         currentState.isoFormSequence = geneInfo.upstream+geneInfo.sequence+geneInfo.downstream;
@@ -470,6 +474,7 @@ export default class App extends React.Component  {
       });
     }
   }
+
   pickCutSite(target){
     this.saveCurrentHighlight('rgb(255, 255, 97)');
     this.setState({
