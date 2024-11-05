@@ -37,6 +37,7 @@ router.get('/api', async (req, res) => {
     console.log('res', response);
   } else if (req.query.type === 'isoform') {
     response = await flyApi.getIsoFormSequence(req.query.isoform);
+    console.log('res', response);
   } else if (req.query.type === 'targetSearch') {
     response = await puppet.searchForTargets(req.query.targetArea);
   } else if (req.query.type === 'targetEfficiency') {

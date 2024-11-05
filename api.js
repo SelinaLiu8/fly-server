@@ -108,7 +108,7 @@ async function getIsoFormSequence(isoForm){
         let location = geneInfo.locDesc+':'+geneInfo.locStart+'..'+geneInfo.locEnd;
         let strand = geneInfo.strand=="-"?'minus':'plus';
         let url = "https://api.flybase.org/api/v1.0/sequence/region/dmel/"+location+"?strand="+strand+"&padding=2000";
-        console.log(url);
+        console.log("getIsoFormSequence URL: ", url);
         let response = await fetch(url)
         let data = await response.json();
         console.log(data.resultset.result);

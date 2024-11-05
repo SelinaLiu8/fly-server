@@ -893,24 +893,86 @@ export default class App extends React.Component  {
       saveAs(blob, filename);
     });
   }
-  downloadGuideRna(){
-    const url = window.location.origin+'/templates/pU6.txt';
-    console.log("RNA url: ", url);
-    fetch(url).then((res)=>{return res.text()}).then((data)=>{
-      console.log(data);
-      let preSplit = data.split('**injection_start**')[0];
-      let postSplit = data.split('**injection_end**')[1];
-      let sense = this.state.oligos.sense.substring(0,7)+' '+this.state.oligos.sense.substring(7,17)+' '+this.state.oligos.sense.substring(17);
-      const design = preSplit+sense+postSplit;
-      var filename = "rna-" + this.state.geneName+".ape";
- 
-      var blob = new Blob([design], {
-       type: "text/plain;charset=utf-8"
+  
+  downloadGuideRna() {
+    const url = window.location.origin + '/templates/pU6.txt';
+    console.log("RNA URL: ", url);
+  
+    fetch(url)
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.text();
+      })
+      .then((data) => {
+        const newFeature = (start, end, locusTag, label, color) => {
+          return `     misc_feature    ${start}..${end}\n` +
+                 `                     /locus_tag="${locusTag}"\n` +
+                 `                     /label="${label}"\n` +
+                 `                     /ApEinfo_label="${label}"\n` +
+                 `                     /ApEinfo_fwdcolor="${color}"\n` +
+                 `                     /ApEinfo_revcolor="green"\n` +
+                 `                     /ApEinfo_graphicformat="arrow_data {{0 1 2 0 0 -1} {} 0}\n` +
+                 `                     width 5 offset 0\n`;
+        };
+  
+        // console.log("Data fetched: ", data);
+  
+        let preSplit = data.split('**injection_start**')[0];
+        let postSplit = data.split('**injection_end**')[1];
+        let sense = this.state.oligos.sense;
+  
+        console.log("Pre-split: ", preSplit);
+        console.log("Sense: ", sense);
+        console.log("Post-split: ", postSplit);
+
+        const u6EndMatch = preSplit.match(/misc_feature\s+(\d+)\.\.(\d+)\n\s+\/locus_tag="u6 promoter"/);
+        const u6EndPosition = u6EndMatch ? parseInt(u6EndMatch[2]) : null;
+  
+        // Get the start and end for the sense feature
+        const senseLength = sense.length;
+        const senseStart = u6EndPosition + 1; // Adjust this if necessary
+        const senseEnd = senseStart + senseLength - 1; 
+
+        console.log("senseStart: ", senseStart)
+        console.log("senseEnd: ", senseEnd);
+  
+        // Create the new feature string for the sense oligo
+        const featureString = newFeature(senseStart, senseEnd, 'sense', 'Sense', '#35df29');
+  
+        // Locate the index of the *FEATURES placeholder
+        const featuresIndex = preSplit.indexOf('FEATURES');
+        if (featuresIndex !== -1) {
+          // Find the end of the FEATURES section
+          const endFeaturesIndex = preSplit.indexOf('ORIGIN', featuresIndex);
+          if (endFeaturesIndex !== -1) {
+            // Append the new feature string before the ORIGIN line
+            preSplit = preSplit.substring(0, endFeaturesIndex) + featureString + preSplit.substring(endFeaturesIndex);
+          } else {
+            console.error("Warning: ORIGIN section not found after FEATURES.");
+          }
+        } else {
+          console.error("Warning: FEATURES section not found in preSplit.");
+        }
+  
+        // Combine preSplit and postSplit
+        const design = preSplit + sense + postSplit;
+  
+        console.log("Final design: ", design);
+  
+        var filename = "rna-" + this.state.geneName + ".ape";
+    
+        var blob = new Blob([design], {
+          type: "text/plain;charset=utf-8"
+        });
+        saveAs(blob, filename);
+      })
+      .catch((error) => {
+        console.error("Error fetching data: ", error);
       });
-      saveAs(blob, filename); 
-    });
-    return;
-  }
+  }  
+  
   addCustomData(e){
     e.preventDefault();
     console.log(e.target.elements);
