@@ -353,20 +353,27 @@ export default class App extends React.Component  {
         } else {
           let isoForms = JSON.parse(geneInfo.results.isoforms);
           if(isoForms.length) {
-            
-            let options = <div className="isoform-form">
-              <h2>Choose Your IsoForm</h2>
-              <p className='warning-message'>This step takes a few seconds, please only click the button once.</p>
-              <form onSubmit={this.pickIsoForm.bind(this)}><select name="isoform">{
-              isoForms.map(isoForm=>{
-                return <option value={isoForm} key={isoForm}>{isoForm}</option>
-              })
-              }</select><input className='btn' type="submit" value="Search" /></form>
+
+            let operation = <div className="isoform-form">
+            <h2>Choose Your Operation</h2>
+            <form onSubmit={this.pickDeleteOrTag.bind(this)}>
+            <select name="operation"><option value="tag">Tag</option><option value="delete">Delete</option>
+              </select><input className='btn' type="submit" value="Search" /></form>
             </div>;
+            
+            // let options = <div className="isoform-form">
+            //   <h2>Choose Your IsoForm</h2>
+            //   <p className='warning-message'>This step takes a few seconds, please only click the button once.</p>
+            //   <form onSubmit={this.pickIsoForm.bind(this)}><select name="isoform">{
+            //   isoForms.map(isoForm=>{
+            //     return <option value={isoForm} key={isoForm}>{isoForm}</option>
+            //   })
+            //   }</select><input className='btn' type="submit" value="Search" /></form>
+            // </div>;
             
             currentState.popup = {
               show:true,
-              message:options,
+              message:operation,
               image:null
             };
             currentState.geneName = geneInfo.results.name;
@@ -475,6 +482,21 @@ export default class App extends React.Component  {
     }
   }
 
+  pickDeleteOrTag(e) {
+    e.preventDefault();
+    let popupForm = <div className="isoform-form"><h2>Choose Your Operation</h2><form onSubmit={this.chooseOperation.bind(this)}>
+          <select name="tag"><option value="tag">Tag</option><option value="delete">Delete</option></select>
+          <input className='btn' type="submit" value="Search" />
+          </form></div>;
+    let currentState = this.state;
+    currentState.popup = {
+      show:true,
+      message:popupForm,
+      image:null,
+      stayOpen:true,
+    };
+  }
+
   pickCutSite(target){
     this.saveCurrentHighlight('rgb(255, 255, 97)');
     this.setState({
@@ -487,6 +509,15 @@ export default class App extends React.Component  {
     if(!this.state.primers||!this.state.primers.length==0){
       this.getPrimers();
       console.log("primer has been set")
+    }
+  }
+
+  chooseOperation(e){
+    if(e){
+      e.preventDefault();
+    }
+    if(e.response == "delete") {
+      console.log("delete function");
     }
   }
 
