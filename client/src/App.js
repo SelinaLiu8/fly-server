@@ -27,6 +27,7 @@ export default class App extends React.Component  {
       fontMenu:false,
       geneInfo:null,
       isoFormStrand:null,
+      operation:null,
       popup:{
         show:false,
         message:null,
@@ -314,188 +315,261 @@ export default class App extends React.Component  {
   /* API CALLS */
 
   searchForGene(e) {
-    if(e){
+    if (e) {
       e.preventDefault();
       e.stopPropagation();
     }
-    //console.log(e.target.elements.geneName.value);
-    let url = urlBase+'/api/?type=search&gene='+e.target.elements.geneName.value;
-    this.setState({popup:{
-      show:true,
-      message:<h2>Searching For Gene</h2>,
-      image:loading,
-      stayOpen:true,
-    }}, ()=>{
-      fetch(url).then((res) =>{return res.json()}).then((geneInfo)=>{
-        console.log('response',geneInfo);
-        let currentState = this.state;
-        if(!geneInfo){
+  
+    let url = urlBase + '/api/?type=search&gene=' + e.target.elements.geneName.value;
+    this.setState(
+      {
+        popup: {
+          show: true,
+          message: <h2>Searching For Gene</h2>,
+          image: loading,
+          stayOpen: true,
+        },
+      },
+      () => {
+        fetch(url)
+          .then((res) => res.json())
+          .then((geneInfo) => {
+            console.log('response', geneInfo);
             let currentState = this.state;
-            let error = <div className="popup-error"><h2>We're experiencing technical issues. Please try again later.</h2></div>;
-            currentState.popup = {
-              show:true,
-              message:error,
-              image:null
-            };
-            currentState.screen = 1;
-
-            this.setState(currentState);
-        } else if(!geneInfo.results.isoforms){
-            let error = <div className="popup-error"><h2>We could not find any results. Please try again with a different search term.</h2></div>;
-            currentState.popup = {
-              show:true,
-              message:error,
-              image:null
-            };
-            currentState.screen = 1;
-      
-            this.setState(currentState);
-        } else {
-          let isoForms = JSON.parse(geneInfo.results.isoforms);
-          if(isoForms.length) {
-
-            let operation = <div className="isoform-form">
-            <h2>Choose Your Operation</h2>
-            <form onSubmit={this.pickDeleteOrTag.bind(this)}>
-            <select name="operation"><option value="tag">Tag</option><option value="delete">Delete</option>
-              </select><input className='btn' type="submit" value="Search" /></form>
-            </div>;
-            
-            // let options = <div className="isoform-form">
-            //   <h2>Choose Your IsoForm</h2>
-            //   <p className='warning-message'>This step takes a few seconds, please only click the button once.</p>
-            //   <form onSubmit={this.pickIsoForm.bind(this)}><select name="isoform">{
-            //   isoForms.map(isoForm=>{
-            //     return <option value={isoForm} key={isoForm}>{isoForm}</option>
-            //   })
-            //   }</select><input className='btn' type="submit" value="Search" /></form>
-            // </div>;
-            
-            currentState.popup = {
-              show:true,
-              message:operation,
-              image:null
-            };
-            currentState.geneName = geneInfo.results.name;
-            currentState.screen = 1;
-            this.setState(currentState);
-          }
-        }
-      });
-    });
-  }
-  makeIsoFormHighlights(){
-    let startSequence = this.state.isoFormSequence.substr(0,9);
-    let stopSequence = this.state.isoFormSequence.substr(this.state.isoFormSequence.length-10,this.state.isoFormSequence.length);
-    let startIndex = this.state.sequence.indexOf(startSequence);
-    let stopIndex = this.state.sequence.indexOf(stopSequence)+7;
-    //console.log(startIndex,startSequence);
-    //console.log(stopIndex,stopSequence);
-    let highlights = {
-      start:{
-        location:startIndex,
-        length:3,
-        color:'#93E593',
-      },
-      stop:{
-        location:stopIndex,
-        length:3,
-        color:'#FF668E',
+  
+            if (!geneInfo) {
+              let error = (
+                <div className="popup-error">
+                  <h2>We're experiencing technical issues. Please try again later.</h2>
+                </div>
+              );
+              currentState.popup = {
+                show: true,
+                message: error,
+                image: null,
+              };
+              currentState.screen = 1;
+  
+              this.setState(currentState);
+            } else if (!geneInfo.results.isoforms) {
+              let error = (
+                <div className="popup-error">
+                  <h2>We could not find any results. Please try again with a different search term.</h2>
+                </div>
+              );
+              currentState.popup = {
+                show: true,
+                message: error,
+                image: null,
+              };
+              currentState.screen = 1;
+  
+              this.setState(currentState);
+            } else {
+              let isoForms = JSON.parse(geneInfo.results.isoforms);
+              if (isoForms.length) {
+                currentState.isoForms = isoForms; // Save isoForms in state
+                currentState.popup = {
+                  show: true,
+                  message: this.renderOperationForm(),
+                  image: null,
+                };
+                currentState.geneName = geneInfo.results.name;
+                currentState.showIsoForm = false; // State for toggling views
+                currentState.screen = 1;
+                this.setState(currentState);
+              }
+            }
+          });
       }
-    };
-    let popupForm = <div className="isoform-form"><h2>Choose Your Tag</h2><form onSubmit={this.chooseTerminal.bind(this)}>
-      <select name="tag"><option value="n">N Terminal</option><option value="c">C Terminal</option></select>
-      <input className='btn' type="submit" value="Search" />
-    </form></div>;
-    this.setState({
-      screen:2,
-      popup:{
-        show:false,
-      },
-      highlights:highlights,
-      popup:{
-        show:true,
-        message:popupForm,
-        image:null,
-        stayOpen:true,
-      }
-    });
+    );
   }
-  pickIsoForm(e){
+  
+  // Render Operation Form
+  renderOperationForm() {
+    return (
+      <div className="isoform-form">
+        <h2>Choose Your Operation</h2>
+        <form onSubmit={this.pickDeleteOrTag.bind(this)}>
+          <select name="operation">
+            <option value="tag">Tag</option>
+            <option value="delete">Delete</option>
+          </select>
+          <input className="btn" type="submit" value="Proceed" />
+        </form>
+      </div>
+    );
+  }
+  
+  // Render IsoForm Selection
+  renderIsoForm() {
+    return (
+      <div className="isoform-form">
+        <h2>Choose Your IsoForm</h2>
+        <p className="warning-message">This step takes a few seconds, please only click the button once.</p>
+        <form onSubmit={this.pickIsoForm.bind(this)}>
+          <select name="isoform">
+            {this.state.isoForms.map((isoForm) => (
+              <option value={isoForm} key={isoForm}>
+                {isoForm}
+              </option>
+            ))}
+          </select>
+          <input className="btn" type="submit" value="Search" />
+        </form>
+      </div>
+    );
+  }
+  
+  pickDeleteOrTag(e) {
     e.preventDefault();
-    //console.log(e.target.isoform.value);
-    let isoForm = e.target.isoform.value;
-    //console.log(isoForm,this.state.isoForm);
-    //console.log(this.state.isoFormSequence);
-    if(isoForm==this.state.isoForm){
-      //console.log('same isoForm');
-      this.makeIsoFormHighlights();
+    let operation = e.target.elements.operation.value;
+    console.log('Selected Operation:', operation);
+
+    if (operation === "tag") {
+      this.setState({
+        operation: "tag"
+      });
+
+    } else if (operation === "delete") {
+      this.setState({
+        operation: "delete"
+      });
+    }
+
+    console.log(operation)
+
+    this.setState({
+      popup: {
+        show: true,
+        message: this.renderIsoForm(), // Transition to isoform selection
+        image: null,
+      },
+      showIsoForm: true,
+    });
+  }  
+  
+  createPopupForm() {
+    return (
+      <div className="isoform-form">
+        <h2>Choose Your Tag</h2>
+        <form onSubmit={this.chooseTerminal.bind(this)}>
+          <select name="tag">
+            <option value="n">N Terminal</option>
+            <option value="c">C Terminal</option>
+          </select>
+          <input className="btn" type="submit" value="Search" />
+        </form>
+      </div>
+    );
+  }
+  
+  makeIsoFormHighlights() {
+    const startSequence = this.state.isoFormSequence.substr(0, 9);
+    const stopSequence = this.state.isoFormSequence.substr(
+      this.state.isoFormSequence.length - 10,
+      this.state.isoFormSequence.length
+    );
+    const startIndex = this.state.sequence.indexOf(startSequence);
+    const stopIndex = this.state.sequence.indexOf(stopSequence) + 7;
+  
+    const highlights = {
+      start: {
+        location: startIndex,
+        length: 3,
+        color: '#93E593',
+      },
+      stop: {
+        location: stopIndex,
+        length: 3,
+        color: '#FF668E',
+      },
+    };
+  
+    if (this.state.operation === 'delete') {
+      // Skip terminal selection for delete operation
+      this.setState({
+        screen: 2,
+        highlights: highlights,
+        popup: { show: false },
+      });
+
+      console.log("Highlights:", this.state.highlights);
     } else {
-      console.log("isoForm: ", isoForm)
-      let url = urlBase+'/api/?type=isoform&isoform='+isoForm;
-      fetch(url).then((res) =>{return res.json()}).then((geneInfo)=>{
-        console.log('response',geneInfo);
-        let currentState = this.state;
-        currentState.isoForm = geneInfo.isoForm;
-        currentState.isoFormSequence = geneInfo.upstream+geneInfo.sequence+geneInfo.downstream;
-        currentState.sequence = geneInfo.upstream+geneInfo.sequence+geneInfo.downstream;
-        currentState.isoFormStrand = geneInfo.strand;
-        let strand = geneInfo.strand;
-        let startIndex = 2000;
-        let stopIndex = geneInfo.sequence.length+2000+(strand=='-'?-3:3);
-        let highlights = {
-          start:{
-            location:startIndex,
-            length:3,
-            color:'#93E593',
-          },
-          stop:{
-            location:stopIndex,
-            length:3,
-            color:'#FF668E',
-          }
-        }
-        currentState.highlights = highlights;
-        let popupForm = <div className="isoform-form"><h2>Choose Your Tag</h2><form onSubmit={this.chooseTerminal.bind(this)}>
-          <select name="tag"><option value="n">N Terminal</option><option value="c">C Terminal</option></select>
-          <input className='btn' type="submit" value="Search" />
-          </form></div>;
-       
-        currentState.popup = {
-          show:true,
-          message:popupForm,
-          image:null,
-          stayOpen:true,
-        };
-        currentState.screen = 2;
-        /*currentState.currentHighlight = {
-          location:null,
-          length:100,
-          color:'#FCD27E',
-          name:'targetSearch'
-        }*/
-        //console.log(currentState);
-        this.setState(currentState,function(){
-          //console.log(this.state);
-        });
+      const popupForm = this.createPopupForm();
+      this.setState({
+        screen: 2,
+        highlights: highlights,
+        popup: {
+          show: true,
+          message: popupForm,
+          image: null,
+          stayOpen: true,
+        },
       });
     }
   }
-
-  pickDeleteOrTag(e) {
+  
+  pickIsoForm(e) {
     e.preventDefault();
-    let popupForm = <div className="isoform-form"><h2>Choose Your Operation</h2><form onSubmit={this.chooseOperation.bind(this)}>
-          <select name="tag"><option value="tag">Tag</option><option value="delete">Delete</option></select>
-          <input className='btn' type="submit" value="Search" />
-          </form></div>;
-    let currentState = this.state;
-    currentState.popup = {
-      show:true,
-      message:popupForm,
-      image:null,
-      stayOpen:true,
-    };
-  }
+    const isoForm = e.target.isoform.value;
+  
+    if (isoForm === this.state.isoForm) {
+      // Reuse highlights logic
+      this.makeIsoFormHighlights();
+      console.log("it went in here!")
+    } else {
+      console.log("isoForm: ", isoForm);
+      const url = `${urlBase}/api/?type=isoform&isoform=${isoForm}`;
+  
+      fetch(url)
+        .then((res) => res.json())
+        .then((geneInfo) => {
+          const strand = geneInfo.strand;
+          const startIndex = 2000;
+          const stopIndex =
+            geneInfo.sequence.length + 2000 + (strand === '-' ? -3 : 3);
+  
+          const highlights = {
+            start: {
+              location: startIndex,
+              length: 3,
+              color: '#93E593',
+            },
+            stop: {
+              location: stopIndex,
+              length: 3,
+              color: '#FF668E',
+            },
+          };
+  
+          const popupForm = this.createPopupForm();
+          const newPopupState =
+            this.state.operation === 'delete'
+              ? { show: false }
+              : {
+                  show: true,
+                  message: popupForm,
+                  image: null,
+                  stayOpen: true,
+                };
+            
+          if (this.state.operation === 'delete') {
+            this.handleDeleteOperation();
+          }
+  
+          this.setState({
+            isoForm: geneInfo.isoForm,
+            isoFormSequence: geneInfo.upstream + geneInfo.sequence + geneInfo.downstream,
+            sequence: geneInfo.upstream + geneInfo.sequence + geneInfo.downstream,
+            isoFormStrand: strand,
+            highlights,
+            popup: newPopupState,
+            screen: 2,
+          });
+        });
+    }
+  }  
 
   pickCutSite(target){
     this.saveCurrentHighlight('rgb(255, 255, 97)');
@@ -521,83 +595,139 @@ export default class App extends React.Component  {
     }
   }
 
-  chooseTerminal(e,terminalInput=null){
-    if(e){
-      e.preventDefault();
-    }
-    //console.log(e.target.tag.value);
-    let i;
-    let terminal = terminalInput||e.target.tag.value;
-    if(terminal=='n'){
-      i = this.state.highlights.start.location;
-    } else if(terminal=='c'){
-      i = this.state.highlights.stop.location;
-    }
-    //console.log('start',i-26,i+26);
-    let targetGenes = this.state.sequence.substring(i-50,i+50); 
-    //console.log(targetGenes);
-    let url = urlBase+'/api/?type=targetSearch&targetArea='+targetGenes;
-    //console.log(url);
-    this.setState({popup:{
-      show:true,
-      message:<div><h2>Finding Potential Targets.<br/> This may take some time.</h2></div>,
-      image:loading,
-      stayOpen:true,
+  // Terminal
+
+  chooseTerminal(e, terminalInput = null) {
+    e.preventDefault();
+  
+    const { highlights, sequence } = this.state;
+    const terminal = terminalInput || e.target.tag.value;
+    const location = terminal === 'n' ? highlights.start.location : highlights.stop.location;
+  
+    const targetGenes = sequence.substring(location - 50, location + 50);
+  
+    this.setState(
+      {
+        popup: {
+          show: true,
+          message: (
+            <div>
+              <h2>Finding Potential Targets.<br /> This may take some time.</h2>
+            </div>
+          ),
+          image: loading,
+          stayOpen: true,
+        },
+        terminal,
       },
-      terminal:terminal
-    },function(){
-      fetch(url).then((res) =>{return res.json()}).then((response)=>{
-        //console.log(response);
-        let efficiencyString = response.results.map((target)=>{
-          return target.distal+target.proximal;
-        });
-        //console.log(encodeURIComponent(efficiencyString.join(',')));
-        this.setState({popup:{
-          show:true,
-          message:<h2>Checking Target Efficiency</h2>,
-          image:loading,
-          stayOpen:true,
+      () => this.processTargetSearch(targetGenes)
+    );
+  }
+  
+  handleDeleteOperation() {
+    const { highlights, sequence } = this.state;
+
+    if (!highlights || !highlights.start || !highlights.stop) {
+      console.error("Highlights not properly set for delete operation.");
+      return; // Return early if highlights are missing
+    }
+  
+    // For delete operation, process both N and C terminals
+    const nLocation = highlights.start.location;
+    const cLocation = highlights.stop.location;
+  
+    const nTargetGenes = sequence.substring(nLocation - 50, nLocation + 50);
+    const cTargetGenes = sequence.substring(cLocation - 50, cLocation + 50);
+  
+    // Combine target areas for delete operation
+    const combinedTargetGenes = `${nTargetGenes},${cTargetGenes}`;
+  
+    this.setState(
+      {
+        popup: {
+          show: true,
+          message: (
+            <div>
+              <h2>Finding Potential Targets.<br /> This may take some time.</h2>
+            </div>
+          ),
+          image: loading,
+          stayOpen: true,
+        },
+      },
+      () => this.processTargetSearch(combinedTargetGenes)
+    );
+  }  
+
+  processTargetSearch(targetGenes) {
+    const url = `${urlBase}/api/?type=targetSearch&targetArea=${targetGenes}`;
+  
+    fetch(url)
+      .then((res) => res.json())
+      .then((response) => {
+        const efficiencyString = response.results.map((target) => target.distal + target.proximal);
+  
+        this.setState(
+          {
+            popup: {
+              show: true,
+              message: <h2>Checking Target Efficiency</h2>,
+              image: loading,
+              stayOpen: true,
+            },
+            targets: response.results,
           },
-          targets:response.results
-        },function(){
-          let url = urlBase+'/api/?type=targetEfficiency&targets='+encodeURIComponent(efficiencyString.join('\n'));
-          fetch(url).then((res)=>{return res.json()}).then((response)=>{
-            //console.log(response);
-            let targets = [];
-            for(let i=0;i<this.state.targets.length;i++){
-              let target = this.state.targets[i];
-              let gene = target.distal+target.proximal;
-              //console.log('target',target);
-              target.score = response[gene];
-              targets.push(target);
-            }
-            this.setState({popup:{
-              show:false,
-              },
-              targets:targets,
-              menu:2,
-            },function(){
-              let terminal = this.state.terminal;
-              let scrollTop;
-              let windowHeight = window.innerHeight;
-              if (terminal === 'n') {
-                scrollTop = document.getElementsByClassName('start')[0].getBoundingClientRect().top;
-              } else {
-                  const screen2 = document.getElementsByClassName('screen-2')[0];
-                  scrollTop = screen2.scrollHeight; // Scroll to the bottom
-              }
-              
-              console.log('scroll top: ', scrollTop, windowHeight);
-              document.getElementsByClassName('screen-2')[0].scrollTo({
-                  top: scrollTop - (windowHeight / 2),
-                  behavior: 'smooth'
+          () => {
+            const efficiencyUrl = `${urlBase}/api/?type=targetEfficiency&targets=${encodeURIComponent(
+              efficiencyString.join('\n')
+            )}`;
+  
+            fetch(efficiencyUrl)
+              .then((res) => res.json())
+              .then((efficiencyResponse) => {
+                const targets = this.state.targets.map((target) => {
+                  const gene = target.distal + target.proximal;
+                  return { ...target, score: efficiencyResponse[gene] };
+                });
+  
+                this.setState(
+                  {
+                    popup: { show: false },
+                    targets,
+                    menu: 2,
+                  },
+                  () => {
+                    if (this.state.operation !== 'delete') {
+                      this.scrollToTerminal(this.state.terminal);
+                    }
+                  }
+                );
               });
-            });
-          });
-        });
+          }
+        );
       });
+  }
+
+  scrollToTerminal(terminal) {
+    const windowHeight = window.innerHeight;
+    let scrollTop;
+  
+    if (terminal === 'n') {
+      const startElement = document.getElementsByClassName('start')[0];
+      scrollTop = startElement.getBoundingClientRect().top;
+    } else {
+      const screen2 = document.getElementsByClassName('screen-2')[0];
+      scrollTop = screen2.scrollHeight; // Scroll to the bottom
+    }
+  
+    console.log('scroll top:', scrollTop, windowHeight);
+  
+    document.getElementsByClassName('screen-2')[0].scrollTo({
+      top: scrollTop - windowHeight / 2,
+      behavior: 'smooth',
     });
   }
+  
   searchForTargets(){
     console.log('searching for target');
     //console.log(this.state.currentHighlight);
