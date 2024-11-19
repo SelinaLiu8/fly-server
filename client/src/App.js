@@ -515,9 +515,8 @@ export default class App extends React.Component  {
     const isoForm = e.target.isoform.value;
   
     if (isoForm === this.state.isoForm) {
-      // Reuse highlights logic
       this.makeIsoFormHighlights();
-      console.log("it went in here!")
+      console.log("it went in here!");
     } else {
       console.log("isoForm: ", isoForm);
       const url = `${urlBase}/api/?type=isoform&isoform=${isoForm}`;
@@ -543,6 +542,8 @@ export default class App extends React.Component  {
             },
           };
   
+          console.log("Setting highlights: ", highlights);
+  
           const popupForm = this.createPopupForm();
           const newPopupState =
             this.state.operation === 'delete'
@@ -553,23 +554,29 @@ export default class App extends React.Component  {
                   image: null,
                   stayOpen: true,
                 };
-            
-          if (this.state.operation === 'delete') {
-            this.handleDeleteOperation();
-          }
   
-          this.setState({
-            isoForm: geneInfo.isoForm,
-            isoFormSequence: geneInfo.upstream + geneInfo.sequence + geneInfo.downstream,
-            sequence: geneInfo.upstream + geneInfo.sequence + geneInfo.downstream,
-            isoFormStrand: strand,
-            highlights,
-            popup: newPopupState,
-            screen: 2,
-          });
+          // Set state first, then handle delete
+          this.setState(
+            {
+              isoForm: geneInfo.isoForm,
+              isoFormSequence:
+                geneInfo.upstream + geneInfo.sequence + geneInfo.downstream,
+              sequence: geneInfo.upstream + geneInfo.sequence + geneInfo.downstream,
+              isoFormStrand: strand,
+              highlights: highlights,
+              popup: newPopupState,
+              screen: 2,
+            },
+            () => {
+              if (this.state.operation === 'delete') {
+                this.handleDeleteOperation();
+              }
+            }
+          );
         });
     }
-  }  
+  }
+   
 
   pickCutSite(target){
     this.saveCurrentHighlight('rgb(255, 255, 97)');
@@ -601,6 +608,7 @@ export default class App extends React.Component  {
     e.preventDefault();
   
     const { highlights, sequence } = this.state;
+    console.log("Highlights: ", highlights);
     const terminal = terminalInput || e.target.tag.value;
     const location = terminal === 'n' ? highlights.start.location : highlights.stop.location;
   
@@ -626,7 +634,7 @@ export default class App extends React.Component  {
   
   handleDeleteOperation() {
     const { highlights, sequence } = this.state;
-
+    console.log("Highlights: ", highlights);
     if (!highlights || !highlights.start || !highlights.stop) {
       console.error("Highlights not properly set for delete operation.");
       return; // Return early if highlights are missing
