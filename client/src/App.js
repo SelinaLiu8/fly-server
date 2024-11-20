@@ -584,7 +584,6 @@ export default class App extends React.Component  {
       targets:[target],
       menu:3,
       screen:3,
-      mutatePam:true,
     });
     // to set the primers
     if(!this.state.primers||!this.state.primers.length==0){
@@ -628,7 +627,7 @@ export default class App extends React.Component  {
         },
         terminal,
       },
-      () => this.processTargetSearch(targetGenes)
+      () => this.processTagTargetSearch(targetGenes)
     );
   }
   
@@ -663,11 +662,78 @@ export default class App extends React.Component  {
           stayOpen: true,
         },
       },
-      () => this.processTargetSearch(combinedTargetGenes)
+      () => this.processDeleteTargetSearch(nTargetGenes, cTargetGenes)
     );
-  }  
+  }
+  
+  processDeleteTargetSearch(nGene, cGene) {
+    const nUrl = `${urlBase}/api/?type=targetSearch&targetArea=${nGene}`;
+    const cUrl = `${urlBase}/api/?type=targetSearch&targetArea=${cGene}`;
+  
+    // Fetch the N-terminal and C-terminal target data separately
+    Promise.all([fetch(nUrl), fetch(cUrl)])
+      .then((responses) => Promise.all(responses.map((res) => res.json())))
+      .then(([nResponse, cResponse]) => {
+        const nEfficiencyString = nResponse.results.map(
+          (target) => target.distal + target.proximal
+        );
+        const cEfficiencyString = cResponse.results.map(
+          (target) => target.distal + target.proximal
+        );
+  
+        this.setState(
+          {
+            popup: {
+              show: true,
+              message: <h2>Checking Target Efficiency</h2>,
+              image: loading,
+              stayOpen: true,
+            },
+            targets: [...nResponse.results, ...cResponse.results],
+          },
+          () => {
+            // Now fetch target efficiency for both N and C terminal targets
+            const nEfficiencyUrl = `${urlBase}/api/?type=targetEfficiency&targets=${encodeURIComponent(
+              nEfficiencyString.join('\n')
+            )}`;
+            const cEfficiencyUrl = `${urlBase}/api/?type=targetEfficiency&targets=${encodeURIComponent(
+              cEfficiencyString.join('\n')
+            )}`;
+  
+            Promise.all([fetch(nEfficiencyUrl), fetch(cEfficiencyUrl)])
+              .then((efficiencyResponses) =>
+                Promise.all(efficiencyResponses.map((res) => res.json()))
+              )
+              .then(([nEfficiencyResponse, cEfficiencyResponse]) => {
+                const updatedTargets = [
+                  ...nResponse.results.map((target) => ({
+                    ...target,
+                    score: nEfficiencyResponse[target.distal + target.proximal],
+                    terminalType: 'N',
+                  })),
+                  ...cResponse.results.map((target) => ({
+                    ...target,
+                    score: cEfficiencyResponse[target.distal + target.proximal],
+                    terminalType: 'C',
+                  })),
+                ];
 
-  processTargetSearch(targetGenes) {
+                console.log("updated targets: ", updatedTargets);
+  
+                this.setState(
+                  {
+                    popup: { show: false },
+                    targets: updatedTargets,
+                    menu: 2,
+                  }
+                );
+              });
+          }
+        );
+      });
+  }
+
+  processTagTargetSearch(targetGenes) {
     const url = `${urlBase}/api/?type=targetSearch&targetArea=${targetGenes}`;
   
     fetch(url)
@@ -705,9 +771,7 @@ export default class App extends React.Component  {
                     menu: 2,
                   },
                   () => {
-                    if (this.state.operation !== 'delete') {
-                      this.scrollToTerminal(this.state.terminal);
-                    }
+                    this.scrollToTerminal(this.state.terminal);
                   }
                 );
               });
@@ -1323,47 +1387,6 @@ export default class App extends React.Component  {
     //console.log('render')
     const makeHighlights = () => {
       return null;
-      if(!this.state.highlights){
-        return null;
-      }
-      /*for (const highlight of this.state.highlights) {
-        let geneInfoHighlights = !this.state.sequence?null:this.state.sequence.split('').map((letter,i)=>{
-          return <div className={(highlight.location<i-((highlight.highlightLength-1)/2)||highlight.location>i+((highlight.highlightLength-1)/2)?' ':'highlight ')+' single-letter '} data-value={i} onMouseEnter={this.highlight.bind(this)}>{letter}</div>;
-        });
-      }*/
-      let allHighlights = [];
-      let currentHighlight = !this.state.sequence?null:this.state.sequence.split('').map((letter,i)=>{
-        if(!this.state.currentHighlight){
-          return null;
-        }
-        let style = {background:'rgba(255,255,255,0)'};
-        let classes = '';
-        if(i>=(this.state.currentHighlight.location-((this.state.currentHighlight.length-1)/2))&&i<=(this.state.currentHighlight.location+((this.state.currentHighlight.length-1)/2))){
-          style = {background:this.state.currentHighlight.color,zIndex:999};
-          classes = 'main-highlight';
-        }
-        return <div style={style} className={classes} data-value={i} >{letter}</div>;
-      });
-      let highlightKeys = Object.keys(this.state.highlights);
-      for(let i=0;i<highlightKeys.length;i++){
-        let highlight = this.state.highlights[highlightKeys[i]];
-        allHighlights.push(!this.state.sequence?null:<div className="gene-wrapper">{
-          this.state.sequence.split('').map((letter,i)=>{
-            let style = {background:'rgba(255,255,255,0)'};
-            let className = null;
-            if(i>=(highlight.location-((highlight.length-1)/2))&&i<=(highlight.location+((highlight.length-1)/2))){
-              style = {background:highlight.color};
-              
-            }
-            if(i==highlight.location){
-              className = highlightKeys[i];
-            }
-            return <div style={style} className={highlightKeys[i]} ref={className} data-value={i}  >{letter}</div>;
-          })
-          }</div>);
-      }
-      allHighlights.push(<div className="current-highlight">{currentHighlight}</div>);
-      return allHighlights;
     }
     const highlightKeys = !this.state.highlights?null:Object.keys(this.state.highlights);
     //console.log(!this.state.currentHighlight?null:this.state.currentHighlight);
@@ -1404,6 +1427,7 @@ export default class App extends React.Component  {
       
       return <div  className={highlightClasses.join(' ')+' single-letter'} data-highlight-location={highlightLocation} onClick={isStartSelect?this.selectStartCodon.bind(this):isStopSelect?this.selectStopCodon.bind(this):null} >{letter}</div>;
     });
+
     const targetList = !this.state.targets?null:this.state.targets.map((target)=>{
       return <div className={"single-target "+(!currentHighlightLocation?'disabled':currentHighlightLocation)} onClick={!currentHighlightLocation?null:this.pickCutSite.bind(this,target)} onMouseEnter={this.highlightString.bind(this,target.distal+target.proximal+target.pam,'rgb(255, 255, 97)',null)} onMouseLeave={this.clearHighlight.bind(this)}>
         <div>{target.distal+target.proximal+target.pam}</div>
