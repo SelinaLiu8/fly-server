@@ -579,18 +579,48 @@ export default class App extends React.Component  {
    
 
   pickCutSite(target){
+    const { terminalType } = target;
     this.saveCurrentHighlight('rgb(255, 255, 97)');
-    this.setState({
-      targets:[target],
-      menu:3,
-      screen:3,
-    });
-    // to set the primers
-    if(!this.state.primers||!this.state.primers.length==0){
-      this.getPrimers();
-      console.log("primer has been set")
+    if (this.state.operation == "tag") {
+      this.setState({
+        targets:[target],
+        menu:3,
+        screen:3,
+      });
+      // to set the primers
+      if(!this.state.primers||!this.state.primers.length==0){
+        this.getPrimers();
+        console.log("primer has been set")
+      }
+    }
+    else if (this.state.operation == "delete") {
+      if (terminalType === "N") {
+        this.setState({ selectedNTarget: target }, this.DeleteCutSite);
+      } else if (terminalType === "C") {
+        this.setState({ selectedCTarget: target }, this.DeleteCutSite);
+      }
     }
   }
+
+  DeleteCutSite() {
+    const { selectedNTarget, selectedCTarget } = this.state;
+  
+    if (selectedNTarget && selectedCTarget) {
+      this.setState(
+        {
+          targets: [selectedNTarget, selectedCTarget],
+          menu: 3,
+          screen: 3,
+        },
+        () => {
+          if (!this.state.primers || this.state.primers.length === 0) {
+            this.getPrimers();
+            console.log("Primer has been set");
+          }
+        }
+      );
+    }
+  }  
 
   chooseOperation(e){
     if(e){
@@ -1428,14 +1458,82 @@ export default class App extends React.Component  {
       return <div  className={highlightClasses.join(' ')+' single-letter'} data-highlight-location={highlightLocation} onClick={isStartSelect?this.selectStartCodon.bind(this):isStopSelect?this.selectStopCodon.bind(this):null} >{letter}</div>;
     });
 
-    const targetList = !this.state.targets?null:this.state.targets.map((target)=>{
-      return <div className={"single-target "+(!currentHighlightLocation?'disabled':currentHighlightLocation)} onClick={!currentHighlightLocation?null:this.pickCutSite.bind(this,target)} onMouseEnter={this.highlightString.bind(this,target.distal+target.proximal+target.pam,'rgb(255, 255, 97)',null)} onMouseLeave={this.clearHighlight.bind(this)}>
-        <div>{target.distal+target.proximal+target.pam}</div>
-        <div><span>Efficiency: </span>{!target.score?'-':target.score}</div>
-        <div><span>Strand: </span>{target.strand}</div>
-        <div><span>Off Targets: </span>{target.offtarget}</div>
-      </div>;
-    });
+    // cut site list
+    let targetList;
+    if (this.state.operation == "delete") {
+      const nTargetList = [];
+      const cTargetList = [];
+    
+      // Categorize targets using a for loop
+      const targets = this.state.targets || [];
+      for (let i = 0; i < targets.length; i++) {
+        const target = targets[i];
+    
+        const targetElement = (
+          <div
+            key={`target-${target.distal}-${target.proximal}-${target.terminalType}`}
+            className={
+              "single-target " +
+              (!currentHighlightLocation ? "disabled" : currentHighlightLocation)
+            }
+            onClick={
+              !currentHighlightLocation
+                ? null
+                : this.pickCutSite.bind(this, target)
+            }
+            onMouseEnter={this.highlightString.bind(
+              this,
+              target.distal + target.proximal + target.pam,
+              "rgb(255, 255, 97)",
+              null
+            )}
+            onMouseLeave={this.clearHighlight.bind(this)}
+          >
+            <div>{target.distal + target.proximal + target.pam}</div>
+            <div>
+              <span>Efficiency: </span>
+              {!target.score ? "-" : target.score}
+            </div>
+            <div>
+              <span>Strand: </span>
+              {target.strand}
+            </div>
+            <div>
+              <span>Off Targets: </span>
+              {target.offtarget}
+            </div>
+          </div>
+        );
+    
+        // Add to respective lists based on terminalType
+        if (target.terminalType === "N") {
+          nTargetList.push(targetElement);
+        } else if (target.terminalType === "C") {
+          cTargetList.push(targetElement);
+        }
+      }
+    
+      // Combine the lists into a single targetList
+      targetList = (
+        <div>
+          <h5>N-terminal Targets</h5>
+          {nTargetList.length > 0 ? nTargetList : <p>No N-terminal targets available</p>}
+    
+          <h5>C-terminal Targets</h5>
+          {cTargetList.length > 0 ? cTargetList : <p>No C-terminal targets available</p>}
+        </div>
+      );
+    }
+    else {
+      targetList = !this.state.targets?null:this.state.targets.map((target)=>{
+        return <div className={"single-target "+(!currentHighlightLocation?'disabled':currentHighlightLocation)} onClick={!currentHighlightLocation?null:this.pickCutSite.bind(this,target)} onMouseEnter={this.highlightString.bind(this,target.distal+target.proximal+target.pam,'rgb(255, 255, 97)',null)} onMouseLeave={this.clearHighlight.bind(this)}>
+          <div>{target.distal+target.proximal+target.pam}</div>
+          <div><span>Efficiency: </span>{!target.score?'-':target.score}</div>
+          <div><span>Strand: </span>{target.strand}</div>
+          <div><span>Off Targets: </span>{target.offtarget}</div>
+        </div>;
+      });
+    }
 
     const pamBoxReadingFrames = () => {
       if(!this.state.highlights.cutsite){
