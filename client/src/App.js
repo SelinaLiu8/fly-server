@@ -614,7 +614,7 @@ export default class App extends React.Component  {
         },
         () => {
           if (!this.state.primers || this.state.primers.length === 0) {
-            this.getPrimers();
+            this.getDeletePrimers();
             console.log("Primer has been set");
           }
         }
@@ -938,6 +938,84 @@ export default class App extends React.Component  {
         });
       })
     });
+  }
+
+  getDeletePrimers() {
+    console.log("delete primier function");
+
+    let sequence = this.state.sequence;
+
+    const calculatePrimerSections = (targetLocation) => ({
+      "5' Homology": sequence.slice(targetLocation - 1200, targetLocation - 1000),
+      "5' Sequence": sequence.slice(targetLocation - 600, targetLocation - 400),
+      "3' Sequence": sequence.slice(targetLocation + 400, targetLocation + 600),
+      "3' Homology": sequence.slice(targetLocation + 1000, targetLocation + 1200),
+    });
+  
+    // Calculate primer sections for both terminals
+    const nPrimerSections = calculatePrimerSections(this.state.highlights.start.location);
+    const cPrimerSections = calculatePrimerSections(this.state.highlights.stop.location);
+  
+    const nPrimerSectionsString = Buffer.from(JSON.stringify(nPrimerSections)).toString("base64");
+    const cPrimerSectionsString = Buffer.from(JSON.stringify(cPrimerSections)).toString("base64");
+  
+    this.setState(
+      {
+        popup: {
+          show: true,
+          message: <h2>Retrieving Homology Arm Primers</h2>,
+          image: loading,
+          stayOpen: true,
+        },
+      },
+      () => {
+        const nFetchUrl = `${urlBase}/api/?type=primers&primerSections=${nPrimerSectionsString}`;
+        const cFetchUrl = `${urlBase}/api/?type=primers&primerSections=${cPrimerSectionsString}`;
+  
+        Promise.all([fetch(nFetchUrl), fetch(cFetchUrl)])
+          .then((responses) => Promise.all(responses.map((res) => res.json())))
+          .then(([nPrimers, cPrimers]) => {
+            this.setState(
+              {
+                primers: {
+                  N: nPrimers,
+                  C: cPrimers,
+                },
+                menu: 3,
+                popup: { show: false },
+              },
+              () => {
+                console.log("N-terminal primers:", nPrimers);
+                console.log("C-terminal primers:", cPrimers);
+  
+                // Scroll to the relevant section if needed
+                const screen = document.getElementsByClassName("screen-3")[0];
+                if (screen) {
+                  const scrollTop = screen.scrollHeight;
+                  screen.scrollTo({
+                    top: scrollTop - window.innerHeight / 2,
+                    behavior: "smooth",
+                  });
+                } else {
+                  console.log("screen-3 element not found.");
+                }
+              }
+            );
+          })
+          .catch((err) => {
+            console.error("Error fetching primers:", err);
+            this.setState({
+              popup: {
+                show: true,
+                message: <h2>Failed to Retrieve Primers</h2>,
+                image: null,
+                stayOpen: false,
+              },
+            });
+          });
+      }
+    );
+    console.log("primers: " + this.state.primers)
   }
 
   mutatePam(e){
@@ -1535,256 +1613,6 @@ export default class App extends React.Component  {
       });
     }
 
-    const pamBoxReadingFrames = () => {
-      if(!this.state.highlights.cutsite){
-        return;
-      }
-      let start = parseInt(JSON.parse(JSON.stringify(this.state.highlights.start.location)));
-      let cutsite = parseInt(this.state.highlights.cutsite.location);
-      let string = [];
-      let frameI = Math.abs((cutsite - start) % 3)+1;
-      let distal = '';
-      let proximal = '';
-      let pam = '';
-      if(this.state.isoFormStrand=='-'){
-        distal = this.state.isoFormSequence.substr(cutsite+3+this.state.targets[0].proximal.length,this.state.targets[0].distal.length);
-        proximal = this.state.isoFormSequence.substr(cutsite+3,this.state.targets[0].proximal.length);
-        pam = this.state.isoFormSequence.substr(cutsite,3);
-        console.log('distal',distal);
-        console.log('proximal',proximal);
-        console.log('pam',pam);
-        //console.log(cutsite,' ',start,Math.abs(cutsite - start)%3,((cutsite - start) % 3),frameI);
-        
-        for(let i=0;i<pam.length;i++){
-          string.push(<div style={{backgroundColor:'#93E593'}}>{pam[i]}<sub>{frameI}</sub></div>);
-          start = start-1;
-          frameI = Math.abs((cutsite - start) % 3)+1;
-          //console.log(cutsite,' ',start,Math.abs(cutsite - start)%3,((cutsite - start) % 3),frameI);
-        }
-        string.push(<div>{' '}</div>);
-        for(let i=0;i<proximal.length;i++){
-          string.push(<div>{proximal[i]}<sub>{frameI}</sub></div>);
-          start = start-1;
-          frameI = Math.abs((cutsite - start) % 3)+1;
-          //console.log(cutsite,' ',start,Math.abs(cutsite - start)%3,((cutsite - start) % 3),frameI);
-        }
-        for(let i=0;i<distal.length;i++){
-          string.push(<div>{distal[i]}<sub>{frameI}</sub></div>);
-          start = start-1;
-          frameI = Math.abs((cutsite - start) % 3)+1;
-          //console.log(cutsite,' ',start,Math.abs(cutsite - start)%3,((cutsite - start) % 3),frameI);
-        }
-        
-        //let string = !this.state.targets?null:this.state.targets[0].distal+this.state.targets[0].proximal+' '+(!this.state.targets?null:this.state.targets[0].pam);
-      } else {
-        distal = this.state.targets[0].distal.split('');
-        proximal = this.state.targets[0].proximal.split('');
-        pam = this.state.targets[0].pam.split('');
-  
-        //console.log(cutsite,' ',start,Math.abs(cutsite - start)%3,((cutsite - start) % 3),frameI);
-        for(let i=0;i<distal.length;i++){
-          string.push(<div>{distal[i]}<sub>{frameI}</sub></div>);
-          start = start+1;
-          frameI = Math.abs((cutsite - start) % 3)+1;
-          //console.log(cutsite,' ',start,Math.abs(cutsite - start)%3,((cutsite - start) % 3),frameI);
-        }
-        for(let i=0;i<this.state.targets[0].proximal.length;i++){
-          string.push(<div>{proximal[i]}<sub>{frameI}</sub></div>);
-          start = start+1;
-          frameI = Math.abs((cutsite - start) % 3)+1;
-          //console.log(cutsite,' ',start,Math.abs(cutsite - start)%3,((cutsite - start) % 3),frameI);
-        }
-        string.push(<div>{' '}</div>);
-        for(let i=0;i<this.state.targets[0].pam.length;i++){
-          string.push(<div style={{backgroundColor:'#93E593'}}>{pam[i]}<sub>{frameI}</sub></div>);
-          start = start+1;
-          frameI = Math.abs((cutsite - start) % 3)+1;
-          //console.log(cutsite,' ',start,Math.abs(cutsite - start)%3,((cutsite - start) % 3),frameI);
-        }
-        //let string = !this.state.targets?null:this.state.targets[0].distal+this.state.targets[0].proximal+' '+(!this.state.targets?null:this.state.targets[0].pam);
-      }
-      
-      return <div className="pam-string">{string}</div>;
-    }
-
-    const pamBox = <div className="pam-wrapper">
-       <h3>Amino Acid Chart</h3>
-       <div>Target: {pamBoxReadingFrames()}</div>
-       <div><form onSubmit={this.mutatePam.bind(this)}><input name="newPam" type="text" /><input type="submit" value="mutate"/></form></div>
-       <h4>2nd Letter</h4>
-       <div className="amino-table">
-        <div><h4>1st<br/>Letter</h4></div>
-        <div className="chart">
-          <div className="header"><div className="cell">U</div><div className="cell">C</div><div className="cell">A</div><div className="cell">G</div></div>
-          <div className="row">
-            <div className="cell">U</div>
-            <div className="cell">
-              <div className="cell-box">
-                <div><div className="mutation">UUU</div><div className="mutation">UUC</div></div>
-                <div className="cell-right">Phe</div>
-              </div>
-              <div className="cell-box">
-                <div><div className="mutation">UUA</div><div className="mutation">UUG</div></div>
-                <div className="cell-right">Leu</div>
-              </div>
-            </div>
-            <div className="cell">
-              <div className="cell-box">
-                <div><div className="mutation">UCU</div><div className="mutation">UCC</div><div className="mutation">UCA</div><div className="mutation">UCG</div></div>
-                <div className="cell-right">Ser</div>
-              </div>
-            </div>
-            <div className="cell">
-              <div className="cell-box">
-                <div><div className="mutation">UAU</div><div className="mutation">UAC</div></div>
-                <div className="cell-right">Tyr</div>
-              </div>
-              <div className="cell-box">
-              <div><div className="mutation">UAU</div><div className="mutation">UAC</div></div>
-                <div className="cell-right stop">Stop<br/>Stop</div>
-              </div>
-            </div>
-            <div className="cell">
-              <div className="cell-box">
-                <div><div className="mutation">UGU</div><div className="mutation">UGC</div></div>
-                <div className="cell-right">Cys</div>
-              </div>
-              <div className="cell-box">
-              <div><div className="mutation">UGA</div><div className="mutation">UGG</div></div>
-                <div className="cell-right stop">Stop<br/>Stop</div>
-              </div>
-            </div>
-            <div className="cell key">
-              <div>U</div>
-              <div>C</div>
-              <div>A</div>
-              <div>G</div>
-            </div>
-          </div>
-          <div className="row">
-            <div className="cell">C</div>
-            <div className="cell">
-              <div className="cell-box">
-                <div><div className="mutation">CUU</div><div className="mutation">CUC</div><div className="mutation">CUA</div><div className="mutation">CUG</div></div>
-                <div className="cell-right">Leu</div>
-              </div>
-            </div>
-            <div className="cell">
-              <div className="cell-box">
-                <div><div className="mutation">CCU</div><div className="mutation">CCC</div><div className="mutation">CCA</div><div className="mutation">CCG</div></div>
-                <div className="cell-right">Pro</div>
-              </div>
-            </div>
-            <div className="cell">
-              <div className="cell-box">
-                <div><div className="mutation">CAU</div><div className="mutation">CAC</div></div>
-                <div className="cell-right">His</div>
-              </div>
-              <div className="cell-box">
-                <div><div className="mutation">CAA</div><div className="mutation">CAG</div></div>
-                <div className="cell-right">Gln</div>
-              </div>
-            </div>
-            <div className="cell">
-              <div className="cell-box">
-                <div><div className="mutation">CGU</div><div className="mutation">CGC</div><div className="mutation">CGA</div><div className="mutation">CGG</div></div>
-                <div className="cell-right">Arg</div>
-              </div>
-            </div>
-            <div className="cell key">
-              <div>U</div>
-              <div>C</div>
-              <div>A</div>
-              <div>G</div>
-            </div>
-          </div>
-          <div className="row">
-            <div className="cell">A</div>
-            <div className="cell">
-              <div className="cell-box">
-                <div><div className="mutation">AUU</div><div className="mutation">AUC</div><div className="mutation">AUA</div></div>
-                <div className="cell-right">lle</div>
-              </div>
-              <div className="cell-box">
-                <div><div className="mutation">AUG</div></div>
-                <div className="cell-right met">Met</div>
-              </div>
-            </div>
-            <div className="cell">
-              <div className="cell-box">
-                <div><div className="mutation">ACU</div><div className="mutation">ACC</div><div className="mutation">ACA</div><div className="mutation">ACG</div></div>
-                <div className="cell-right">Thr</div>
-              </div>
-            </div>
-            <div className="cell">
-              <div className="cell-box">
-                <div><div className="mutation">AAU</div><div className="mutation">AAC</div></div>
-                <div className="cell-right">Asn</div>
-              </div>
-              <div className="cell-box">
-              <div><div className="mutation">AAA</div><div className="mutation">AAG</div></div>
-                <div className="cell-right">Lys</div>
-              </div>
-            </div>
-            <div className="cell">
-              <div className="cell-box">
-                <div><div className="mutation">AGU</div><div className="mutation">AGC</div></div>
-                <div className="cell-right">Ser</div>
-              </div>
-              <div className="cell-box">
-              <div><div className="mutation">AGA</div><div className="mutation">AGG</div></div>
-                <div className="cell-right">Arg</div>
-              </div>
-            </div>
-            <div className="cell key">
-              <div>U</div>
-              <div>C</div>
-              <div>A</div>
-              <div>G</div>
-            </div>
-          </div>
-          <div className="row">
-            <div className="cell">G</div>
-            <div className="cell">
-              <div className="cell-box">
-                <div><div className="mutation">GUU</div><div className="mutation">GUC</div><div className="mutation">GUA</div><div className="mutation">GUG</div></div>
-                <div className="cell-right">Val</div>
-              </div>
-            </div>
-            <div className="cell">
-              <div className="cell-box">
-                <div><div className="mutation">GCU</div><div className="mutation">GCC</div><div className="mutation">GCA</div><div className="mutation">GCG</div></div>
-                <div className="cell-right">Ala</div>
-              </div>
-            </div>
-            <div className="cell">
-              <div className="cell-box">
-                <div><div className="mutation">GAU</div><div className="mutation">GAC</div></div>
-                <div className="cell-right">Asp</div>
-              </div>
-              <div className="cell-box">
-              <div><div className="mutation">GAA</div><div className="mutation">GAG</div></div>
-                <div className="cell-right">Glu</div>
-              </div>
-            </div>
-            <div className="cell">
-              <div className="cell-box">
-              <div><div className="mutation">GGU</div><div className="mutation">GGC</div><div className="mutation">GGA</div><div className="mutation">GGG</div></div>
-                <div className="cell-right">Gly</div>
-              </div>
-            </div>
-            <div className="cell key">
-              <div>U</div>
-              <div>C</div>
-              <div>A</div>
-              <div>G</div>
-            </div>
-          </div>
-        </div>
-        <div><h4>3rd<br/>Letter</h4></div>
-       </div>
-    </div>;
-
     const HomologyList = () => {
       console.log("homology menu: ", this.state.primers);
 
@@ -1792,7 +1620,13 @@ export default class App extends React.Component  {
         return;
       }
 
-      let primerKeys = Object.keys(this.state.primers);
+      let primerKeys;
+      if (this.state.operation == "delete") {
+        primerKeys = Object.keys(this.state.primers.N);
+      }
+      else {
+        primerKeys = Object.keys(this.state.primers);
+      }
       const order = ["hom5", "hom3", "seq5", "seq3"];
 
       primerKeys.sort((a, b) => order.indexOf(a) - order.indexOf(b));
@@ -1817,28 +1651,129 @@ export default class App extends React.Component  {
         }
         console.log("Primer Label Name: ", primerLabelName)
 
-        if(this.state.selectedArms&&this.state.selectedArms[key]){
-          let primerSingle = this.state.selectedArms[key];
-
-          return <div><div className="homology-label">{primerLabelName}</div>
-            <div className="single-target" onMouseDown={this.selectHomologyArm.bind(this,primerSingle,key)} onMouseLeave={this.clearHighlight.bind(this)}>
-            <div >{primerSingle[7]}</div>
-            <div ><div>Tm: </div><div>{primerSingle[3]}</div></div>
-            <div ><div>GC%: </div><div>{primerSingle[4]}</div></div> 
-            <div ><div>Any (Self Complementarity): </div><div>{primerSingle[5]}</div></div>
-            <div ><div>3' (Self Complementarity): </div><div>{primerSingle[6]}</div></div>
-          </div></div>;
+        if (this.state.operation === "delete") {
+          const nPrimers = this.state.primers.N[key] || [];
+          const cPrimers = this.state.primers.C[key] || [];
+    
+          return (
+            <div key={key}>
+              <div className="homology-label">{primerLabelName}</div>
+              <div className="primer-section">
+                <div className="primer-group">
+                  <h4>N-Terminal</h4>
+                  {nPrimers.map((primerSingle, index) => (
+                    <div
+                      key={`N-${index}`}
+                      className="single-target"
+                      onMouseEnter={this.highlightString.bind(
+                        this,
+                        primerSingle[7],
+                        "rgba(86, 64, 155,0.3)",
+                        "homology"
+                      )}
+                      onMouseDown={this.selectHomologyArm.bind(this, primerSingle, key)}
+                      onMouseLeave={this.clearHighlight.bind(this)}
+                    >
+                      <div>{primerSingle[7]}</div>
+                      <div>
+                        <div>Tm: </div>
+                        <div>{primerSingle[3]}</div>
+                      </div>
+                      <div>
+                        <div>GC%: </div>
+                        <div>{primerSingle[4]}</div>
+                      </div>
+                      <div>
+                        <div>Any (Self Complementarity): </div>
+                        <div>{primerSingle[5]}</div>
+                      </div>
+                      <div>
+                        <div>3' (Self Complementarity): </div>
+                        <div>{primerSingle[6]}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="primer-group">
+                  <h4>C-Terminal</h4>
+                  {cPrimers.map((primerSingle, index) => (
+                    <div
+                      key={`C-${index}`}
+                      className="single-target"
+                      onMouseEnter={this.highlightString.bind(
+                        this,
+                        primerSingle[7],
+                        "rgba(86, 64, 155,0.3)",
+                        "homology"
+                      )}
+                      onMouseDown={this.selectHomologyArm.bind(this, primerSingle, key)}
+                      onMouseLeave={this.clearHighlight.bind(this)}
+                    >
+                      <div>{primerSingle[7]}</div>
+                      <div>
+                        <div>Tm: </div>
+                        <div>{primerSingle[3]}</div>
+                      </div>
+                      <div>
+                        <div>GC%: </div>
+                        <div>{primerSingle[4]}</div>
+                      </div>
+                      <div>
+                        <div>Any (Self Complementarity): </div>
+                        <div>{primerSingle[5]}</div>
+                      </div>
+                      <div>
+                        <div>3' (Self Complementarity): </div>
+                        <div>{primerSingle[6]}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          );
         } else {
-          return <div><div className="homology-label">{primerLabelName}</div>{primerOptions.map((primerSingle)=>{
-            return <div className="single-target" onMouseEnter={this.highlightString.bind(this,primerSingle[7],'rgba(86, 64, 155,0.3)','homology')} onMouseDown={this.selectHomologyArm.bind(this,primerSingle,key)} onMouseLeave={this.clearHighlight.bind(this)}>
-            <div >{primerSingle[7]}</div>
-            <div ><div>Tm: </div><div>{primerSingle[3]}</div></div>
-            <div ><div>GC%: </div><div>{primerSingle[4]}</div></div> 
-            <div ><div>Any (Self Complementarity): </div><div>{primerSingle[5]}</div></div>
-            <div ><div>3' (Self Complementarity): </div><div>{primerSingle[6]}</div></div>
-          </div>})}</div>;
+          const primerOptions = this.state.primers[key];
+    
+          return (
+            <div key={key}>
+              <div className="homology-label">{primerLabelName}</div>
+              {primerOptions.map((primerSingle, index) => (
+                <div
+                  key={index}
+                  className="single-target"
+                  onMouseEnter={this.highlightString.bind(
+                    this,
+                    primerSingle[7],
+                    "rgba(86, 64, 155,0.3)",
+                    "homology"
+                  )}
+                  onMouseDown={this.selectHomologyArm.bind(this, primerSingle, key)}
+                  onMouseLeave={this.clearHighlight.bind(this)}
+                >
+                  <div>{primerSingle[7]}</div>
+                  <div>
+                    <div>Tm: </div>
+                    <div>{primerSingle[3]}</div>
+                  </div>
+                  <div>
+                    <div>GC%: </div>
+                    <div>{primerSingle[4]}</div>
+                  </div>
+                  <div>
+                    <div>Any (Self Complementarity): </div>
+                    <div>{primerSingle[5]}</div>
+                  </div>
+                  <div>
+                    <div>3' (Self Complementarity): </div>
+                    <div>{primerSingle[6]}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          );
         }
-      });
+      });    
       return <div>{primerHTML}</div>;
     }
 
