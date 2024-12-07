@@ -1076,6 +1076,71 @@ export default class App extends React.Component  {
     });
   }
 
+  selectDeleteHomologyArm(selection, arm, terminal) {
+    let currentArms = JSON.parse(JSON.stringify(!this.state.selectedArms?{}:this.state.selectedArms));
+    const terminalKey = `${arm}_${terminal}`; // Create a unique key combining arm and terminal
+
+    currentArms[terminalKey] = selection;
+  
+    this.saveCurrentHighlight("rgba(86, 64, 155,0.3)", arm);
+  
+    this.setState({ selectedArms: currentArms }, () => {
+      this.setState({ currentHighlight: null }, () => {
+        const totalSelected = Object.keys(this.state.selectedArms);
+  
+        if (totalSelected.length === 8) { // Expecting 4 arms × 2 terminals = 8
+          console.log("Searching");
+          console.log(
+            urlBase +
+              "/api/?type=oligos&target=" +
+              this.state.targets[0].distal +
+              this.state.targets[0].proximal +
+              this.state.targets[0].pam
+          );
+  
+          this.setState(
+            {
+              popup: {
+                show: true,
+                message: <h2>Retrieving Oligo Information</h2>,
+                image: loading,
+                stayOpen: true,
+              },
+            },
+            () => {
+              fetch(
+                urlBase +
+                  "/api/?type=oligos&target=" +
+                  this.state.targets[0].distal +
+                  this.state.targets[0].proximal +
+                  this.state.targets[0].pam
+              )
+                .then((res) => res.json())
+                .then((res) => {
+                  console.log(res);
+                  if (!res.sense) {
+                    this.setState({
+                      menu: 4,
+                      popup: {
+                        show: false,
+                      },
+                    });
+                  }
+                  this.setState({
+                    menu: 4,
+                    oligos: res,
+                    popup: {
+                      show: false,
+                    },
+                  });
+                });
+            }
+          );
+        }
+      });
+    });
+  }
+
   // UTILITIES
 
   downloadApeFile() {
@@ -1671,7 +1736,7 @@ export default class App extends React.Component  {
                         "rgba(86, 64, 155,0.3)",
                         "homology"
                       )}
-                      onMouseDown={this.selectHomologyArm.bind(this, primerSingle, key)}
+                      onMouseDown={this.selectDeleteHomologyArm.bind(this, primerSingle, key, "N")}
                       onMouseLeave={this.clearHighlight.bind(this)}
                     >
                       <div>{primerSingle[7]}</div>
@@ -1706,7 +1771,7 @@ export default class App extends React.Component  {
                         "rgba(86, 64, 155,0.3)",
                         "homology"
                       )}
-                      onMouseDown={this.selectHomologyArm.bind(this, primerSingle, key)}
+                      onMouseDown={this.selectDeleteHomologyArm.bind(this, primerSingle, key, "C")}
                       onMouseLeave={this.clearHighlight.bind(this)}
                     >
                       <div>{primerSingle[7]}</div>
