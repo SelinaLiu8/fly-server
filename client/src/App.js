@@ -140,7 +140,7 @@ export default class App extends React.Component  {
       console.log('primer keys',primerKeys);
       let primerHTML = primerKeys.map((key)=>{
         let primerOptions = this.state.primers[key];
-        //console.log('this primer',primerOptions);
+        console.log('this primer',primerOptions);
         if(this.state.selectedArms&&this.state.selectedArms[key]){
           let primerSingle = this.state.selectedArms[key];
           return <div><div className=""><b>{key}</b></div>
@@ -217,10 +217,229 @@ export default class App extends React.Component  {
       stayOpen:false,
     }});
   }
+
+  viewDeleteFinishedDesign() {
+    let targetKeys = Object.keys(this.state.targets[0]);
+    let targetHTML = targetKeys.map((prop)=>{
+
+      return <div><b>{prop}:</b> {this.state.targets[0][prop]}</div>;
+    });
+
+    let NprimerHTML, CprimerHTML;
+
+    const getPrimerHTML = (primerType, primers) => {
+      const primerKeys = Object.keys(primers);
+    
+      return primerKeys.map((key) => {
+        let primerSingle;
+        if (this.state.selectedArms && this.state.selectedArms[key]) {
+          primerSingle = this.state.selectedArms[key];
+        } else {
+          primerSingle = primers[key];
+        }
+        console.log("primer single: ", primerSingle)
+        return <div>
+          <h4>{primerType} Terminal</h4>
+          <div className=""><b>{key}</b></div>
+            <div className="">
+              <div>{primerSingle[7]}</div>
+              <div><div>Tm: {primerSingle[3]}</div></div>
+              <div><div>GC%: {primerSingle[4]}</div></div>
+              <div><div>Any (Self Complementarity): {primerSingle[5]}</div></div>
+              <div><div>3' (Self Complementarity): {primerSingle[6]}</div></div>
+            </div><br />
+        </div>;
+      });
+    };
+    
+    NprimerHTML = getPrimerHTML('N', this.state.primers.N);
+    CprimerHTML = getPrimerHTML('C', this.state.primers.C);
+
+// let NprimerKeys = Object.keys(this.state.primers.N);
+// let CprimerKeys = Object.keys(this.state.primers.C);
+
+// let NprimerHTML = NprimerKeys.map((key) => {
+//   console.log("key: ", key);
+//   let NprimerOptions = this.state.primers.N[key];
+
+//   console.log("N primer: ", NprimerOptions)
+//   if (this.state.selectedArms && this.state.selectedArms[key]) {
+//     let primerSingle = this.state.selectedArms[key];
+//     return (
+//       <div>
+//         <div className="">
+//           <b>{key}</b>
+//         </div>
+//         <div className="">
+//           <div>{primerSingle[7]}</div>
+//           <div>
+//             <div>Tm: {primerSingle[3]}</div>
+//           </div>
+//           <div>
+//             <div>GC%: {primerSingle[4]}</div>
+//           </div>
+//           <div>
+//             <div>Any (Self Complementarity): {primerSingle[5]}</div>
+//           </div>
+//           <div>
+//             <div>3' (Self Complementarity): {primerSingle[6]}</div>
+//           </div>
+//         </div>
+//         <br />
+//       </div>
+//     );
+//   } else {
+//     return (
+//       <div>
+//         <div>
+//           <h4>N Terminal</h4>
+//           <div className="">
+//             <b>{key}</b>
+//           </div>
+//           {NprimerOptions.map((primerSingle) => (
+//             <div className="">
+//               <div>{primerSingle[7]}</div>
+//               <div>
+//                 <div>Tm: {primerSingle[3]}</div>
+//               </div>
+//               <div>
+//                 <div>GC%: {primerSingle[4]}</div>
+//               </div>
+//               <div>
+//                 <div>Any (Self Complementarity): {primerSingle[5]}</div>
+//               </div>
+//               <div>
+//                 <div>3' (Self Complementarity): {primerSingle[6]}</div>
+//               </div>
+//             </div>
+//           ))}
+//           <br />
+//         </div>
+//       </div>
+//     );
+//   }
+// });
+
+// let CprimerHTML = CprimerKeys.map((key) => {
+//   console.log("key: ", key);
+//   let CprimerOptions = this.state.primers.C[key];
+
+//   if (this.state.selectedArms && this.state.selectedArms[key]) {
+//     let primerSingle = this.state.selectedArms[key];
+//     return (
+//       <div>
+//         <div className="">
+//           <b>{key}</b>
+//         </div>
+//         <div className="">
+//           <div>{primerSingle[7]}</div>
+//           <div>
+//             <div>Tm: {primerSingle[3]}</div>
+//           </div>
+//           <div>
+//             <div>GC%: {primerSingle[4]}</div>
+//           </div>
+//           <div>
+//             <div>Any (Self Complementarity): {primerSingle[5]}</div>
+//           </div>
+//           <div>
+//             <div>3' (Self Complementarity): {primerSingle[6]}</div>
+//           </div>
+//         </div>
+//         <br />
+//       </div>
+//     );
+//   } else {
+//     return (
+//       <div>
+//         <div>
+//           <h4>C Terminal</h4>
+//           <div className="">
+//             <b>{key}</b>
+//           </div>
+//           {CprimerOptions.map((primerSingle) => (
+//             <div className="">
+//               <div>{primerSingle[7]}</div>
+//               <div>
+//                 <div>Tm: {primerSingle[3]}</div>
+//               </div>
+//               <div>
+//                 <div>GC%: {primerSingle[4]}</div>
+//               </div>
+//               <div>
+//                 <div>Any (Self Complementarity): {primerSingle[5]}</div>
+//               </div>
+//               <div>
+//                 <div>3' (Self Complementarity): {primerSingle[6]}</div>
+//               </div>
+//             </div>
+//           ))}
+//           <br />
+//         </div>
+//       </div>
+//     );
+//   }
+// });
+
+    const handlePrint = () => {
+      const printContents = document.getElementById("printableArea").innerHTML;
+      const printWindow = window.open('', '_blank');
+
+      // Write the printable content to the new tab
+      printWindow.document.write(`
+          <html>
+              <head>
+                  <title>Print</title>
+                  <style>
+                      /* Add any styling here to ensure it looks correct when printed */
+                      body {
+                          font-family: sans-serif;
+                          margin: 20px;
+                      }
+                  </style>
+              </head>
+              <body>
+                  ${printContents}
+              </body>
+          </html>
+      `);
+  
+      // Close the document to finish loading content in the new tab
+      printWindow.document.close();
+  
+      // Wait for the new window to finish loading, then print
+      printWindow.onload = () => {
+          printWindow.print();
+          printWindow.onafterprint = () => printWindow.close();  // Automatically close the tab after printing
+      };
+    };
+
+    let message = <div id='printableArea'>
+      <h2>Design Info</h2>
+      <div><h3>Target Info</h3>{targetHTML}</div>
+      <div><h3>Homology Info</h3>
+        {NprimerHTML}
+        {CprimerHTML}
+      </div>
+      {/* <div>
+        <h3>Oligo Info</h3>
+        <div><b>Sense: </b>{this.state.oligos.sense}</div>
+        <div><b>Antisense: </b>{this.state.oligos.antisense}</div>
+      </div> */}
+      <button onClick={handlePrint}>Print</button>
+    </div>;
+
+    this.setState({popup:{
+      show:true,
+      message:message,
+      image:null,
+      stayOpen:false,
+    }});
+  }
   
   saveCurrentHighlight(color=null,name=null){
     let highlight = JSON.parse(JSON.stringify(this.state.currentHighlight));
-    //console.log('highlight',highlight);
+    console.log('highlight: ',highlight);
     if(color){
       highlight.color = color;
     }
@@ -615,7 +834,7 @@ export default class App extends React.Component  {
         () => {
           if (!this.state.primers || this.state.primers.length === 0) {
             this.getDeletePrimers();
-            console.log("Primer has been set");
+            console.log("Primer has been set"); 
           }
         }
       );
@@ -668,7 +887,7 @@ export default class App extends React.Component  {
       console.error("Highlights not properly set for delete operation.");
       return; // Return early if highlights are missing
     }
-  
+    
     // For delete operation, process both N and C terminals
     const nLocation = highlights.start.location;
     const cLocation = highlights.stop.location;
@@ -801,7 +1020,9 @@ export default class App extends React.Component  {
                     menu: 2,
                   },
                   () => {
-                    this.scrollToTerminal(this.state.terminal);
+                    if (this.state.operation == "tag") {
+                      this.scrollToTerminal(this.state.terminal);
+                    }
                   }
                 );
               });
@@ -987,18 +1208,6 @@ export default class App extends React.Component  {
               () => {
                 console.log("N-terminal primers:", nPrimers);
                 console.log("C-terminal primers:", cPrimers);
-  
-                // Scroll to the relevant section if needed
-                const screen = document.getElementsByClassName("screen-3")[0];
-                if (screen) {
-                  const scrollTop = screen.scrollHeight;
-                  screen.scrollTo({
-                    top: scrollTop - window.innerHeight / 2,
-                    behavior: "smooth",
-                  });
-                } else {
-                  console.log("screen-3 element not found.");
-                }
               }
             );
           })
@@ -1035,6 +1244,8 @@ export default class App extends React.Component  {
     let currentArms = JSON.parse(JSON.stringify(!this.state.selectedArms?{}:this.state.selectedArms));
     currentArms[arm] = selection;
     this.saveCurrentHighlight('rgba(86, 64, 155,0.3)',arm);
+
+    console.log("Current highlight: ", this.state.currentHighlight)
 
     this.setState({selectedArms:currentArms},()=>{
       //console.log(this.state);
@@ -1562,9 +1773,9 @@ export default class App extends React.Component  {
       return null;
     }
     const highlightKeys = !this.state.highlights?null:Object.keys(this.state.highlights);
-    //console.log(!this.state.currentHighlight?null:this.state.currentHighlight);
     const currentHighlight = !this.state.currentHighlight?null:this.state.currentHighlight;
     const currentHighlightLocation = !currentHighlight?null:currentHighlight.location;
+
     const geneInfoPrep = !this.state.sequence?null:this.state.sequence.split('').map((letter,i)=>{
     let highlightClasses = [];
     let highlightLocation = null;
@@ -1853,7 +2064,12 @@ export default class App extends React.Component  {
       </div>
     }    
     const downloadOptions = () => {
-      const plasmidOptions = ["N terminal SSPB and mCherry tag","N terminal EGFP and SSPB tag with Extended Linker","C terminal mCherry and SSPB tag","C terminal EGFP and SSPB tag with Extended Linker","C terminal EGFP and SSPB tag","C terminal mDendra2 and SSPB tag","C terminal mScarlett and SSPB tag","N terminal EGFP and SSPB tag","N terminal mDendra2 and SSPB tag","N terminal mScarlett and SSPB tag"];
+      let plasmidOptions;
+      if (this.state.operation == "delete") {
+        plasmidOptions = ["pHD-DsRed-X"]
+      } else {
+        plasmidOptions = ["N terminal SSPB and mCherry tag","N terminal EGFP and SSPB tag with Extended Linker","C terminal mCherry and SSPB tag","C terminal EGFP and SSPB tag with Extended Linker","C terminal EGFP and SSPB tag","C terminal mDendra2 and SSPB tag","C terminal mScarlett and SSPB tag","N terminal EGFP and SSPB tag","N terminal mDendra2 and SSPB tag","N terminal mScarlett and SSPB tag"];
+      }
       let htmlOptions = [];
       for(let i=-1;i<plasmidOptions.length;i++){
         if(i===-1){
@@ -1867,16 +2083,29 @@ export default class App extends React.Component  {
         }
       }
       
-      return <div className="download-list">
-        <div><button className="btn" onMouseDown={this.viewFinishedDesign.bind(this)}>View All Data</button></div>
-        <div className="download-label">Genomic Template</div>
-        <div><button className="btn" onMouseDown={this.downloadApeFile.bind(this)}>Download</button></div>
-        <div className="download-label">Guide Rna Vector</div>
-        <div><button className="btn" onMouseDown={this.downloadGuideRna.bind(this)}>Download</button></div>
-        <div className="download-label">Plasmid Template</div>
-        <div><select onChange={this.changePlasmidTemplate.bind(this)}>{htmlOptions}</select></div>
-        <div><button className="btn" onMouseDown={this.downloadPlasmidTemplate.bind(this)}>Download</button></div>
+      if (this.state.operation == 'tag') {
+        return <div className="download-list">
+          <div><button className="btn" onMouseDown={this.viewFinishedDesign.bind(this)}>View All Data</button></div>
+          <div className="download-label">Genomic Template</div>
+          <div><button className="btn" onMouseDown={this.downloadApeFile.bind(this)}>Download</button></div>
+          <div className="download-label">Guide Rna Vector</div>
+          <div><button className="btn" onMouseDown={this.downloadGuideRna.bind(this)}>Download</button></div>
+          <div className="download-label">Plasmid Template</div>
+          <div><select onChange={this.changePlasmidTemplate.bind(this)}>{htmlOptions}</select></div>
+          <div><button className="btn" onMouseDown={this.downloadPlasmidTemplate.bind(this)}>Download</button></div>
+        </div>;
+      } else {
+        return <div className="download-list">
+        <div><button className="btn" onMouseDown={this.viewDeleteFinishedDesign.bind(this)}>View All Data</button></div>
+          <div className="download-label">Genomic Template</div>
+          <div><button className="btn" onMouseDown={this.downloadApeFile.bind(this)}>Download</button></div>
+          <div className="download-label">Guide Rna Vector</div>
+          <div><button className="btn" onMouseDown={this.downloadGuideRna.bind(this)}>Download</button></div>
+          <div className="download-label">Plasmid Template</div>
+          <div><select onChange={this.changePlasmidTemplate.bind(this)}>{htmlOptions}</select></div>
+          <div><button className="btn" onMouseDown={this.downloadPlasmidTemplate.bind(this)}>Download</button></div>
       </div>;
+      }
     }
     
     const customDataUpload = () => {
@@ -1933,12 +2162,6 @@ export default class App extends React.Component  {
               <label onClick={this.changeScreens.bind(this)} data-screen="2"><div className="arrow-down">&#94;</div>Select Cut Site</label>
               {!targetList?null:<div className="target-list" style={{display:this.state.menu==2?'flex':'none'}}>{targetList}</div>}
             </div>       
-            {/* This is for mutate pam, currently not needed */}
-            {/* <div className={(this.state.menu==3?'active':'')+' menu-icon'} data-menu="3" >
-              <div className="menu-image-wrapper" style={{pointerEvents:this.state.screen>2?'':'none'}} onClick={this.changeMenus.bind(this)} data-menu="3" alt="sidebar3"><img src={sidebar4} alt="sidebar3"/></div>
-              <label onClick={this.changeScreens.bind(this)} data-screen="3">Mutate Pam</label>
-              {this.state.screen<3?null:<div className="pam-box" style={{display:!this.state.mutatePam?'none':'flex'}}>{pamBox}</div>}
-            </div>             */}
             <div className={(this.state.menu==3?'active':'')+' menu-icon'} data-menu="3" >
               <div className="menu-image-wrapper" style={{pointerEvents:this.state.screen>2?'':'none'}} onClick={this.changeMenus.bind(this)} data-menu="3" alt="sidebar4"><img src={sidebar3} alt="sidebar4"/></div>
               <label onClick={this.changeScreens.bind(this)} data-screen="3">Homology Arm Primers</label>
