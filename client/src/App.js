@@ -228,26 +228,45 @@ export default class App extends React.Component  {
     ));
 
     const generatePrimerHTML = (terminalType, primers) => {
-        const primerKeys = Object.keys(primers);
-        return primerKeys.map((key) => {
-            const primerSingle = this.state.selectedArms?.[`${key}_${terminalType}`] || primers[key][0];
-            return (
-                <div key={`${terminalType}-${key}`}>
-                    <div className=""><b>{key}</b></div>
-                    <div className="">
-                        <div>{primerSingle[7]}</div>
-                        <div><div>Tm: {primerSingle[3]}</div></div>
-                        <div><div>GC%: {primerSingle[4]}</div></div>
-                        <div><div>Any (Self Complementarity): {primerSingle[5]}</div></div>
-                        <div><div>3' (Self Complementarity): {primerSingle[6]}</div></div>
-                    </div><br />
-                </div>
-            );
-        });
-    };
+      console.log("delete final design primers: ", primers)
+      const primerKeys = Object.keys(primers);
+      return primerKeys.map((key) => {
+          // Filter primers based on terminal type (N or C)
+          const primerSingle = this.state.selectedArms[key];
+          console.log("primer single: ", primerSingle)
+          return (
+              <div key={`${terminalType}-${key}`}>
+                  <div><b>{key}</b></div>
+                  <div>
+                      <div>{primerSingle[7]}</div>
+                      <div><div>Tm: {primerSingle[3]}</div></div>
+                      <div><div>GC%: {primerSingle[4]}</div></div>
+                      <div><div>Any (Self Complementarity): {primerSingle[5]}</div></div>
+                      <div><div>3' (Self Complementarity): {primerSingle[6]}</div></div>
+                  </div><br />
+              </div>
+          );
+      });
+  };
+  
+  const NprimersFiltered = Object.keys(this.state.selectedArms)
+  .filter(key => key.endsWith('_N')) // Filter for keys ending with '_N'
+  .reduce((obj, key) => {
+      obj[key] = this.state.selectedArms[key];
+      return obj;
+  }, {});
 
-    const NprimerHTML = generatePrimerHTML('N', this.state.primers.N);
-    const CprimerHTML = generatePrimerHTML('C', this.state.primers.C);
+  const CprimersFiltered = Object.keys(this.state.selectedArms)
+  .filter(key => key.endsWith('_C')) // Filter for keys ending with '_C'
+  .reduce((obj, key) => {
+      obj[key] = this.state.selectedArms[key];
+      return obj;
+  }, {});
+  
+  // Generate HTML for N-terminal and C-terminal primers
+  const NprimerHTML = generatePrimerHTML('N', NprimersFiltered);
+  const CprimerHTML = generatePrimerHTML('C', CprimersFiltered);
+  
 
     const cutSitesHTML = (
       <div>
@@ -1210,7 +1229,7 @@ saveCurrentHighlight(color, name) {
     const terminalKey = `${arm}_${terminal}`;
     currentArms[terminalKey] = selection;
     console.log("Delete function arm: ", arm);
-    this.saveCurrentHighlight("rgba(86, 64, 155,0.3)", arm);
+    this.saveCurrentHighlight("rgba(86, 64, 155,0.3)", terminalKey);
   
     this.setState({ selectedArms: currentArms }, () => {
       this.setState({ currentHighlight: null }, () => {
@@ -1380,115 +1399,104 @@ saveCurrentHighlight(color, name) {
   }
 
   downloadDeleteApeFile() {
-    fetch(window.location.origin+'/fly_templates/empty_ape.txt').then((res) => res.text()).then((res) => {
-        const data = res;
-        fetch(window.location.origin+'/fly_templates/feature.txt').then((res) => res.text()).then((res2) => {
-            const feature = res2;
-            const newFeature = (loc, name, color) => {
-                return feature
-                    .split('*featureLoc*').join(loc)
-                    .split('*featureName*').join(name)
-                    .split('*featureColor*').join(color);
-            };
+    fetch(window.location.origin + '/fly_templates/empty_ape.txt')
+        .then((res) => res.text())
+        .then((res) => {
+            const data = res;
 
-            let gene = this.state.sequence;
-            const target = this.state.targets[0].distal.toString() + this.state.targets[0].proximal.toString();
-            const targetMatch = gene.toLowerCase().match(target.toLowerCase());
-            const revTargetMatch = gene.toLowerCase().match(this.revComp(target.toLowerCase()));
-            let targetI;
-            if (targetMatch) {
-                targetI = targetMatch.index + 1;
-            } else if (revTargetMatch) {
-                targetI = revTargetMatch.index;
-            }
+            fetch(window.location.origin + '/fly_templates/feature.txt')
+                .then((res) => res.text())
+                .then((res2) => {
+                    const featureTemplate = res2;
 
-            const pamStart = revTargetMatch ? targetI - 2 : targetI + 20;
-            const start = 1 + parseInt(this.state.highlights.start.location);
-            const stop = 1 + parseInt(this.state.highlights.stop.location);
-            gene = !this.state.currentPam
-                ? gene
-                : gene.substr(0, pamStart - 1) + this.state.currentPam + gene.substr(pamStart + 2, gene.length);
+                    // Utility function to create feature entries
+                    const newFeature = (loc, name, color) => {
+                        return featureTemplate
+                            .split('*featureLoc*').join(loc)
+                            .split('*featureName*').join(name)
+                            .split('*featureColor*').join(color);
+                    };
 
-            // Generate features for both N and C terminals
-            const nFeatures = Object.keys(this.state.highlights).filter(key => key.endsWith('_N')).map(key => {
-                const highlight = this.state.highlights[key];
-                return newFeature(
-                    `${1 + highlight.location}..${1 + highlight.location + highlight.length}`,
-                    `${key.replace('_N', '')} (N-Terminal)`,
-                    '#35df29' // Adjust color as needed
-                );
-            });
+                    // Generate gene features
+                    let gene = this.state.sequence;
+                    const nTarget = this.state.selectedNTarget;
+                    const cTarget = this.state.selectedCTarget;
+                    const nTargetSequence = nTarget.distal + nTarget.proximal;
+                    const cTargetSequence = cTarget.distal + cTarget.proximal;
 
-            const cFeatures = Object.keys(this.state.highlights).filter(key => key.endsWith('_C')).map(key => {
-                const highlight = this.state.highlights[key];
-                return newFeature(
-                    `${1 + highlight.location}..${1 + highlight.location + highlight.length}`,
-                    `${key.replace('_C', '')} (C-Terminal)`,
-                    '#df2935' // Adjust color as needed
-                );
-            });
+                    // Match targets for N-Terminal
+                    const targetMatchN = gene.toLowerCase().match(nTargetSequence.toLowerCase());
+                    const revTargetMatchN = gene.toLowerCase().match(this.revComp(nTargetSequence.toLowerCase()));
+                    let targetIN = targetMatchN ? targetMatchN.index + 1 : revTargetMatchN.index;
 
-            const featureArr = [
-                newFeature(start + '..' + (start + 2), 'Start Codon', '#35df29'),
-                newFeature(stop + '..' + (stop + 2), 'Stop Codon', '#df2935'),
-                ...nFeatures,
-                ...cFeatures,
-                newFeature(targetI + '..' + (parseInt(targetI) + 20), 'Target', '#77d1e1'),
-                newFeature(pamStart + '..' + (parseInt(pamStart) + 2), 'Pam', '#0000FF'),
-            ];
+                    // Match targets for C-Terminal
+                    const targetMatchC = gene.toLowerCase().match(cTargetSequence.toLowerCase());
+                    const revTargetMatchC = gene.toLowerCase().match(this.revComp(cTargetSequence.toLowerCase()));
+                    let targetIC = targetMatchC ? targetMatchC.index + 1 : revTargetMatchC.index;
 
-            const makeGeneArr = () => {
-                let geneArr = [];
-                const spaces = (str) => {
-                    let spaceArr = [];
-                    for (let i = 0; i < 9 - str.length; i++) {
-                        spaceArr.push('');
-                    }
-                    return spaceArr;
-                };
-                for (let i = 0; i < gene.length;) {
-                    if (i % 50 === 0) {
-                        geneArr.push('\n');
-                    }
-                    if (i === 0 || i % 50 === 0) {
-                        const currentNum = (i + 1).toString();
-                        geneArr.push(spaces(i + 1).join(' ') + (i + 1) + ' ');
-                    }
-                    if (i + 10 > gene.length) {
-                        geneArr.push(gene.slice(i, gene.length));
-                    } else {
-                        geneArr.push(gene.slice(i, i + 10));
-                    }
-                    geneArr.push('');
-                    i = i + 10;
-                }
-                return geneArr.join(' ');
-            };
+                    // Define PAM positions for N and C
+                    const pamStartN = revTargetMatchN ? targetIN - 2 : targetIN + 20;
+                    const pamStartC = revTargetMatchC ? targetIC - 2 : targetIC + 20;
 
-            const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
-            const date = new Date();
-            const day = date.getDate();
-            const month = months[date.getMonth()];
-            const year = date.getFullYear();
+                    const start = parseInt(this.state.highlights.start.location) + 1;
+                    const stop = parseInt(this.state.highlights.stop.location) + 1;
 
-            const newData = data
-                .split('*FEATURES*').join(featureArr.join(''))
-                .split('*name*').join(this.state.geneName)
-                .split('*length*').join(this.state.sequence.length)
-                .split('*date*').join(day + '-' + month + '-' + year)
-                .split('*GENE*').join(makeGeneArr());
+                    // Insert PAM sequence if needed
+                    gene = this.state.currentPam
+                        ? gene.substr(0, pamStartN - 1) + this.state.currentPam + gene.substr(pamStartN + 2)
+                        : gene;
 
-            const design = newData;
-            const filename = this.state.geneName + "_delete.ape";
-            const blob = new Blob([design], {
-                type: "text/plain;charset=utf-8"
-            });
-            saveAs(blob, filename);
+
+                    console.log(this.state.highlights)
+                    // Generate features for Start, Stop, and Targets
+                    const featureArr = [
+                        newFeature(`${start}..${start + 2}`, 'Start Codon', '#35df29'),
+                        newFeature(`${stop}..${stop + 2}`, 'Stop Codon', '#df2935'),
+                        newFeature((parseInt(1+this.state.highlights['hom5_N']['location']))+'..'+(parseInt(1+this.state.highlights['hom5_N']['location'])+this.state.highlights['hom5_N']['length']),"5' N Homology Arm Primer",'#fdca40'),
+                        newFeature((parseInt(1+this.state.highlights['hom3_N']['location']))+'..'+(parseInt(1+this.state.highlights['hom3_N']['location'])+this.state.highlights['hom3_N']['length']),"3' N Homology Arm Primer",'#fdca40'),
+                        newFeature((parseInt(1+this.state.highlights['seq5_N']['location']))+'..'+(parseInt(1+this.state.highlights['seq5_N']['location'])+this.state.highlights['seq5_N']['length']),"5' N Sequence Primer",'#fdca40'),
+                        newFeature((parseInt(1+this.state.highlights['seq3_N']['location']))+'..'+(parseInt(1+this.state.highlights['seq3_N']['location'])+this.state.highlights['seq3_N']['length']),"3' N Sequence Primer",'#fdca40'),
+                        newFeature((parseInt(1+this.state.highlights['hom5_C']['location']))+'..'+(parseInt(1+this.state.highlights['hom5_C']['location'])+this.state.highlights['hom5_C']['length']),"5' C Homology Arm Primer",'#d440fd'),
+                        newFeature((parseInt(1+this.state.highlights['hom3_C']['location']))+'..'+(parseInt(1+this.state.highlights['hom3_C']['location'])+this.state.highlights['hom3_C']['length']),"3' C Homology Arm Primer",'#d440fd'),
+                        newFeature((parseInt(1+this.state.highlights['seq5_C']['location']))+'..'+(parseInt(1+this.state.highlights['seq5_C']['location'])+this.state.highlights['seq5_C']['length']),"5' C Sequence Primer",'#d440fd'),
+                        newFeature((parseInt(1+this.state.highlights['seq3_C']['location']))+'..'+(parseInt(1+this.state.highlights['seq3_C']['location'])+this.state.highlights['seq3_C']['length']),"3' C Sequence Primer",'#d440fd'),
+                        newFeature(`${targetIN}..${targetIN + 20}`, 'Target N-Terminal', '#77d1e1'),
+                        newFeature(`${targetIC}..${targetIC + 20}`, 'Target C-Terminal', '#77d1e1'),
+                        newFeature(`${pamStartN}..${pamStartN + 2}`, 'PAM N-Terminal', '#0000FF'),
+                        newFeature(`${pamStartC}..${pamStartC + 2}`, 'PAM C-Terminal', '#0000FF')
+                    ];
+
+                    // Format the gene sequence
+                    const makeGeneArr = () => {
+                        let geneArr = [];
+                        for (let i = 0; i < gene.length; i += 10) {
+                            if (i % 50 === 0) geneArr.push('\n' + (i + 1).toString().padStart(9, ' ') + ' ');
+                            geneArr.push(gene.slice(i, i + 10) + ' ');
+                        }
+                        return geneArr.join('');
+                    };
+
+                    // Get current date
+                    const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+                    const date = new Date();
+                    const formattedDate = `${date.getDate()}-${months[date.getMonth()]}-${date.getFullYear()}`;
+
+                    // Finalize APE data
+                    const newData = data
+                        .split('*FEATURES*').join(featureArr.join(''))
+                        .split('*name*').join(this.state.geneName)
+                        .split('*length*').join(this.state.sequence.length)
+                        .split('*date*').join(formattedDate)
+                        .split('*GENE*').join(makeGeneArr());
+
+                    // Create and download the APE file
+                    const blob = new Blob([newData], { type: "text/plain;charset=utf-8" });
+                    saveAs(blob, `${this.state.geneName}_delete.ape`);
+                });
         });
-    });
 }
 
-  
+
   changePlasmidTemplate(e){
     let template = e.target.value;
 
@@ -1959,8 +1967,6 @@ saveCurrentHighlight(color, name) {
     }
 
     const HomologyList = () => {
-      console.log("homology menu: ", this.state.primers);
-
       if(!this.state.primers){
         return;
       }
