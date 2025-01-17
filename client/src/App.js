@@ -27,6 +27,7 @@ export default class App extends React.Component  {
       fontMenu:false,
       geneInfo:null,
       isoFormStrand:null,
+      operation:null,
       popup:{
         show:false,
         message:null,
@@ -139,7 +140,7 @@ export default class App extends React.Component  {
       console.log('primer keys',primerKeys);
       let primerHTML = primerKeys.map((key)=>{
         let primerOptions = this.state.primers[key];
-        //console.log('this primer',primerOptions);
+        console.log('this primer',primerOptions);
         if(this.state.selectedArms&&this.state.selectedArms[key]){
           let primerSingle = this.state.selectedArms[key];
           return <div><div className=""><b>{key}</b></div>
@@ -216,32 +217,182 @@ export default class App extends React.Component  {
       stayOpen:false,
     }});
   }
-  
-  saveCurrentHighlight(color=null,name=null){
-    let highlight = JSON.parse(JSON.stringify(this.state.currentHighlight));
-    //console.log('highlight',highlight);
-    if(color){
-      highlight.color = color;
-    }
-    let highlights = this.state.highlights;
-    
-    if(name){
-      highlights[name] = highlight;
-    } else {
-      highlights[highlight.name] = highlight;
-    }
-    //console.log(highlights);
-    if(highlight.name=='targetSearch'){
-      //console.log('search for targets');
-      this.searchForTargets();
-    } else {
 
-      this.setState({highlights:highlights},()=>{
-       console.log(this.state);
-  
+  viewDeleteFinishedDesign() {
+    const targetKeys = Object.keys(this.state.targets[0]).filter(
+      (key) => !["terminalType", "distal", "proximal", "pam"].includes(key)
+    );    
+    console.log("target keys: ", targetKeys)
+    const targetHTML = targetKeys.map((prop) => (
+        <div key={`target-${prop}`}><b>{prop}:</b> {this.state.targets[0][prop]}</div>
+    ));
+
+    const generatePrimerHTML = (terminalType, primers) => {
+      console.log("delete final design primers: ", primers)
+      const primerKeys = Object.keys(primers);
+      return primerKeys.map((key) => {
+          // Filter primers based on terminal type (N or C)
+          const primerSingle = this.state.selectedArms[key];
+          console.log("primer single: ", primerSingle)
+          return (
+              <div key={`${terminalType}-${key}`}>
+                  <div><b>{key}</b></div>
+                  <div>
+                      <div>{primerSingle[7]}</div>
+                      <div><div>Tm: {primerSingle[3]}</div></div>
+                      <div><div>GC%: {primerSingle[4]}</div></div>
+                      <div><div>Any (Self Complementarity): {primerSingle[5]}</div></div>
+                      <div><div>3' (Self Complementarity): {primerSingle[6]}</div></div>
+                  </div><br />
+              </div>
+          );
       });
-    }
+  };
+  
+  const NprimersFiltered = Object.keys(this.state.selectedArms)
+  .filter(key => key.endsWith('_N')) // Filter for keys ending with '_N'
+  .reduce((obj, key) => {
+      obj[key] = this.state.selectedArms[key];
+      return obj;
+  }, {});
+
+  const CprimersFiltered = Object.keys(this.state.selectedArms)
+  .filter(key => key.endsWith('_C')) // Filter for keys ending with '_C'
+  .reduce((obj, key) => {
+      obj[key] = this.state.selectedArms[key];
+      return obj;
+  }, {});
+  
+  // Generate HTML for N-terminal and C-terminal primers
+  const NprimerHTML = generatePrimerHTML('N', NprimersFiltered);
+  const CprimerHTML = generatePrimerHTML('C', CprimersFiltered);
+  
+
+    const cutSitesHTML = (
+      <div>
+        <div>
+          <h4>N Terminal</h4>
+          <div><b>Distal:</b> {this.state.selectedNTarget.distal || "Not Available"}</div>
+          <div><b>Proximal:</b> {this.state.selectedNTarget.proximal || "Not Available"}</div>
+          <div><b>PAM:</b> {this.state.selectedNTarget.pam || "Not Available"}</div>
+        </div>
+          <div>
+            <h4>C Terminal</h4>
+            <div><b>Distal:</b> {this.state.selectedCTarget.distal || "Not Available"}</div>
+            <div><b>Proximal:</b> {this.state.selectedCTarget.proximal || "Not Available"}</div>
+            <div><b>PAM:</b> {this.state.selectedCTarget.pam || "Not Available"}</div>
+          </div>
+      </div>
+    );
+
+    const handlePrint = () => {
+        const printContents = document.getElementById("printableArea").innerHTML;
+        const printWindow = window.open('', '_blank');
+
+        // Write the printable content to the new tab
+        printWindow.document.write(`
+            <html>
+                <head>
+                    <title>Print</title>
+                    <style>
+                        /* Add any styling here to ensure it looks correct when printed */
+                        body {
+                            font-family: sans-serif;
+                            margin: 20px;
+                        }
+                    </style>
+                </head>
+                <body>
+                    ${printContents}
+                </body>
+            </html>
+        `);
+    
+        // Close the document to finish loading content in the new tab
+        printWindow.document.close();
+    
+        // Wait for the new window to finish loading, then print
+        printWindow.onload = () => {
+            printWindow.print();
+            printWindow.onafterprint = () => printWindow.close();  // Automatically close the tab after printing
+        };
+    };
+
+    const message = (
+        <div id='printableArea'>
+            <h2>Design Info</h2>
+            <div><h3>Target Info</h3>
+              {targetHTML}
+            </div>
+            <div>
+              <h3>Cut Sites</h3>
+              {cutSitesHTML}
+            </div>
+            <div>
+                <h3>Homology Info</h3>
+                <div>
+                    <h4>N-Terminal Primers</h4>
+                    {NprimerHTML}
+                </div>
+                <div>
+                    <h4>C-Terminal Primers</h4>
+                    {CprimerHTML}
+                </div>
+            </div>
+            <div>
+              <h3>Oligo Info</h3>
+                <div>
+                  <h4>N Terminal</h4>
+                  <div><b>Sense: </b>{this.state.oligos.N.sense}</div>
+                  <div><b>Antisense: </b>{this.state.oligos.N.antisense}</div>
+                </div>
+                <div>
+                  <h4>C Terminal</h4>
+                  <div><b>Sense: </b>{this.state.oligos.C.sense}</div>
+                  <div><b>Antisense: </b>{this.state.oligos.C.antisense}</div>
+                </div>
+            </div>
+            <button onClick={handlePrint}>Print</button>
+        </div>
+    );
+
+    this.setState({
+        popup: {
+            show: true,
+            message: message,
+            image: null,
+            stayOpen: false,
+        },
+    });
+}
+  
+saveCurrentHighlight(color, name) {
+  const { currentHighlight, highlights } = this.state;
+
+  if (!currentHighlight) {
+      console.error("No current highlight to save.");
+      return;
   }
+
+  // Assign color and name to the current highlight
+  const newHighlight = {
+      ...currentHighlight,
+      color: color || currentHighlight.color,
+      name: name || currentHighlight.name
+  };
+
+  // Merge the new highlight into the existing highlights
+  this.setState({
+      highlights: {
+          ...highlights,
+          [name]: newHighlight,
+      },
+  }, () => {
+      console.log("Updated highlights:", this.state.highlights);
+  });
+}
+
+
   changeCurrentHighlight(i){
     let currentHighlight = this.state.currentHighlight;
     currentHighlight.location = i;
@@ -293,7 +444,7 @@ export default class App extends React.Component  {
   }
   clearHighlight(){
    //console.log('mouseleave');
-   //this.setState({currentHighlight:null});
+   this.setState({currentHighlight:null});
   }
   revComp(dna) {
     let revComp = [];
@@ -314,166 +465,270 @@ export default class App extends React.Component  {
   /* API CALLS */
 
   searchForGene(e) {
-    if(e){
+    if (e) {
       e.preventDefault();
       e.stopPropagation();
     }
-    //console.log(e.target.elements.geneName.value);
-    let url = urlBase+'/api/?type=search&gene='+e.target.elements.geneName.value;
-    this.setState({popup:{
-      show:true,
-      message:<h2>Searching For Gene</h2>,
-      image:loading,
-      stayOpen:true,
-    }}, ()=>{
-      fetch(url).then((res) =>{return res.json()}).then((geneInfo)=>{
-        console.log('response',geneInfo);
-        let currentState = this.state;
-        if(!geneInfo){
+  
+    let url = urlBase + '/api/?type=search&gene=' + e.target.elements.geneName.value;
+    this.setState(
+      {
+        popup: {
+          show: true,
+          message: <h2>Searching For Gene</h2>,
+          image: loading,
+          stayOpen: true,
+        },
+      },
+      () => {
+        fetch(url)
+          .then((res) => res.json())
+          .then((geneInfo) => {
+            console.log('response', geneInfo);
             let currentState = this.state;
-            let error = <div className="popup-error"><h2>We're experiencing technical issues. Please try again later.</h2></div>;
-            currentState.popup = {
-              show:true,
-              message:error,
-              image:null
-            };
-            currentState.screen = 1;
-
-            this.setState(currentState);
-        } else if(!geneInfo.results.isoforms){
-            let error = <div className="popup-error"><h2>We could not find any results. Please try again with a different search term.</h2></div>;
-            currentState.popup = {
-              show:true,
-              message:error,
-              image:null
-            };
-            currentState.screen = 1;
-      
-            this.setState(currentState);
-        } else {
-          let isoForms = JSON.parse(geneInfo.results.isoforms);
-          if(isoForms.length) {
-            
-            let options = <div className="isoform-form">
-              <h2>Choose Your IsoForm</h2>
-              <p className='warning-message'>This step takes a few seconds, please only click the button once.</p>
-              <form onSubmit={this.pickIsoForm.bind(this)}><select name="isoform">{
-              isoForms.map(isoForm=>{
-                return <option value={isoForm} key={isoForm}>{isoForm}</option>
-              })
-              }</select><input className='btn' type="submit" value="Search" /></form>
-            </div>;
-            
-            currentState.popup = {
-              show:true,
-              message:options,
-              image:null
-            };
-            currentState.geneName = geneInfo.results.name;
-            currentState.screen = 1;
-            this.setState(currentState);
-          }
-        }
-      });
-    });
-  }
-  makeIsoFormHighlights(){
-    let startSequence = this.state.isoFormSequence.substr(0,9);
-    let stopSequence = this.state.isoFormSequence.substr(this.state.isoFormSequence.length-10,this.state.isoFormSequence.length);
-    let startIndex = this.state.sequence.indexOf(startSequence);
-    let stopIndex = this.state.sequence.indexOf(stopSequence)+7;
-    //console.log(startIndex,startSequence);
-    //console.log(stopIndex,stopSequence);
-    let highlights = {
-      start:{
-        location:startIndex,
-        length:3,
-        color:'#93E593',
-      },
-      stop:{
-        location:stopIndex,
-        length:3,
-        color:'#FF668E',
+  
+            if (!geneInfo) {
+              let error = (
+                <div className="popup-error">
+                  <h2>We're experiencing technical issues. Please try again later.</h2>
+                </div>
+              );
+              currentState.popup = {
+                show: true,
+                message: error,
+                image: null,
+              };
+              currentState.screen = 1;
+  
+              this.setState(currentState);
+            } else if (!geneInfo.results.isoforms) {
+              let error = (
+                <div className="popup-error">
+                  <h2>We could not find any results. Please try again with a different search term.</h2>
+                </div>
+              );
+              currentState.popup = {
+                show: true,
+                message: error,
+                image: null,
+              };
+              currentState.screen = 1;
+  
+              this.setState(currentState);
+            } else {
+              let isoForms = JSON.parse(geneInfo.results.isoforms);
+              if (isoForms.length) {
+                currentState.isoForms = isoForms; // Save isoForms in state
+                currentState.popup = {
+                  show: true,
+                  message: this.renderOperationForm(),
+                  image: null,
+                };
+                currentState.geneName = geneInfo.results.name;
+                currentState.showIsoForm = false; // State for toggling views
+                currentState.screen = 1;
+                this.setState(currentState);
+              }
+            }
+          });
       }
-    };
-    let popupForm = <div className="isoform-form"><h2>Choose Your Tag</h2><form onSubmit={this.chooseTerminal.bind(this)}>
-      <select name="tag"><option value="n">N Terminal</option><option value="c">C Terminal</option></select>
-      <input className='btn' type="submit" value="Search" />
-    </form></div>;
-    this.setState({
-      screen:2,
-      popup:{
-        show:false,
-      },
-      highlights:highlights,
-      popup:{
-        show:true,
-        message:popupForm,
-        image:null,
-        stayOpen:true,
-      }
-    });
+    );
   }
-  pickIsoForm(e){
+  
+  // Render Operation Form
+  renderOperationForm() {
+    return (
+      <div className="isoform-form">
+        <h2>Choose Your Operation</h2>
+        <form onSubmit={this.pickDeleteOrTag.bind(this)}>
+          <select name="operation">
+            <option value="tag">Tag</option>
+            <option value="delete">Delete</option>
+          </select>
+          <input className="btn" type="submit" value="Proceed" />
+        </form>
+      </div>
+    );
+  }
+  
+  // Render IsoForm Selection
+  renderIsoForm() {
+    return (
+      <div className="isoform-form">
+        <h2>Choose Your IsoForm</h2>
+        <p className="warning-message">This step takes a few seconds, please only click the button once.</p>
+        <form onSubmit={this.pickIsoForm.bind(this)}>
+          <select name="isoform">
+            {this.state.isoForms.map((isoForm) => (
+              <option value={isoForm} key={isoForm}>
+                {isoForm}
+              </option>
+            ))}
+          </select>
+          <input className="btn" type="submit" value="Search" />
+        </form>
+      </div>
+    );
+  }
+  
+  pickDeleteOrTag(e) {
     e.preventDefault();
-    //console.log(e.target.isoform.value);
-    let isoForm = e.target.isoform.value;
-    //console.log(isoForm,this.state.isoForm);
-    //console.log(this.state.isoFormSequence);
-    if(isoForm==this.state.isoForm){
-      //console.log('same isoForm');
-      this.makeIsoFormHighlights();
+    let operation = e.target.elements.operation.value;
+    console.log('Selected Operation:', operation);
+
+    if (operation === "tag") {
+      this.setState({
+        operation: "tag"
+      });
+
+    } else if (operation === "delete") {
+      this.setState({
+        operation: "delete"
+      });
+    }
+
+    console.log(operation)
+
+    this.setState({
+      popup: {
+        show: true,
+        message: this.renderIsoForm(), // Transition to isoform selection
+        image: null,
+      },
+      showIsoForm: true,
+    });
+  }  
+  
+  createPopupForm() {
+    return (
+      <div className="isoform-form">
+        <h2>Choose Your Tag</h2>
+        <form onSubmit={this.chooseTerminal.bind(this)}>
+          <select name="tag">
+            <option value="n">N Terminal</option>
+            <option value="c">C Terminal</option>
+          </select>
+          <input className="btn" type="submit" value="Search" />
+        </form>
+      </div>
+    );
+  }
+  
+  makeIsoFormHighlights() {
+    const startSequence = this.state.isoFormSequence.substr(0, 9);
+    const stopSequence = this.state.isoFormSequence.substr(
+      this.state.isoFormSequence.length - 10,
+      this.state.isoFormSequence.length
+    );
+    console.log("Stop Sequence: ", stopSequence);
+    const startIndex = this.state.sequence.indexOf(startSequence);
+    const stopIndex = this.state.sequence.indexOf(stopSequence) + 7;
+  
+    const highlights = {
+      start: {
+        location: startIndex,
+        length: 3,
+        color: '#93E593',
+      },
+      stop: {
+        location: stopIndex,
+        length: 3,
+        color: '#FF668E',
+      },
+    };
+  
+    if (this.state.operation === 'delete') {
+      // Skip terminal selection for delete operation
+      this.setState({
+        screen: 2,
+        highlights: highlights,
+        popup: { show: false },
+      });
+
+      console.log("Highlights:", this.state.highlights);
     } else {
-      console.log("isoForm: ", isoForm)
-      let url = urlBase+'/api/?type=isoform&isoform='+isoForm;
-      fetch(url).then((res) =>{return res.json()}).then((geneInfo)=>{
-        console.log('response',geneInfo);
-        let currentState = this.state;
-        currentState.isoForm = geneInfo.isoForm;
-        currentState.isoFormSequence = geneInfo.upstream+geneInfo.sequence+geneInfo.downstream;
-        currentState.sequence = geneInfo.upstream+geneInfo.sequence+geneInfo.downstream;
-        currentState.isoFormStrand = geneInfo.strand;
-        let strand = geneInfo.strand;
-        let startIndex = 2000;
-        let stopIndex = geneInfo.sequence.length+2000+(strand=='-'?-3:3);
-        let highlights = {
-          start:{
-            location:startIndex,
-            length:3,
-            color:'#93E593',
-          },
-          stop:{
-            location:stopIndex,
-            length:3,
-            color:'#FF668E',
-          }
-        }
-        currentState.highlights = highlights;
-        let popupForm = <div className="isoform-form"><h2>Choose Your Tag</h2><form onSubmit={this.chooseTerminal.bind(this)}>
-          <select name="tag"><option value="n">N Terminal</option><option value="c">C Terminal</option></select>
-          <input className='btn' type="submit" value="Search" />
-          </form></div>;
-       
-        currentState.popup = {
-          show:true,
-          message:popupForm,
-          image:null,
-          stayOpen:true,
-        };
-        currentState.screen = 2;
-        /*currentState.currentHighlight = {
-          location:null,
-          length:100,
-          color:'#FCD27E',
-          name:'targetSearch'
-        }*/
-        //console.log(currentState);
-        this.setState(currentState,function(){
-          //console.log(this.state);
-        });
+      const popupForm = this.createPopupForm();
+      this.setState({
+        screen: 2,
+        highlights: highlights,
+        popup: {
+          show: true,
+          message: popupForm,
+          image: null,
+          stayOpen: true,
+        },
       });
     }
   }
+  
+  pickIsoForm(e) {
+    e.preventDefault();
+    const isoForm = e.target.isoform.value;
+  
+    if (isoForm === this.state.isoForm) {
+      this.makeIsoFormHighlights();
+      console.log("it went in here!");
+    } else {
+      console.log("isoForm: ", isoForm);
+      const url = `${urlBase}/api/?type=isoform&isoform=${isoForm}`;
+  
+      fetch(url)
+        .then((res) => res.json())
+        .then((geneInfo) => {
+          const strand = geneInfo.strand;
+          const startIndex = 2000;
+          const stopIndex =
+            geneInfo.sequence.length + 2000 - 3;//+(strand === '-' ? -3 : 0);
+  
+          const highlights = {
+            start: {
+              location: startIndex,
+              length: 3,
+              color: '#93E593',
+            },
+            stop: {
+              location: stopIndex,
+              length: 3,
+              color: '#FF668E',
+            },
+          };
+          
+          console.log("geneInfo.sequence: ", geneInfo.sequence);
+          console.log("Setting highlights: ", highlights);
+  
+          const popupForm = this.createPopupForm();
+          const newPopupState =
+            this.state.operation === 'delete'
+              ? { show: false }
+              : {
+                  show: true,
+                  message: popupForm,
+                  image: null,
+                  stayOpen: true,
+                };
+  
+          // Set state first, then handle delete
+          this.setState(
+            {
+              isoForm: geneInfo.isoForm,
+              isoFormSequence:
+                geneInfo.upstream + geneInfo.sequence + geneInfo.downstream,
+              sequence: geneInfo.upstream + geneInfo.sequence + geneInfo.downstream,
+              isoFormStrand: strand,
+              highlights: highlights,
+              popup: newPopupState,
+              screen: 2,
+            },
+            () => {
+              if (this.state.operation === 'delete') {
+                this.handleDeleteOperation();
+              }
+            }
+          );
+        });
+    }
+  }
+   
 
   pickCutSite(target){
     this.saveCurrentHighlight('rgb(255, 255, 97)');
@@ -481,7 +736,6 @@ export default class App extends React.Component  {
       targets:[target],
       menu:3,
       screen:3,
-      mutatePam:true,
     });
     // to set the primers
     if(!this.state.primers||!this.state.primers.length==0){
@@ -490,83 +744,341 @@ export default class App extends React.Component  {
     }
   }
 
-  chooseTerminal(e,terminalInput=null){
+  // pickDeleteCutSite(target) {
+  //   const { terminalType } = target;
+  //   let newHighlights = this.state.highlights;
+  //   if (terminalType === "N") {
+  //     this.saveCurrentHighlight('rgb(255, 255, 97)', "cutsite_N");
+  //     // I want to add the this.state.currentHighlight to the rest of the highlight in the setstate
+  //     this.setState({ selectedNTarget: target});
+  //     console.log("selected N:", this.state.selectedNTarget)
+  //   } else if (terminalType === "C") {
+  //     this.saveCurrentHighlight('rgb(255, 255, 97)', "cutsite_C");
+  //     this.setState({ selectedCTarget: target,}, () => {
+  //       console.log("selected C:", this.state.selectedCTarget)
+  //       const { selectedNTarget, selectedCTarget } = this.state;
+        
+  //       if (selectedNTarget && selectedCTarget) {
+  //         this.setState(
+  //           {
+  //             targets: [selectedNTarget, selectedCTarget],
+  //             menu: 3,
+  //             screen: 3,
+  //           },
+  //           () => {
+  //             if (!this.state.primers || this.state.primers.length === 0) {
+  //               this.getDeletePrimers();
+  //               console.log("Primer has been set");
+  //             }
+  //           }
+  //         );
+  //       }
+  //     });
+  //   }
+  // }
+
+  pickDeleteCutSite(target) {
+    const { terminalType } = target;
+    let newHighlights = { ...this.state.highlights }; // Clone the highlights to avoid direct mutation
+  
+    if (terminalType === "N") {
+      // Update N-terminal highlight
+      this.highlightString(target.distal + target.proximal + target.pam, 'rgb(255, 255, 97)', "cutsite_N");
+  
+      // Update the selected N-terminal target
+      this.setState({ selectedNTarget: target }, () => {
+        console.log("selected N:", this.state.selectedNTarget);
+      });
+  
+      // Store the N-terminal target highlight in the state
+      newHighlights.cutsite_N = {
+        color: 'rgb(255, 255, 97)',
+        name: "cutsite_N",
+        target: target,
+      };
+  
+    } else if (terminalType === "C") {
+      // Update C-terminal highlight
+      this.highlightString(target.distal + target.proximal + target.pam, 'rgb(255, 255, 97)', "cutsite_C");
+  
+      // Update the selected C-terminal target
+      this.setState({ selectedCTarget: target }, () => {
+        console.log("selected C:", this.state.selectedCTarget);
+        
+        // Check if both N and C-terminal are selected
+        const { selectedNTarget, selectedCTarget } = this.state;
+        if (selectedNTarget && selectedCTarget) {
+          // Both N and C targets are selected, so update the targets and set the menu/screen state
+          this.setState(
+            {
+              targets: [selectedNTarget, selectedCTarget],
+              menu: 3,
+              screen: 3,
+            },
+            () => {
+              if (!this.state.primers || this.state.primers.length === 0) {
+                this.getDeletePrimers();
+                console.log("Primer has been set");
+              }
+            }
+          );
+        }
+      });
+  
+      // Store the C-terminal target highlight in the state
+      newHighlights.cutsite_C = {
+        color: 'rgb(255, 255, 97)',
+        name: "cutsite_C",
+        target: target,
+      };
+    }
+  
+    // Update the highlights state with the new highlights (N or C terminal)
+    this.setState({ highlights: newHighlights });
+  }  
+
+  setHighlight(terminalType, target) {
+    let newHighlights = { ...this.state.highlights };
+  
+    // Handle N-terminal highlight
+    if (terminalType === "N") {
+      // Update the highlight for N-terminal
+      this.highlightString(target.distal + target.proximal + target.pam, 'rgb(255, 255, 97)', "cutsite_N");
+      
+      // Set the new highlight for N-terminal
+      newHighlights.cutsite_N = {
+        color: 'rgb(255, 255, 97)',
+        name: "cutsite_N",
+        target: target,
+      };
+    } else if (terminalType === "C") {
+      // Update the highlight for C-terminal
+      this.highlightString(target.distal + target.proximal + target.pam, 'rgb(255, 255, 97)', "cutsite_C");
+      
+      // Set the new highlight for C-terminal
+      newHighlights.cutsite_C = {
+        color: 'rgb(255, 255, 97)',
+        name: "cutsite_C",
+        target: target,
+      };
+    }
+  
+    // Update the highlights state with the new highlights
+    this.setState({ highlights: newHighlights });
+  }
+  
+  
+  chooseOperation(e){
     if(e){
       e.preventDefault();
     }
-    //console.log(e.target.tag.value);
-    let i;
-    let terminal = terminalInput||e.target.tag.value;
-    if(terminal=='n'){
-      i = this.state.highlights.start.location;
-    } else if(terminal=='c'){
-      i = this.state.highlights.stop.location;
+    if(e.response == "delete") {
+      console.log("delete function");
     }
-    //console.log('start',i-26,i+26);
-    let targetGenes = this.state.sequence.substring(i-50,i+50); 
-    //console.log(targetGenes);
-    let url = urlBase+'/api/?type=targetSearch&targetArea='+targetGenes;
-    //console.log(url);
-    this.setState({popup:{
-      show:true,
-      message:<div><h2>Finding Potential Targets.<br/> This may take some time.</h2></div>,
-      image:loading,
-      stayOpen:true,
+  }
+
+  // Terminal
+
+  chooseTerminal(e, terminalInput = null) {
+    e.preventDefault();
+  
+    const { highlights, sequence } = this.state;
+    console.log("Highlights: ", highlights);
+    const terminal = terminalInput || e.target.tag.value;
+    const location = terminal === 'n' ? highlights.start.location : highlights.stop.location;
+  
+    const targetGenes = sequence.substring(location - 50, location + 50);
+  
+    this.setState(
+      {
+        popup: {
+          show: true,
+          message: (
+            <div>
+              <h2>Finding Potential Targets.<br /> This may take some time.</h2>
+            </div>
+          ),
+          image: loading,
+          stayOpen: true,
+        },
+        terminal,
       },
-      terminal:terminal
-    },function(){
-      fetch(url).then((res) =>{return res.json()}).then((response)=>{
-        //console.log(response);
-        let efficiencyString = response.results.map((target)=>{
-          return target.distal+target.proximal;
-        });
-        //console.log(encodeURIComponent(efficiencyString.join(',')));
-        this.setState({popup:{
-          show:true,
-          message:<h2>Checking Target Efficiency</h2>,
-          image:loading,
-          stayOpen:true,
+      () => this.processTagTargetSearch(targetGenes)
+    );
+  }
+  
+  // This is for the isoForm, not cut site
+  handleDeleteOperation() {
+    const { highlights, sequence } = this.state;
+    console.log("Highlights: ", highlights);
+    if (!highlights || !highlights.start || !highlights.stop) {
+      console.error("Highlights not properly set for delete operation.");
+      return; // Return early if highlights are missing
+    }
+    
+    // For delete operation, process both N and C terminals
+    const nLocation = highlights.start.location;
+    const cLocation = highlights.stop.location;
+  
+    const nTargetGenes = sequence.substring(nLocation - 50, nLocation + 50);
+    const cTargetGenes = sequence.substring(cLocation - 50, cLocation + 50);
+  
+    // Combine target areas for delete operation
+    const combinedTargetGenes = `${nTargetGenes},${cTargetGenes}`;
+  
+    this.setState(
+      {
+        popup: {
+          show: true,
+          message: (
+            <div>
+              <h2>Finding Potential Targets.<br /> This may take some time.</h2>
+            </div>
+          ),
+          image: loading,
+          stayOpen: true,
+        },
+      },
+      () => this.processDeleteTargetSearch(nTargetGenes, cTargetGenes)
+    );
+  }
+  
+  processDeleteTargetSearch(nGene, cGene) {
+    const nUrl = `${urlBase}/api/?type=targetSearch&targetArea=${nGene}`;
+    const cUrl = `${urlBase}/api/?type=targetSearch&targetArea=${cGene}`;
+  
+    // Fetch the N-terminal and C-terminal target data separately
+    Promise.all([fetch(nUrl), fetch(cUrl)])
+      .then((responses) => Promise.all(responses.map((res) => res.json())))
+      .then(([nResponse, cResponse]) => {
+        const nEfficiencyString = nResponse.results.map(
+          (target) => target.distal + target.proximal
+        );
+        const cEfficiencyString = cResponse.results.map(
+          (target) => target.distal + target.proximal
+        );
+  
+        this.setState(
+          {
+            popup: {
+              show: true,
+              message: <h2>Checking Target Efficiency</h2>,
+              image: loading,
+              stayOpen: true,
+            },
+            targets: [...nResponse.results, ...cResponse.results],
           },
-          targets:response.results
-        },function(){
-          let url = urlBase+'/api/?type=targetEfficiency&targets='+encodeURIComponent(efficiencyString.join('\n'));
-          fetch(url).then((res)=>{return res.json()}).then((response)=>{
-            //console.log(response);
-            let targets = [];
-            for(let i=0;i<this.state.targets.length;i++){
-              let target = this.state.targets[i];
-              let gene = target.distal+target.proximal;
-              //console.log('target',target);
-              target.score = response[gene];
-              targets.push(target);
-            }
-            this.setState({popup:{
-              show:false,
-              },
-              targets:targets,
-              menu:2,
-            },function(){
-              let terminal = this.state.terminal;
-              let scrollTop;
-              let windowHeight = window.innerHeight;
-              if (terminal === 'n') {
-                scrollTop = document.getElementsByClassName('start')[0].getBoundingClientRect().top;
-              } else {
-                  const screen2 = document.getElementsByClassName('screen-2')[0];
-                  scrollTop = screen2.scrollHeight; // Scroll to the bottom
-              }
-              
-              console.log('scroll top: ', scrollTop, windowHeight);
-              document.getElementsByClassName('screen-2')[0].scrollTo({
-                  top: scrollTop - (windowHeight / 2),
-                  behavior: 'smooth'
+          () => {
+            // Now fetch target efficiency for both N and C terminal targets
+            const nEfficiencyUrl = `${urlBase}/api/?type=targetEfficiency&targets=${encodeURIComponent(
+              nEfficiencyString.join('\n')
+            )}`;
+            const cEfficiencyUrl = `${urlBase}/api/?type=targetEfficiency&targets=${encodeURIComponent(
+              cEfficiencyString.join('\n')
+            )}`;
+  
+            Promise.all([fetch(nEfficiencyUrl), fetch(cEfficiencyUrl)])
+              .then((efficiencyResponses) =>
+                Promise.all(efficiencyResponses.map((res) => res.json()))
+              )
+              .then(([nEfficiencyResponse, cEfficiencyResponse]) => {
+                const updatedTargets = [
+                  ...nResponse.results.map((target) => ({
+                    ...target,
+                    score: nEfficiencyResponse[target.distal + target.proximal],
+                    terminalType: 'N',
+                  })),
+                  ...cResponse.results.map((target) => ({
+                    ...target,
+                    score: cEfficiencyResponse[target.distal + target.proximal],
+                    terminalType: 'C',
+                  })),
+                ];
+
+                console.log("updated targets: ", updatedTargets);
+  
+                this.setState(
+                  {
+                    popup: { show: false },
+                    targets: updatedTargets,
+                    menu: 2,
+                  }
+                );
               });
-            });
-          });
-        });
+          }
+        );
       });
+  }
+
+  processTagTargetSearch(targetGenes) {
+    const url = `${urlBase}/api/?type=targetSearch&targetArea=${targetGenes}`;
+  
+    fetch(url)
+      .then((res) => res.json())
+      .then((response) => {
+        const efficiencyString = response.results.map((target) => target.distal + target.proximal);
+  
+        this.setState(
+          {
+            popup: {
+              show: true,
+              message: <h2>Checking Target Efficiency</h2>,
+              image: loading,
+              stayOpen: true,
+            },
+            targets: response.results,
+          },
+          () => {
+            const efficiencyUrl = `${urlBase}/api/?type=targetEfficiency&targets=${encodeURIComponent(
+              efficiencyString.join('\n')
+            )}`;
+  
+            fetch(efficiencyUrl)
+              .then((res) => res.json())
+              .then((efficiencyResponse) => {
+                const targets = this.state.targets.map((target) => {
+                  const gene = target.distal + target.proximal;
+                  return { ...target, score: efficiencyResponse[gene] };
+                });
+  
+                this.setState(
+                  {
+                    popup: { show: false },
+                    targets,
+                    menu: 2,
+                  },
+                  () => {
+                    if (this.state.operation == "tag") {
+                      this.scrollToTerminal(this.state.terminal);
+                    }
+                  }
+                );
+              });
+          }
+        );
+      });
+  }
+
+  scrollToTerminal(terminal) {
+    const windowHeight = window.innerHeight;
+    let scrollTop;
+  
+    if (terminal === 'n') {
+      const startElement = document.getElementsByClassName('start')[0];
+      scrollTop = startElement.getBoundingClientRect().top;
+    } else {
+      const screen2 = document.getElementsByClassName('screen-2')[0];
+      scrollTop = screen2.scrollHeight; // Scroll to the bottom
+    }
+  
+    console.log('scroll top:', scrollTop, windowHeight);
+  
+    document.getElementsByClassName('screen-2')[0].scrollTo({
+      top: scrollTop - windowHeight / 2,
+      behavior: 'smooth',
     });
   }
+  
   searchForTargets(){
     console.log('searching for target');
     //console.log(this.state.currentHighlight);
@@ -677,6 +1189,72 @@ export default class App extends React.Component  {
     });
   }
 
+  getDeletePrimers() {
+    console.log("delete primier function");
+
+    let sequence = this.state.sequence;
+
+    const calculatePrimerSections = (targetLocation) => ({
+      "5' Homology": sequence.slice(targetLocation - 1200, targetLocation - 1000),
+      "5' Sequence": sequence.slice(targetLocation - 600, targetLocation - 400),
+      "3' Sequence": sequence.slice(targetLocation + 400, targetLocation + 600),
+      "3' Homology": sequence.slice(targetLocation + 1000, targetLocation + 1200),
+    });
+  
+    // Calculate primer sections for both terminals
+    const nPrimerSections = calculatePrimerSections(this.state.highlights.start.location);
+    const cPrimerSections = calculatePrimerSections(this.state.highlights.stop.location);
+  
+    const nPrimerSectionsString = Buffer.from(JSON.stringify(nPrimerSections)).toString("base64");
+    const cPrimerSectionsString = Buffer.from(JSON.stringify(cPrimerSections)).toString("base64");
+  
+    this.setState(
+      {
+        popup: {
+          show: true,
+          message: <h2>Retrieving Homology Arm Primers</h2>,
+          image: loading,
+          stayOpen: true,
+        },
+      },
+      () => {
+        const nFetchUrl = `${urlBase}/api/?type=primers&primerSections=${nPrimerSectionsString}`;
+        const cFetchUrl = `${urlBase}/api/?type=primers&primerSections=${cPrimerSectionsString}`;
+  
+        Promise.all([fetch(nFetchUrl), fetch(cFetchUrl)])
+          .then((responses) => Promise.all(responses.map((res) => res.json())))
+          .then(([nPrimers, cPrimers]) => {
+            this.setState(
+              {
+                primers: {
+                  N: nPrimers,
+                  C: cPrimers,
+                },
+                menu: 3,
+                popup: { show: false },
+              },
+              () => {
+                console.log("N-terminal primers:", nPrimers);
+                console.log("C-terminal primers:", cPrimers);
+              }
+            );
+          })
+          .catch((err) => {
+            console.error("Error fetching primers:", err);
+            this.setState({
+              popup: {
+                show: true,
+                message: <h2>Failed to Retrieve Primers</h2>,
+                image: null,
+                stayOpen: false,
+              },
+            });
+          });
+      }
+    );
+    console.log("primers: " + this.state.primers)
+  }
+
   mutatePam(e){
     e.preventDefault();
     let newPam = e.target.elements.newPam.value;
@@ -694,6 +1272,8 @@ export default class App extends React.Component  {
     let currentArms = JSON.parse(JSON.stringify(!this.state.selectedArms?{}:this.state.selectedArms));
     currentArms[arm] = selection;
     this.saveCurrentHighlight('rgba(86, 64, 155,0.3)',arm);
+
+    console.log("Current highlight: ", this.state.currentHighlight)
 
     this.setState({selectedArms:currentArms},()=>{
       //console.log(this.state);
@@ -733,6 +1313,91 @@ export default class App extends React.Component  {
         }
       });
     });
+  }
+
+  selectDeleteHomologyArm(selection, arm, terminal) {
+    let currentArms = JSON.parse(JSON.stringify(!this.state.selectedArms ? {} : this.state.selectedArms));
+    console.log("Delete function CurrentArm: ", currentArms);
+    const terminalKey = `${arm}_${terminal}`;
+    currentArms[terminalKey] = selection;
+    console.log("Delete function arm: ", arm);
+    this.saveCurrentHighlight("rgba(86, 64, 155,0.3)", terminalKey);
+  
+    this.setState({ selectedArms: currentArms }, () => {
+      this.setState({ currentHighlight: null }, () => {
+        const totalSelected = Object.keys(this.state.selectedArms);
+  
+        if (totalSelected.length === 8) { // Expecting 4 arms × 2 terminals = 8
+          console.log("Searching");
+          this.fetchOligoInformation();
+        }
+      });
+    });
+  }
+
+  fetchOligoInformation() {
+    const { selectedNTarget, selectedCTarget, targets } = this.state;
+  
+    if (!selectedNTarget || !selectedCTarget) {
+      console.error("Both selectedNTarget and selectedCTarget are required for fetching oligos.");
+      return;
+    }
+  
+    const fetchOptions = {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    };
+  
+    // Fetch oligos for N target
+    fetch(
+      `${urlBase}/api/?type=oligos&target=${selectedNTarget.distal}${selectedNTarget.proximal}${selectedNTarget.pam}`,
+      fetchOptions
+    )
+      .then((res) => res.json())
+      .then((res) => {
+        this.updateOligoState(res, "N");
+      });
+  
+    // Fetch oligos for C target
+    fetch(
+      `${urlBase}/api/?type=oligos&target=${selectedCTarget.distal}${selectedCTarget.proximal}${selectedCTarget.pam}`,
+      fetchOptions
+    )
+      .then((res) => res.json())
+      .then((res) => {
+        this.updateOligoState(res, "C");
+      });
+  
+    // Show popup while fetching
+    this.setState({
+      popup: {
+        show: true,
+        message: <h2>Retrieving Oligo Information</h2>,
+        image: loading,
+        stayOpen: true,
+      },
+    });
+  }
+  
+  updateOligoState(res, targetType) {
+    if (!res.sense) {
+      this.setState({
+        menu: 4,
+        popup: { show: false },
+      });
+      return;
+    }
+  
+    // Update state based on fetched oligos
+    this.setState((prevState) => ({
+      oligos: {
+        ...prevState.oligos,
+        [targetType]: res,
+      },
+      popup: { show: false },
+      menu: 4,
+    }));
+    console.log("Oligos: ", this.state.oligos)
   }
 
   // UTILITIES
@@ -824,6 +1489,106 @@ export default class App extends React.Component  {
       });
     });
   }
+
+  downloadDeleteApeFile() {
+    fetch(window.location.origin + '/fly_templates/empty_ape.txt')
+        .then((res) => res.text())
+        .then((res) => {
+            const data = res;
+
+            fetch(window.location.origin + '/fly_templates/feature.txt')
+                .then((res) => res.text())
+                .then((res2) => {
+                    const featureTemplate = res2;
+
+                    // Utility function to create feature entries
+                    const newFeature = (loc, name, color) => {
+                        return featureTemplate
+                            .split('*featureLoc*').join(loc)
+                            .split('*featureName*').join(name)
+                            .split('*featureColor*').join(color);
+                    };
+
+                    // Generate gene features
+                    let gene = this.state.sequence;
+                    const nTarget = this.state.selectedNTarget;
+                    const cTarget = this.state.selectedCTarget;
+                    const nTargetSequence = nTarget.distal + nTarget.proximal;
+                    const cTargetSequence = cTarget.distal + cTarget.proximal;
+
+                    // Match targets for N-Terminal
+                    const targetMatchN = gene.toLowerCase().match(nTargetSequence.toLowerCase());
+                    const revTargetMatchN = gene.toLowerCase().match(this.revComp(nTargetSequence.toLowerCase()));
+                    let targetIN = targetMatchN ? targetMatchN.index + 1 : revTargetMatchN.index;
+
+                    // Match targets for C-Terminal
+                    const targetMatchC = gene.toLowerCase().match(cTargetSequence.toLowerCase());
+                    const revTargetMatchC = gene.toLowerCase().match(this.revComp(cTargetSequence.toLowerCase()));
+                    let targetIC = targetMatchC ? targetMatchC.index + 1 : revTargetMatchC.index;
+
+                    // Define PAM positions for N and C
+                    const pamStartN = revTargetMatchN ? targetIN - 2 : targetIN + 20;
+                    const pamStartC = revTargetMatchC ? targetIC - 2 : targetIC + 20;
+
+                    const start = parseInt(this.state.highlights.start.location) + 1;
+                    const stop = parseInt(this.state.highlights.stop.location) + 1;
+
+                    // Insert PAM sequence if needed
+                    gene = this.state.currentPam
+                        ? gene.substr(0, pamStartN - 1) + this.state.currentPam + gene.substr(pamStartN + 2)
+                        : gene;
+
+
+                    console.log(this.state.highlights)
+                    // Generate features for Start, Stop, and Targets
+                    const featureArr = [
+                        newFeature(`${start}..${start + 2}`, 'Start Codon', '#35df29'),
+                        newFeature(`${stop}..${stop + 2}`, 'Stop Codon', '#df2935'),
+                        newFeature((parseInt(1+this.state.highlights['hom5_N']['location']))+'..'+(parseInt(1+this.state.highlights['hom5_N']['location'])+this.state.highlights['hom5_N']['length']),"5' N Homology Arm Primer",'#fdca40'),
+                        newFeature((parseInt(1+this.state.highlights['hom3_N']['location']))+'..'+(parseInt(1+this.state.highlights['hom3_N']['location'])+this.state.highlights['hom3_N']['length']),"3' N Homology Arm Primer",'#fdca40'),
+                        newFeature((parseInt(1+this.state.highlights['seq5_N']['location']))+'..'+(parseInt(1+this.state.highlights['seq5_N']['location'])+this.state.highlights['seq5_N']['length']),"5' N Sequence Primer",'#fdca40'),
+                        newFeature((parseInt(1+this.state.highlights['seq3_N']['location']))+'..'+(parseInt(1+this.state.highlights['seq3_N']['location'])+this.state.highlights['seq3_N']['length']),"3' N Sequence Primer",'#fdca40'),
+                        newFeature((parseInt(1+this.state.highlights['hom5_C']['location']))+'..'+(parseInt(1+this.state.highlights['hom5_C']['location'])+this.state.highlights['hom5_C']['length']),"5' C Homology Arm Primer",'#d440fd'),
+                        newFeature((parseInt(1+this.state.highlights['hom3_C']['location']))+'..'+(parseInt(1+this.state.highlights['hom3_C']['location'])+this.state.highlights['hom3_C']['length']),"3' C Homology Arm Primer",'#d440fd'),
+                        newFeature((parseInt(1+this.state.highlights['seq5_C']['location']))+'..'+(parseInt(1+this.state.highlights['seq5_C']['location'])+this.state.highlights['seq5_C']['length']),"5' C Sequence Primer",'#d440fd'),
+                        newFeature((parseInt(1+this.state.highlights['seq3_C']['location']))+'..'+(parseInt(1+this.state.highlights['seq3_C']['location'])+this.state.highlights['seq3_C']['length']),"3' C Sequence Primer",'#d440fd'),
+                        newFeature(`${targetIN}..${targetIN + 20}`, 'Target N-Terminal', '#77d1e1'),
+                        newFeature(`${targetIC}..${targetIC + 20}`, 'Target C-Terminal', '#77d1e1'),
+                        newFeature(`${pamStartN}..${pamStartN + 2}`, 'PAM N-Terminal', '#0000FF'),
+                        newFeature(`${pamStartC}..${pamStartC + 2}`, 'PAM C-Terminal', '#0000FF')
+                    ];
+
+                    // Format the gene sequence
+                    const makeGeneArr = () => {
+                        let geneArr = [];
+                        for (let i = 0; i < gene.length; i += 10) {
+                            if (i % 50 === 0) geneArr.push('\n' + (i + 1).toString().padStart(9, ' ') + ' ');
+                            geneArr.push(gene.slice(i, i + 10) + ' ');
+                        }
+                        return geneArr.join('');
+                    };
+
+                    // Get current date
+                    const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+                    const date = new Date();
+                    const formattedDate = `${date.getDate()}-${months[date.getMonth()]}-${date.getFullYear()}`;
+
+                    // Finalize APE data
+                    const newData = data
+                        .split('*FEATURES*').join(featureArr.join(''))
+                        .split('*name*').join(this.state.geneName)
+                        .split('*length*').join(this.state.sequence.length)
+                        .split('*date*').join(formattedDate)
+                        .split('*GENE*').join(makeGeneArr());
+
+                    // Create and download the APE file
+                    const blob = new Blob([newData], { type: "text/plain;charset=utf-8" });
+                    saveAs(blob, `${this.state.geneName}_delete.ape`);
+                });
+        });
+}
+
+
   changePlasmidTemplate(e){
     let template = e.target.value;
 
@@ -893,6 +1658,58 @@ export default class App extends React.Component  {
       saveAs(blob, filename);
     });
   }
+
+  downloadDeletePlasmidTemplate(e){
+    e.preventDefault();
+    if(!this.state.plasmidTemplate){return false;}
+    
+    const url = (window.location.origin+'/plasmid_folder/')+(this.state.plasmidTemplate.split(' ').join('%20'))+'.txt';
+    console.log(url);
+    fetch(url).then((res)=>{return res.text()}).then((data)=>{
+      const preArm1 = data.split('**arm_1_start**')[0];
+      let searchSequence = this.state.targets[0].distal+this.state.targets[0].proximal+this.state.targets[0].pam;
+      const Ncutsite = this.state.highlights.start.location+3
+      const Ccutsite = this.state.highlights.stop.location;
+      let arm1 = this.state.sequence.slice(Ncutsite-1000, Ncutsite);
+      const postArm1 = data.split('**arm_1_end**')[1].split('**arm_2_start**')[0];
+      let arm2 = this.state.sequence.slice(Ccutsite, Ccutsite+1000);
+      const postArm2 = data.split('**arm_2_end**')[1];
+      console.log(this.state.highlights.start.location);
+
+      let replaceArm1 = data.split('**arm_1_start**')[1].split('**arm_1_end**')[0].split('');
+      let arm1I = 0;
+      let replaceArm2 = data.split('**arm_2_start**')[1].split('**arm_2_end**')[0].split('');
+      let arm2I = 0;
+
+
+      for(let y=0;y<replaceArm1.length;y++) {
+        if(replaceArm1[y]===' '||replaceArm1[y]==='\n'||!isNaN(replaceArm1[y])) {
+          continue;
+        } else {
+          replaceArm1[y] = arm1[arm1I];
+          arm1I++;
+        }
+
+      }
+      for(let y=0;y<replaceArm2.length;y++) {
+        if(replaceArm2[y]===' '||replaceArm2[y]==='\n'||!isNaN(replaceArm2[y])) {
+          continue;
+        } else {
+          replaceArm2[y] = arm2[arm2I];
+          arm2I++;
+        }
+        
+      }
+
+      let newData = preArm1 + replaceArm1.join('') + postArm1 + replaceArm2.join('') + postArm2;
+      const design = newData;
+      var filename = this.state.plasmidTemplate+" for "+this.state.geneName+".ape";
+      var blob = new Blob([design], {
+        type: "text/plain;charset=utf-8"
+      });
+      saveAs(blob, filename);
+    });
+  }
   
   downloadGuideRna() {
     const url = window.location.origin + '/templates/pU6.txt';
@@ -922,6 +1739,8 @@ export default class App extends React.Component  {
         let preSplit = data.split('**injection_start**')[0];
         let postSplit = data.split('**injection_end**')[1];
         let sense = this.state.oligos.sense;
+
+        console.log("Oligos: ", this.state.oligos)
   
         console.log("Pre-split: ", preSplit);
         console.log("Sense: ", sense);
@@ -972,6 +1791,82 @@ export default class App extends React.Component  {
         console.error("Error fetching data: ", error);
       });
   }  
+
+  downloadDeleteGuideRna() {
+    const url = window.location.origin + '/templates/pU6.txt';
+    console.log("RNA URL: ", url);
+  
+    fetch(url)
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.text();
+      })
+      .then((data) => {
+        const newFeature = (start, end, locusTag, label, color) => {
+          return `     misc_feature    ${start}..${end}\n` +
+                 `                     /locus_tag="${locusTag}"\n` +
+                 `                     /label="${label}"\n` +
+                 `                     /ApEinfo_label="${label}"\n` +
+                 `                     /ApEinfo_fwdcolor="${color}"\n` +
+                 `                     /ApEinfo_revcolor="green"\n` +
+                 `                     /ApEinfo_graphicformat="arrow_data {{0 1 2 0 0 -1} {} 0}\n` +
+                 `                     width 5 offset 0\n`;
+        };
+  
+        const u6EndMatch = data.match(/misc_feature\s+(\d+)\.\.(\d+)\n\s+\/locus_tag="u6 promoter"/);
+        const u6EndPosition = u6EndMatch ? parseInt(u6EndMatch[2]) : null;
+  
+        if (!u6EndPosition) {
+          console.error("Could not determine the u6 promoter end position.");
+          return;
+        }
+  
+        const generateFile = (oligo, label, fileName) => {
+          // Split data for each oligo to avoid overwriting
+          const preSplit = data.split('**injection_start**')[0];
+          const postSplit = data.split('**injection_end**')[1];
+  
+          const oligoLength = oligo.length;
+          const oligoStart = u6EndPosition + 1;
+          const oligoEnd = oligoStart + oligoLength - 1;
+  
+          console.log(`${label} Start: `, oligoStart);
+          console.log(`${label} End: `, oligoEnd);
+  
+          const featureString = newFeature(oligoStart, oligoEnd, label, label, '#35df29');
+  
+          // Insert the new feature into the FEATURES section
+          let modifiedPreSplit = preSplit;
+          const featuresIndex = preSplit.indexOf('FEATURES');
+          if (featuresIndex !== -1) {
+            const endFeaturesIndex = preSplit.indexOf('ORIGIN', featuresIndex);
+            if (endFeaturesIndex !== -1) {
+              modifiedPreSplit = preSplit.substring(0, endFeaturesIndex) + featureString + preSplit.substring(endFeaturesIndex);
+            } else {
+              console.error("Warning: ORIGIN section not found after FEATURES.");
+            }
+          } else {
+            console.error("Warning: FEATURES section not found in preSplit.");
+          }
+  
+          // Combine parts to form the final design
+          const design = modifiedPreSplit + oligo + postSplit;
+  
+          // Trigger the file download
+          const blob = new Blob([design], { type: "text/plain;charset=utf-8" });
+          saveAs(blob, `${fileName}.ape`);
+        };
+  
+        // Generate files for N and C
+        generateFile(this.state.oligos.N, "delete-N", "rna-delete-N");
+        generateFile(this.state.oligos.C, "delete-C", "rna-delete-C");
+      })
+      .catch((error) => {
+        console.error("Error fetching data: ", error);
+      });
+  }
   
   addCustomData(e){
     e.preventDefault();
@@ -1154,354 +2049,156 @@ export default class App extends React.Component  {
     //console.log('render')
     const makeHighlights = () => {
       return null;
-      if(!this.state.highlights){
-        return null;
-      }
-      /*for (const highlight of this.state.highlights) {
-        let geneInfoHighlights = !this.state.sequence?null:this.state.sequence.split('').map((letter,i)=>{
-          return <div className={(highlight.location<i-((highlight.highlightLength-1)/2)||highlight.location>i+((highlight.highlightLength-1)/2)?' ':'highlight ')+' single-letter '} data-value={i} onMouseEnter={this.highlight.bind(this)}>{letter}</div>;
-        });
-      }*/
-      let allHighlights = [];
-      let currentHighlight = !this.state.sequence?null:this.state.sequence.split('').map((letter,i)=>{
-        if(!this.state.currentHighlight){
-          return null;
-        }
-        let style = {background:'rgba(255,255,255,0)'};
-        let classes = '';
-        if(i>=(this.state.currentHighlight.location-((this.state.currentHighlight.length-1)/2))&&i<=(this.state.currentHighlight.location+((this.state.currentHighlight.length-1)/2))){
-          style = {background:this.state.currentHighlight.color,zIndex:999};
-          classes = 'main-highlight';
-        }
-        return <div style={style} className={classes} data-value={i} >{letter}</div>;
-      });
-      let highlightKeys = Object.keys(this.state.highlights);
-      for(let i=0;i<highlightKeys.length;i++){
-        let highlight = this.state.highlights[highlightKeys[i]];
-        allHighlights.push(!this.state.sequence?null:<div className="gene-wrapper">{
-          this.state.sequence.split('').map((letter,i)=>{
-            let style = {background:'rgba(255,255,255,0)'};
-            let className = null;
-            if(i>=(highlight.location-((highlight.length-1)/2))&&i<=(highlight.location+((highlight.length-1)/2))){
-              style = {background:highlight.color};
-              
-            }
-            if(i==highlight.location){
-              className = highlightKeys[i];
-            }
-            return <div style={style} className={highlightKeys[i]} ref={className} data-value={i}  >{letter}</div>;
-          })
-          }</div>);
-      }
-      allHighlights.push(<div className="current-highlight">{currentHighlight}</div>);
-      return allHighlights;
     }
     const highlightKeys = !this.state.highlights?null:Object.keys(this.state.highlights);
-    //console.log(!this.state.currentHighlight?null:this.state.currentHighlight);
     const currentHighlight = !this.state.currentHighlight?null:this.state.currentHighlight;
     const currentHighlightLocation = !currentHighlight?null:currentHighlight.location;
-    const geneInfoPrep = !this.state.sequence?null:this.state.sequence.split('').map((letter,i)=>{
-    let highlightClasses = [];
-    let highlightLocation = null;
-      if(currentHighlight&&i>=currentHighlightLocation&&i<currentHighlightLocation+currentHighlight.length){
-        highlightClasses.push('current-highlight');
-        highlightClasses.push(currentHighlight.name);
-        highlightLocation = currentHighlight.location;
-      }
-     
-      let isStartSelect = false;
-      let isStopSelect = false;
-      if(highlightKeys&&highlightKeys.length>0){
-        for(let y=0;y<highlightKeys.length;y++){
-          let key = highlightKeys[y];
-          let currentHighlight = this.state.highlights[key];
-          let start = currentHighlight.location;
-          let stop = start+currentHighlight.length;
-          if(i>=start&&i<stop){
-            if(!highlightClasses.includes(key)){
-              highlightClasses.push(key);
-            }
 
-            if(key.includes('potentialStart')){
-              isStartSelect = true;
-            }
-            if(key.includes('potentialStop')){
-              isStopSelect = true;
-            }
-            highlightLocation = start;
+    const geneInfoPrep = !this.state.sequence
+    ? null
+    : this.state.sequence.split("").map((letter, i) => {
+          let highlightClasses = [];
+          let highlightLocation = null;
+
+          // Check if the current letter is within the current highlight
+          if (
+              this.state.currentHighlight &&
+              i >= this.state.currentHighlight.location &&
+              i < this.state.currentHighlight.location + this.state.currentHighlight.length
+          ) {
+              highlightClasses.push("current-highlight");
+              highlightClasses.push(this.state.currentHighlight.name);
+              highlightLocation = this.state.currentHighlight.location;
           }
-        }
-      }
-      
-      return <div  className={highlightClasses.join(' ')+' single-letter'} data-highlight-location={highlightLocation} onClick={isStartSelect?this.selectStartCodon.bind(this):isStopSelect?this.selectStopCodon.bind(this):null} >{letter}</div>;
-    });
-    const targetList = !this.state.targets?null:this.state.targets.map((target)=>{
-      return <div className={"single-target "+(!currentHighlightLocation?'disabled':currentHighlightLocation)} onClick={!currentHighlightLocation?null:this.pickCutSite.bind(this,target)} onMouseEnter={this.highlightString.bind(this,target.distal+target.proximal+target.pam,'rgb(255, 255, 97)',null)} onMouseLeave={this.clearHighlight.bind(this)}>
-        <div>{target.distal+target.proximal+target.pam}</div>
-        <div><span>Efficiency: </span>{!target.score?'-':target.score}</div>
-        <div><span>Strand: </span>{target.strand}</div>
-        <div><span>Off Targets: </span>{target.offtarget}</div>
-      </div>;
-    });
 
-    const pamBoxReadingFrames = () => {
-      if(!this.state.highlights.cutsite){
-        return;
+          // Check all highlights
+          Object.keys(this.state.highlights || {}).forEach((key) => {
+              const highlight = this.state.highlights[key];
+              const start = highlight.location;
+              const stop = start + highlight.length;
+
+              if (i >= start && i < stop) {
+                  if (!highlightClasses.includes(key)) {
+                      highlightClasses.push(key);
+                  }
+
+                  if (key.includes("potentialStart")) {
+                      highlightClasses.push("is-start-select");
+                  }
+                  if (key.includes("potentialStop")) {
+                      highlightClasses.push("is-stop-select");
+                  }
+
+                  highlightLocation = start;
+              }
+          });
+
+          return (
+              <div
+                  key={i}
+                  className={`${highlightClasses.join(" ")} single-letter`}
+                  data-highlight-location={highlightLocation}
+                  onClick={
+                      highlightClasses.includes("is-start-select")
+                          ? this.selectStartCodon.bind(this)
+                          : highlightClasses.includes("is-stop-select")
+                          ? this.selectStopCodon.bind(this)
+                          : null
+                  }
+              >
+                  {letter}
+              </div>
+          );
+      });
+
+    // cut site list
+    let targetList;
+    if (this.state.operation == "delete") {
+      const nTargetList = [];
+      const cTargetList = [];
+    
+      // Categorize targets using a for loop
+      const targets = this.state.targets || [];
+      for (let i = 0; i < targets.length; i++) {
+        const target = targets[i];
+    
+        const targetElement = (
+          <div
+            key={`target-${target.distal}-${target.proximal}-${target.terminalType}`}
+            className={
+              "single-target " +
+              (!currentHighlightLocation ? "disabled" : currentHighlightLocation)}
+            onClick={
+              !currentHighlightLocation
+                ? null
+                : this.pickDeleteCutSite.bind(this, target)
+            }
+            onMouseEnter={this.highlightString.bind(
+              this,
+              target.distal + target.proximal + target.pam,
+              "rgb(255, 255, 97)",
+              null
+            )}
+            onMouseLeave={this.clearHighlight.bind(this)}
+          >
+            <div>{target.distal + target.proximal + target.pam}</div>
+            <div>
+              <span>Efficiency: </span>
+              {!target.score ? "-" : target.score}
+            </div>
+            <div>
+              <span>Strand: </span>
+              {target.strand}
+            </div>
+            <div>
+              <span>Off Targets: </span>
+              {target.offtarget}
+            </div>
+          </div>
+        );
+    
+        // Add to respective lists based on terminalType
+        if (target.terminalType === "N") {
+          nTargetList.push(targetElement);
+        } else if (target.terminalType === "C") {
+          cTargetList.push(targetElement);
+        }
       }
-      let start = parseInt(JSON.parse(JSON.stringify(this.state.highlights.start.location)));
-      let cutsite = parseInt(this.state.highlights.cutsite.location);
-      let string = [];
-      let frameI = Math.abs((cutsite - start) % 3)+1;
-      let distal = '';
-      let proximal = '';
-      let pam = '';
-      if(this.state.isoFormStrand=='-'){
-        distal = this.state.isoFormSequence.substr(cutsite+3+this.state.targets[0].proximal.length,this.state.targets[0].distal.length);
-        proximal = this.state.isoFormSequence.substr(cutsite+3,this.state.targets[0].proximal.length);
-        pam = this.state.isoFormSequence.substr(cutsite,3);
-        console.log('distal',distal);
-        console.log('proximal',proximal);
-        console.log('pam',pam);
-        //console.log(cutsite,' ',start,Math.abs(cutsite - start)%3,((cutsite - start) % 3),frameI);
-        
-        for(let i=0;i<pam.length;i++){
-          string.push(<div style={{backgroundColor:'#93E593'}}>{pam[i]}<sub>{frameI}</sub></div>);
-          start = start-1;
-          frameI = Math.abs((cutsite - start) % 3)+1;
-          //console.log(cutsite,' ',start,Math.abs(cutsite - start)%3,((cutsite - start) % 3),frameI);
-        }
-        string.push(<div>{' '}</div>);
-        for(let i=0;i<proximal.length;i++){
-          string.push(<div>{proximal[i]}<sub>{frameI}</sub></div>);
-          start = start-1;
-          frameI = Math.abs((cutsite - start) % 3)+1;
-          //console.log(cutsite,' ',start,Math.abs(cutsite - start)%3,((cutsite - start) % 3),frameI);
-        }
-        for(let i=0;i<distal.length;i++){
-          string.push(<div>{distal[i]}<sub>{frameI}</sub></div>);
-          start = start-1;
-          frameI = Math.abs((cutsite - start) % 3)+1;
-          //console.log(cutsite,' ',start,Math.abs(cutsite - start)%3,((cutsite - start) % 3),frameI);
-        }
-        
-        //let string = !this.state.targets?null:this.state.targets[0].distal+this.state.targets[0].proximal+' '+(!this.state.targets?null:this.state.targets[0].pam);
-      } else {
-        distal = this.state.targets[0].distal.split('');
-        proximal = this.state.targets[0].proximal.split('');
-        pam = this.state.targets[0].pam.split('');
-  
-        //console.log(cutsite,' ',start,Math.abs(cutsite - start)%3,((cutsite - start) % 3),frameI);
-        for(let i=0;i<distal.length;i++){
-          string.push(<div>{distal[i]}<sub>{frameI}</sub></div>);
-          start = start+1;
-          frameI = Math.abs((cutsite - start) % 3)+1;
-          //console.log(cutsite,' ',start,Math.abs(cutsite - start)%3,((cutsite - start) % 3),frameI);
-        }
-        for(let i=0;i<this.state.targets[0].proximal.length;i++){
-          string.push(<div>{proximal[i]}<sub>{frameI}</sub></div>);
-          start = start+1;
-          frameI = Math.abs((cutsite - start) % 3)+1;
-          //console.log(cutsite,' ',start,Math.abs(cutsite - start)%3,((cutsite - start) % 3),frameI);
-        }
-        string.push(<div>{' '}</div>);
-        for(let i=0;i<this.state.targets[0].pam.length;i++){
-          string.push(<div style={{backgroundColor:'#93E593'}}>{pam[i]}<sub>{frameI}</sub></div>);
-          start = start+1;
-          frameI = Math.abs((cutsite - start) % 3)+1;
-          //console.log(cutsite,' ',start,Math.abs(cutsite - start)%3,((cutsite - start) % 3),frameI);
-        }
-        //let string = !this.state.targets?null:this.state.targets[0].distal+this.state.targets[0].proximal+' '+(!this.state.targets?null:this.state.targets[0].pam);
-      }
-      
-      return <div className="pam-string">{string}</div>;
+    
+      // Combine the lists into a single targetList
+      targetList = (
+        <div>
+          <h5>N-terminal Targets</h5>
+          {nTargetList.length > 0 ? nTargetList : <p>No N-terminal targets available</p>}
+    
+          <h5>C-terminal Targets</h5>
+          {cTargetList.length > 0 ? cTargetList : <p>No C-terminal targets available</p>}
+        </div>
+      );
+    }
+    else {
+      targetList = !this.state.targets?null:this.state.targets.map((target)=>{
+        return <div className={"single-target "+(!currentHighlightLocation?'disabled':currentHighlightLocation)} onClick={!currentHighlightLocation?null:this.pickCutSite.bind(this,target)} onMouseEnter={this.highlightString.bind(this,target.distal+target.proximal+target.pam,'rgb(255, 255, 97)',null)} onMouseLeave={this.clearHighlight.bind(this)}>
+          <div>{target.distal+target.proximal+target.pam}</div>
+          <div><span>Efficiency: </span>{!target.score?'-':target.score}</div>
+          <div><span>Strand: </span>{target.strand}</div>
+          <div><span>Off Targets: </span>{target.offtarget}</div>
+        </div>;
+      });
     }
 
-    const pamBox = <div className="pam-wrapper">
-       <h3>Amino Acid Chart</h3>
-       <div>Target: {pamBoxReadingFrames()}</div>
-       <div><form onSubmit={this.mutatePam.bind(this)}><input name="newPam" type="text" /><input type="submit" value="mutate"/></form></div>
-       <h4>2nd Letter</h4>
-       <div className="amino-table">
-        <div><h4>1st<br/>Letter</h4></div>
-        <div className="chart">
-          <div className="header"><div className="cell">U</div><div className="cell">C</div><div className="cell">A</div><div className="cell">G</div></div>
-          <div className="row">
-            <div className="cell">U</div>
-            <div className="cell">
-              <div className="cell-box">
-                <div><div className="mutation">UUU</div><div className="mutation">UUC</div></div>
-                <div className="cell-right">Phe</div>
-              </div>
-              <div className="cell-box">
-                <div><div className="mutation">UUA</div><div className="mutation">UUG</div></div>
-                <div className="cell-right">Leu</div>
-              </div>
-            </div>
-            <div className="cell">
-              <div className="cell-box">
-                <div><div className="mutation">UCU</div><div className="mutation">UCC</div><div className="mutation">UCA</div><div className="mutation">UCG</div></div>
-                <div className="cell-right">Ser</div>
-              </div>
-            </div>
-            <div className="cell">
-              <div className="cell-box">
-                <div><div className="mutation">UAU</div><div className="mutation">UAC</div></div>
-                <div className="cell-right">Tyr</div>
-              </div>
-              <div className="cell-box">
-              <div><div className="mutation">UAU</div><div className="mutation">UAC</div></div>
-                <div className="cell-right stop">Stop<br/>Stop</div>
-              </div>
-            </div>
-            <div className="cell">
-              <div className="cell-box">
-                <div><div className="mutation">UGU</div><div className="mutation">UGC</div></div>
-                <div className="cell-right">Cys</div>
-              </div>
-              <div className="cell-box">
-              <div><div className="mutation">UGA</div><div className="mutation">UGG</div></div>
-                <div className="cell-right stop">Stop<br/>Stop</div>
-              </div>
-            </div>
-            <div className="cell key">
-              <div>U</div>
-              <div>C</div>
-              <div>A</div>
-              <div>G</div>
-            </div>
-          </div>
-          <div className="row">
-            <div className="cell">C</div>
-            <div className="cell">
-              <div className="cell-box">
-                <div><div className="mutation">CUU</div><div className="mutation">CUC</div><div className="mutation">CUA</div><div className="mutation">CUG</div></div>
-                <div className="cell-right">Leu</div>
-              </div>
-            </div>
-            <div className="cell">
-              <div className="cell-box">
-                <div><div className="mutation">CCU</div><div className="mutation">CCC</div><div className="mutation">CCA</div><div className="mutation">CCG</div></div>
-                <div className="cell-right">Pro</div>
-              </div>
-            </div>
-            <div className="cell">
-              <div className="cell-box">
-                <div><div className="mutation">CAU</div><div className="mutation">CAC</div></div>
-                <div className="cell-right">His</div>
-              </div>
-              <div className="cell-box">
-                <div><div className="mutation">CAA</div><div className="mutation">CAG</div></div>
-                <div className="cell-right">Gln</div>
-              </div>
-            </div>
-            <div className="cell">
-              <div className="cell-box">
-                <div><div className="mutation">CGU</div><div className="mutation">CGC</div><div className="mutation">CGA</div><div className="mutation">CGG</div></div>
-                <div className="cell-right">Arg</div>
-              </div>
-            </div>
-            <div className="cell key">
-              <div>U</div>
-              <div>C</div>
-              <div>A</div>
-              <div>G</div>
-            </div>
-          </div>
-          <div className="row">
-            <div className="cell">A</div>
-            <div className="cell">
-              <div className="cell-box">
-                <div><div className="mutation">AUU</div><div className="mutation">AUC</div><div className="mutation">AUA</div></div>
-                <div className="cell-right">lle</div>
-              </div>
-              <div className="cell-box">
-                <div><div className="mutation">AUG</div></div>
-                <div className="cell-right met">Met</div>
-              </div>
-            </div>
-            <div className="cell">
-              <div className="cell-box">
-                <div><div className="mutation">ACU</div><div className="mutation">ACC</div><div className="mutation">ACA</div><div className="mutation">ACG</div></div>
-                <div className="cell-right">Thr</div>
-              </div>
-            </div>
-            <div className="cell">
-              <div className="cell-box">
-                <div><div className="mutation">AAU</div><div className="mutation">AAC</div></div>
-                <div className="cell-right">Asn</div>
-              </div>
-              <div className="cell-box">
-              <div><div className="mutation">AAA</div><div className="mutation">AAG</div></div>
-                <div className="cell-right">Lys</div>
-              </div>
-            </div>
-            <div className="cell">
-              <div className="cell-box">
-                <div><div className="mutation">AGU</div><div className="mutation">AGC</div></div>
-                <div className="cell-right">Ser</div>
-              </div>
-              <div className="cell-box">
-              <div><div className="mutation">AGA</div><div className="mutation">AGG</div></div>
-                <div className="cell-right">Arg</div>
-              </div>
-            </div>
-            <div className="cell key">
-              <div>U</div>
-              <div>C</div>
-              <div>A</div>
-              <div>G</div>
-            </div>
-          </div>
-          <div className="row">
-            <div className="cell">G</div>
-            <div className="cell">
-              <div className="cell-box">
-                <div><div className="mutation">GUU</div><div className="mutation">GUC</div><div className="mutation">GUA</div><div className="mutation">GUG</div></div>
-                <div className="cell-right">Val</div>
-              </div>
-            </div>
-            <div className="cell">
-              <div className="cell-box">
-                <div><div className="mutation">GCU</div><div className="mutation">GCC</div><div className="mutation">GCA</div><div className="mutation">GCG</div></div>
-                <div className="cell-right">Ala</div>
-              </div>
-            </div>
-            <div className="cell">
-              <div className="cell-box">
-                <div><div className="mutation">GAU</div><div className="mutation">GAC</div></div>
-                <div className="cell-right">Asp</div>
-              </div>
-              <div className="cell-box">
-              <div><div className="mutation">GAA</div><div className="mutation">GAG</div></div>
-                <div className="cell-right">Glu</div>
-              </div>
-            </div>
-            <div className="cell">
-              <div className="cell-box">
-              <div><div className="mutation">GGU</div><div className="mutation">GGC</div><div className="mutation">GGA</div><div className="mutation">GGG</div></div>
-                <div className="cell-right">Gly</div>
-              </div>
-            </div>
-            <div className="cell key">
-              <div>U</div>
-              <div>C</div>
-              <div>A</div>
-              <div>G</div>
-            </div>
-          </div>
-        </div>
-        <div><h4>3rd<br/>Letter</h4></div>
-       </div>
-    </div>;
-
     const HomologyList = () => {
-      console.log("homology menu: ", this.state.primers);
-
       if(!this.state.primers){
         return;
       }
 
-      let primerKeys = Object.keys(this.state.primers);
+      let primerKeys;
+      if (this.state.operation == "delete") {
+        primerKeys = Object.keys(this.state.primers.N);
+      }
+      else {
+        primerKeys = Object.keys(this.state.primers);
+      }
       const order = ["hom5", "hom3", "seq5", "seq3"];
 
       primerKeys.sort((a, b) => order.indexOf(a) - order.indexOf(b));
@@ -1526,28 +2223,129 @@ export default class App extends React.Component  {
         }
         console.log("Primer Label Name: ", primerLabelName)
 
-        if(this.state.selectedArms&&this.state.selectedArms[key]){
-          let primerSingle = this.state.selectedArms[key];
-
-          return <div><div className="homology-label">{primerLabelName}</div>
-            <div className="single-target" onMouseDown={this.selectHomologyArm.bind(this,primerSingle,key)} onMouseLeave={this.clearHighlight.bind(this)}>
-            <div >{primerSingle[7]}</div>
-            <div ><div>Tm: </div><div>{primerSingle[3]}</div></div>
-            <div ><div>GC%: </div><div>{primerSingle[4]}</div></div> 
-            <div ><div>Any (Self Complementarity): </div><div>{primerSingle[5]}</div></div>
-            <div ><div>3' (Self Complementarity): </div><div>{primerSingle[6]}</div></div>
-          </div></div>;
+        if (this.state.operation === "delete") {
+          const nPrimers = this.state.primers.N[key] || [];
+          const cPrimers = this.state.primers.C[key] || [];
+    
+          return (
+            <div key={key}>
+              <div className="homology-label">{primerLabelName}</div>
+              <div className="primer-section">
+                <div className="primer-group">
+                  <h4>N-Terminal</h4>
+                  {nPrimers.map((primerSingle, index) => (
+                    <div
+                      key={`N-${index}`}
+                      className="single-target"
+                      onMouseEnter={this.highlightString.bind(
+                        this,
+                        primerSingle[7],
+                        "rgba(86, 64, 155,0.3)",
+                        "homology"
+                      )}
+                      onMouseDown={this.selectDeleteHomologyArm.bind(this, primerSingle, key, "N")}
+                      onMouseLeave={this.clearHighlight.bind(this)}
+                    >
+                      <div>{primerSingle[7]}</div>
+                      <div>
+                        <div>Tm: </div>
+                        <div>{primerSingle[3]}</div>
+                      </div>
+                      <div>
+                        <div>GC%: </div>
+                        <div>{primerSingle[4]}</div>
+                      </div>
+                      <div>
+                        <div>Any (Self Complementarity): </div>
+                        <div>{primerSingle[5]}</div>
+                      </div>
+                      <div>
+                        <div>3' (Self Complementarity): </div>
+                        <div>{primerSingle[6]}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="primer-group">
+                  <h4>C-Terminal</h4>
+                  {cPrimers.map((primerSingle, index) => (
+                    <div
+                      key={`C-${index}`}
+                      className="single-target"
+                      onMouseEnter={this.highlightString.bind(
+                        this,
+                        primerSingle[7],
+                        "rgba(86, 64, 155,0.3)",
+                        "homology"
+                      )}
+                      onMouseDown={this.selectDeleteHomologyArm.bind(this, primerSingle, key, "C")}
+                      onMouseLeave={this.clearHighlight.bind(this)}
+                    >
+                      <div>{primerSingle[7]}</div>
+                      <div>
+                        <div>Tm: </div>
+                        <div>{primerSingle[3]}</div>
+                      </div>
+                      <div>
+                        <div>GC%: </div>
+                        <div>{primerSingle[4]}</div>
+                      </div>
+                      <div>
+                        <div>Any (Self Complementarity): </div>
+                        <div>{primerSingle[5]}</div>
+                      </div>
+                      <div>
+                        <div>3' (Self Complementarity): </div>
+                        <div>{primerSingle[6]}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          );
         } else {
-          return <div><div className="homology-label">{primerLabelName}</div>{primerOptions.map((primerSingle)=>{
-            return <div className="single-target" onMouseEnter={this.highlightString.bind(this,primerSingle[7],'rgba(86, 64, 155,0.3)','homology')} onMouseDown={this.selectHomologyArm.bind(this,primerSingle,key)} onMouseLeave={this.clearHighlight.bind(this)}>
-            <div >{primerSingle[7]}</div>
-            <div ><div>Tm: </div><div>{primerSingle[3]}</div></div>
-            <div ><div>GC%: </div><div>{primerSingle[4]}</div></div> 
-            <div ><div>Any (Self Complementarity): </div><div>{primerSingle[5]}</div></div>
-            <div ><div>3' (Self Complementarity): </div><div>{primerSingle[6]}</div></div>
-          </div>})}</div>;
+          const primerOptions = this.state.primers[key];
+    
+          return (
+            <div key={key}>
+              <div className="homology-label">{primerLabelName}</div>
+              {primerOptions.map((primerSingle, index) => (
+                <div
+                  key={index}
+                  className="single-target"
+                  onMouseEnter={this.highlightString.bind(
+                    this,
+                    primerSingle[7],
+                    "rgba(86, 64, 155,0.3)",
+                    "homology"
+                  )}
+                  onMouseDown={this.selectHomologyArm.bind(this, primerSingle, key)}
+                  onMouseLeave={this.clearHighlight.bind(this)}
+                >
+                  <div>{primerSingle[7]}</div>
+                  <div>
+                    <div>Tm: </div>
+                    <div>{primerSingle[3]}</div>
+                  </div>
+                  <div>
+                    <div>GC%: </div>
+                    <div>{primerSingle[4]}</div>
+                  </div>
+                  <div>
+                    <div>Any (Self Complementarity): </div>
+                    <div>{primerSingle[5]}</div>
+                  </div>
+                  <div>
+                    <div>3' (Self Complementarity): </div>
+                    <div>{primerSingle[6]}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          );
         }
-      });
+      });    
       return <div>{primerHTML}</div>;
     }
 
@@ -1562,30 +2360,49 @@ export default class App extends React.Component  {
       </div>
     }    
     const downloadOptions = () => {
-      const plasmidOptions = ["N terminal SSPB and mCherry tag","N terminal EGFP and SSPB tag with Extended Linker","C terminal mCherry and SSPB tag","C terminal EGFP and SSPB tag with Extended Linker","C terminal EGFP and SSPB tag","C terminal mDendra2 and SSPB tag","C terminal mScarlett and SSPB tag","N terminal EGFP and SSPB tag","N terminal mDendra2 and SSPB tag","N terminal mScarlett and SSPB tag"];
+      let plasmidOptions;
+      if (this.state.operation === "delete") {
+        plasmidOptions = ["pHD-DsRed-X"]
+      } else {
+        plasmidOptions = ["N terminal SSPB and mCherry tag","N terminal EGFP and SSPB tag with Extended Linker","C terminal mCherry and SSPB tag","C terminal EGFP and SSPB tag with Extended Linker","C terminal EGFP and SSPB tag","C terminal mDendra2 and SSPB tag","C terminal mScarlett and SSPB tag","N terminal EGFP and SSPB tag","N terminal mDendra2 and SSPB tag","N terminal mScarlett and SSPB tag"];
+      }
       let htmlOptions = [];
       for(let i=-1;i<plasmidOptions.length;i++){
         if(i===-1){
           htmlOptions.push(<option default>Choose A Template</option>)
         } else {
           const terminal = this.state.terminal;
-          console.log(terminal+' terminal',plasmidOptions[i].toLowerCase(),plasmidOptions[i].includes(terminal+' terminal'));
-          if(plasmidOptions[i].toLowerCase().includes(terminal+' terminal')){
+          if (this.state.operation === "tag" && plasmidOptions[i].toLowerCase().includes(terminal+' terminal')) {
+            htmlOptions.push(<option key={i} value={plasmidOptions[i]}>{plasmidOptions[i]}</option>)
+          } else {
             htmlOptions.push(<option key={i} value={plasmidOptions[i]}>{plasmidOptions[i]}</option>)
           }
         }
       }
       
-      return <div className="download-list">
-        <div><button className="btn" onMouseDown={this.viewFinishedDesign.bind(this)}>View All Data</button></div>
-        <div className="download-label">Genomic Template</div>
-        <div><button className="btn" onMouseDown={this.downloadApeFile.bind(this)}>Download</button></div>
-        <div className="download-label">Guide Rna Vector</div>
-        <div><button className="btn" onMouseDown={this.downloadGuideRna.bind(this)}>Download</button></div>
-        <div className="download-label">Plasmid Template</div>
-        <div><select onChange={this.changePlasmidTemplate.bind(this)}>{htmlOptions}</select></div>
-        <div><button className="btn" onMouseDown={this.downloadPlasmidTemplate.bind(this)}>Download</button></div>
+      if (this.state.operation == 'tag') {
+        return <div className="download-list">
+          <div><button className="btn" onMouseDown={this.viewFinishedDesign.bind(this)}>View All Data</button></div>
+          <div className="download-label">Genomic Template</div>
+          <div><button className="btn" onMouseDown={this.downloadApeFile.bind(this)}>Download</button></div>
+          <div className="download-label">Guide Rna Vector</div>
+          <div><button className="btn" onMouseDown={this.downloadGuideRna.bind(this)}>Download</button></div>
+          <div className="download-label">Plasmid Template</div>
+          <div><select onChange={this.changePlasmidTemplate.bind(this)}>{htmlOptions}</select></div>
+          <div><button className="btn" onMouseDown={this.downloadPlasmidTemplate.bind(this)}>Download</button></div>
+        </div>;
+      } else {
+        return <div className="download-list">
+        <div><button className="btn" onMouseDown={this.viewDeleteFinishedDesign.bind(this)}>View All Data</button></div>
+          <div className="download-label">Genomic Template</div>
+          <div><button className="btn" onMouseDown={this.downloadDeleteApeFile.bind(this)}>Download</button></div>
+          <div className="download-label">Guide Rna Vector</div>
+          <div><button className="btn" onMouseDown={this.downloadDeleteGuideRna.bind(this)}>Download</button></div>
+          <div className="download-label">Plasmid Template</div>
+          <div><select onChange={this.changePlasmidTemplate.bind(this)}>{htmlOptions}</select></div>
+          <div><button className="btn" onMouseDown={this.downloadDeletePlasmidTemplate.bind(this)}>Download</button></div>
       </div>;
+      }
     }
     
     const customDataUpload = () => {
@@ -1642,12 +2459,6 @@ export default class App extends React.Component  {
               <label onClick={this.changeScreens.bind(this)} data-screen="2"><div className="arrow-down">&#94;</div>Select Cut Site</label>
               {!targetList?null:<div className="target-list" style={{display:this.state.menu==2?'flex':'none'}}>{targetList}</div>}
             </div>       
-            {/* This is for mutate pam, currently not needed */}
-            {/* <div className={(this.state.menu==3?'active':'')+' menu-icon'} data-menu="3" >
-              <div className="menu-image-wrapper" style={{pointerEvents:this.state.screen>2?'':'none'}} onClick={this.changeMenus.bind(this)} data-menu="3" alt="sidebar3"><img src={sidebar4} alt="sidebar3"/></div>
-              <label onClick={this.changeScreens.bind(this)} data-screen="3">Mutate Pam</label>
-              {this.state.screen<3?null:<div className="pam-box" style={{display:!this.state.mutatePam?'none':'flex'}}>{pamBox}</div>}
-            </div>             */}
             <div className={(this.state.menu==3?'active':'')+' menu-icon'} data-menu="3" >
               <div className="menu-image-wrapper" style={{pointerEvents:this.state.screen>2?'':'none'}} onClick={this.changeMenus.bind(this)} data-menu="3" alt="sidebar4"><img src={sidebar3} alt="sidebar4"/></div>
               <label onClick={this.changeScreens.bind(this)} data-screen="3">Homology Arm Primers</label>
