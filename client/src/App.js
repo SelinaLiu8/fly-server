@@ -2528,7 +2528,6 @@ saveCurrentHighlight(color, name) {
       </div>
       {popup()}
     </div>
-
     )
   }
 }
