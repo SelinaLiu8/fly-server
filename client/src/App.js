@@ -620,6 +620,7 @@ saveCurrentHighlight(color, name) {
       this.state.isoFormSequence.length - 10,
       this.state.isoFormSequence.length
     );
+    console.log("Stop Sequence: ", stopSequence);
     const startIndex = this.state.sequence.indexOf(startSequence);
     const stopIndex = this.state.sequence.indexOf(stopSequence) + 7;
   
@@ -677,7 +678,7 @@ saveCurrentHighlight(color, name) {
           const strand = geneInfo.strand;
           const startIndex = 2000;
           const stopIndex =
-            geneInfo.sequence.length + 2000 + (strand === '-' ? -3 : 3);
+            geneInfo.sequence.length + 2000 - 3;//+(strand === '-' ? -3 : 0);
   
           const highlights = {
             start: {
@@ -691,7 +692,8 @@ saveCurrentHighlight(color, name) {
               color: '#FF668E',
             },
           };
-  
+          
+          console.log("geneInfo.sequence: ", geneInfo.sequence);
           console.log("Setting highlights: ", highlights);
   
           const popupForm = this.createPopupForm();
@@ -742,21 +744,71 @@ saveCurrentHighlight(color, name) {
     }
   }
 
+  // pickDeleteCutSite(target) {
+  //   const { terminalType } = target;
+  //   let newHighlights = this.state.highlights;
+  //   if (terminalType === "N") {
+  //     this.saveCurrentHighlight('rgb(255, 255, 97)', "cutsite_N");
+  //     // I want to add the this.state.currentHighlight to the rest of the highlight in the setstate
+  //     this.setState({ selectedNTarget: target});
+  //     console.log("selected N:", this.state.selectedNTarget)
+  //   } else if (terminalType === "C") {
+  //     this.saveCurrentHighlight('rgb(255, 255, 97)', "cutsite_C");
+  //     this.setState({ selectedCTarget: target,}, () => {
+  //       console.log("selected C:", this.state.selectedCTarget)
+  //       const { selectedNTarget, selectedCTarget } = this.state;
+        
+  //       if (selectedNTarget && selectedCTarget) {
+  //         this.setState(
+  //           {
+  //             targets: [selectedNTarget, selectedCTarget],
+  //             menu: 3,
+  //             screen: 3,
+  //           },
+  //           () => {
+  //             if (!this.state.primers || this.state.primers.length === 0) {
+  //               this.getDeletePrimers();
+  //               console.log("Primer has been set");
+  //             }
+  //           }
+  //         );
+  //       }
+  //     });
+  //   }
+  // }
+
   pickDeleteCutSite(target) {
     const { terminalType } = target;
-    let newHighlights = this.state.highlights
+    let newHighlights = { ...this.state.highlights }; // Clone the highlights to avoid direct mutation
+  
     if (terminalType === "N") {
-      this.saveCurrentHighlight('rgb(255, 255, 97)', "cutsite_N");
-      // I want to add the this.state.currentHighlight to the rest of the highlight in the setstate
-      this.setState({ selectedNTarget: target});
-      console.log("selected N:", this.state.selectedNTarget)
+      // Update N-terminal highlight
+      this.highlightString(target.distal + target.proximal + target.pam, 'rgb(255, 255, 97)', "cutsite_N");
+  
+      // Update the selected N-terminal target
+      this.setState({ selectedNTarget: target }, () => {
+        console.log("selected N:", this.state.selectedNTarget);
+      });
+  
+      // Store the N-terminal target highlight in the state
+      newHighlights.cutsite_N = {
+        color: 'rgb(255, 255, 97)',
+        name: "cutsite_N",
+        target: target,
+      };
+  
     } else if (terminalType === "C") {
-      this.saveCurrentHighlight('rgb(255, 255, 97)', "cutsite_C");
-      this.setState({ selectedCTarget: target,}, () => {
-        console.log("selected C:", this.state.selectedCTarget)
-        const { selectedNTarget, selectedCTarget } = this.state;
+      // Update C-terminal highlight
+      this.highlightString(target.distal + target.proximal + target.pam, 'rgb(255, 255, 97)', "cutsite_C");
+  
+      // Update the selected C-terminal target
+      this.setState({ selectedCTarget: target }, () => {
+        console.log("selected C:", this.state.selectedCTarget);
         
+        // Check if both N and C-terminal are selected
+        const { selectedNTarget, selectedCTarget } = this.state;
         if (selectedNTarget && selectedCTarget) {
+          // Both N and C targets are selected, so update the targets and set the menu/screen state
           this.setState(
             {
               targets: [selectedNTarget, selectedCTarget],
@@ -772,10 +824,50 @@ saveCurrentHighlight(color, name) {
           );
         }
       });
+  
+      // Store the C-terminal target highlight in the state
+      newHighlights.cutsite_C = {
+        color: 'rgb(255, 255, 97)',
+        name: "cutsite_C",
+        target: target,
+      };
     }
+  
+    // Update the highlights state with the new highlights (N or C terminal)
+    this.setState({ highlights: newHighlights });
+  }  
+
+  setHighlight(terminalType, target) {
+    let newHighlights = { ...this.state.highlights };
+  
+    // Handle N-terminal highlight
+    if (terminalType === "N") {
+      // Update the highlight for N-terminal
+      this.highlightString(target.distal + target.proximal + target.pam, 'rgb(255, 255, 97)', "cutsite_N");
+      
+      // Set the new highlight for N-terminal
+      newHighlights.cutsite_N = {
+        color: 'rgb(255, 255, 97)',
+        name: "cutsite_N",
+        target: target,
+      };
+    } else if (terminalType === "C") {
+      // Update the highlight for C-terminal
+      this.highlightString(target.distal + target.proximal + target.pam, 'rgb(255, 255, 97)', "cutsite_C");
+      
+      // Set the new highlight for C-terminal
+      newHighlights.cutsite_C = {
+        color: 'rgb(255, 255, 97)',
+        name: "cutsite_C",
+        target: target,
+      };
+    }
+  
+    // Update the highlights state with the new highlights
+    this.setState({ highlights: newHighlights });
   }
   
-
+  
   chooseOperation(e){
     if(e){
       e.preventDefault();
@@ -2035,8 +2127,7 @@ saveCurrentHighlight(color, name) {
             key={`target-${target.distal}-${target.proximal}-${target.terminalType}`}
             className={
               "single-target " +
-              (!currentHighlightLocation ? "disabled" : currentHighlightLocation)
-            }
+              (!currentHighlightLocation ? "disabled" : currentHighlightLocation)}
             onClick={
               !currentHighlightLocation
                 ? null
