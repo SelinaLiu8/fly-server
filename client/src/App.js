@@ -1492,7 +1492,7 @@ saveCurrentHighlight(color, name) {
 
   downloadDeleteApeFile() {
     fetch(window.location.origin + '/fly_templates/empty_ape.txt')
-        .then((res) => res.text())
+        .then((res) => res.text()) 
         .then((res) => {
             const data = res;
 
