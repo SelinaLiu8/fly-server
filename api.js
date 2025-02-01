@@ -1,3 +1,5 @@
+console.log("Starting API script...");
+
 const fs = require('fs');
 const mysql = require('mysql2/promise');
 const local = require('./.env.js');
@@ -14,53 +16,65 @@ const pool = mysql.createPool({
     queueLimit: 0
 });
 
-async function getIdFromSearch(searchTerm){
+async function getIdFromSearch(searchTerm) {
     console.log("It went into getidfromsearch function");
+
+    // Read the file
     let data = await fs.readFileSync('./fb_synonyms_January24.tsv', 'utf8');
     let lines = data.split('\n');
     let relevantData = [];
-    lines.map((row,i)=>{
-        if(i>5){
+
+    // Parse the file
+    lines.map((row, i) => {
+        if (i > 5) {  // Skip header lines
             let cells = row.split('\t');
-            if(cells[1]=='Dmel'&&cells[4]!=''&&cells[5]!=''){
+            if (cells[1] == 'Dmel') {
                 let obj = {
-                    primary_FBid:cells[0],
-                    organism_abbreviation:cells[1],
-                    current_symbol:cells[2],
-                    current_fullname:cells[3],
-                    fullname_synonyms:cells[4],
-                    symbol_synonyms:cells[5],
-                }
+                    primary_FBid: cells[0],
+                    organism_abbreviation: cells[1],
+                    current_symbol: cells[2],
+                    current_fullname: cells[3],
+                    fullname_synonyms: cells[4],
+                    symbol_synonyms: cells[5],
+                };
                 relevantData.push(obj);
             }
         }
     });
+
+    // Filter by the search term
     let result = relevantData.filter(obj => {
-        return obj.current_symbol.toLowerCase()==searchTerm.toLowerCase();
+        return obj.current_symbol.toLowerCase() == searchTerm.toLowerCase();
     });
-    let response = {results:{isoforms:null}};
-    if(!result.length){
+
+    // console.log("Filtered result: ", result);  // Add this log
+
+    let response = { results: { isoforms: null } };
+    if (!result.length) {
         return response;
     }
 
     let idQuery = "SELECT * FROM isoforms WHERE id = ?";
-    let idQueryResults = await pool.execute(idQuery,[
+    let idQueryResults = await pool.execute(idQuery, [
         result[0].primary_FBid
     ]);
-    console.log('in database ',idQueryResults[0]);
 
-    if(idQueryResults[0].length!=0){
-        response = {results:{name:searchTerm,id:result[0].primary_FBid,isoforms:idQueryResults[0][0].isoforms}};
+    console.log('in database ', idQueryResults[0]);
+
+    if (idQueryResults[0].length != 0) {
+        response = { results: { name: searchTerm, id: result[0].primary_FBid, isoforms: idQueryResults[0][0].isoforms } };
     } else {
         let geneInfo = await getGeneticInfoFromId(result[0].primary_FBid);
-        if(geneInfo){
-            response = {results:{name:searchTerm,id:result[0].primary_FBid,isoforms:geneInfo}};
+        if (geneInfo) {
+            response = { results: { name: searchTerm, id: result[0].primary_FBid, isoforms: geneInfo } };
         }
     }
 
     return response;
 }
+
 async function getGeneticInfoFromId(id){
+    console.log("It went into getGenetricInfo function")
     let url = 'https://api.flybase.org/api/1.0/sequence/id/'+id+'/CDS';
     console.log(url);
     let response = await fetch(url);
@@ -129,4 +143,5 @@ async function getIsoFormSequence(isoForm){
 }
 
 module.exports.getIdFromSearch = getIdFromSearch;
+module.exports.getGeneticInfoFromId = getGeneticInfoFromId;
 module.exports.getIsoFormSequence = getIsoFormSequence;
