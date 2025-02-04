@@ -2195,6 +2195,7 @@ saveCurrentHighlight(color, name) {
       let primerKeys;
       if (this.state.operation == "delete") {
         primerKeys = Object.keys(this.state.primers.N);
+        primerKeys = Object.keys(this.state.primers.C);
       }
       else {
         primerKeys = Object.keys(this.state.primers);
@@ -2209,17 +2210,29 @@ saveCurrentHighlight(color, name) {
         console.log("key: ", key)
 
         let primerLabelName = ""
-        if (key == "hom5") {
-          primerLabelName = "Homology 5";
-        } else if (key == "hom3") {
-          primerLabelName = "Homology 3";
-        } else if (key == "seq5") {
-          primerLabelName = "Sequence 5";
-        } else if (key == "seq3") {
-          primerLabelName = "Sequence 3";
+        if (this.state.operation == "delete") {
+          if (key === "hom5") {
+            primerLabelName = `forward homology arm primer`;
+          } else if (key === "hom3") {
+            primerLabelName = `reverse homology arm primer`;
+          } else if (key === "seq5") {
+            primerLabelName = `forward sequencing primer`;
+          } else if (key === "seq3") {
+            primerLabelName = `reverse sequencing primer`;
+          }
         } else {
-          primerLabelName = "";
-          console.log("primer label name didn't get set");
+          if (key == "hom5") {
+            primerLabelName = `${this.state.terminal} forward homology arm primer`;
+          } else if (key == "hom3") {
+            primerLabelName = `${this.state.terminal} reverse homology arm primer`;
+          } else if (key == "seq5") {
+            primerLabelName = `${this.state.terminal} forward sequencing primer`;
+          } else if (key == "seq3") {
+            primerLabelName = `${this.state.terminal} reverse sequencing primer`;
+          } else {
+            primerLabelName = "";
+            console.log("primer label name didn't get set");
+          }
         }
         console.log("Primer Label Name: ", primerLabelName)
 
