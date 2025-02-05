@@ -393,30 +393,28 @@ saveCurrentHighlight(color, name) {
 }
 
 
-  changeCurrentHighlight(i){
-    let currentHighlight = this.state.currentHighlight;
-    currentHighlight.location = i;
-    this.setState({currentHighlight:currentHighlight});
-  }
-  stringLocation(string=null,type){
-    if(!type){
+changeCurrentHighlight(i){
+  let currentHighlight = this.state.currentHighlight;
+  currentHighlight.location = i;
+  this.setState({currentHighlight:currentHighlight});
+}
+
+  stringLocation(string = null, type) {
+    if (!type) {
       return this.state.sequence.indexOf(string);
     }
     let location = this.state.sequence.indexOf(string);
-    console.log('location',location);
+    console.log('location', location);
     let length = string.length;
   
-    if(location==-1){
-      
+    if (location == -1) {
       let revString = this.revComp(string);
-      console.log('rev',revString);
-      location = this.state.sequence.indexOf(revString);    
-      //location = location+(length/2)-4;
-    } else {
-     // location = location+(length/2)-1;
+      console.log('rev', revString);
+      location = this.state.sequence.indexOf(revString);
     }
     return location;
   }
+  
   highlightString(string,color=null,type=null){
     console.log('string: ',string,' color: ',color);
     //console.log(this.state.sequence);
@@ -781,9 +779,18 @@ saveCurrentHighlight(color, name) {
     const { terminalType } = target;
     let newHighlights = { ...this.state.highlights }; // Clone the highlights to avoid direct mutation
   
+    // Concatenate distal, proximal, and pam
+    const cutSiteString = target.distal + target.proximal + target.pam;
+  
+    // Ensure the cutSiteString is valid before calling stringLocation
+    if (!cutSiteString || cutSiteString.length === 0) {
+      console.error("Invalid cutSiteString:", cutSiteString);
+      return; // Exit if the string is invalid
+    }
+  
     if (terminalType === "N") {
       // Update N-terminal highlight
-      this.highlightString(target.distal + target.proximal + target.pam, 'rgb(255, 255, 97)', "cutsite_N");
+      this.highlightString(cutSiteString, 'rgb(255, 255, 97)', "cutsite_N");
   
       // Update the selected N-terminal target
       this.setState({ selectedNTarget: target }, () => {
@@ -791,20 +798,23 @@ saveCurrentHighlight(color, name) {
       });
   
       // Store the N-terminal target highlight in the state
+      // this location is very wrong
+      console.log("cutsite location: ", this.stringLocation(cutSiteString))
       newHighlights.cutsite_N = {
+        location: this.stringLocation(cutSiteString), // Use the validated cutSiteString
+        length: cutSiteString.length,
         color: 'rgb(255, 255, 97)',
         name: "cutsite_N",
-        target: target,
       };
   
     } else if (terminalType === "C") {
       // Update C-terminal highlight
-      this.highlightString(target.distal + target.proximal + target.pam, 'rgb(255, 255, 97)', "cutsite_C");
+      this.highlightString(cutSiteString, 'rgb(255, 255, 97)', "cutsite_C");
   
       // Update the selected C-terminal target
       this.setState({ selectedCTarget: target }, () => {
         console.log("selected C:", this.state.selectedCTarget);
-        
+  
         // Check if both N and C-terminal are selected
         const { selectedNTarget, selectedCTarget } = this.state;
         if (selectedNTarget && selectedCTarget) {
@@ -827,46 +837,16 @@ saveCurrentHighlight(color, name) {
   
       // Store the C-terminal target highlight in the state
       newHighlights.cutsite_C = {
+        location: this.stringLocation(cutSiteString), // Use the validated cutSiteString
+        length: cutSiteString.length,
         color: 'rgb(255, 255, 97)',
         name: "cutsite_C",
-        target: target,
       };
     }
   
     // Update the highlights state with the new highlights (N or C terminal)
     this.setState({ highlights: newHighlights });
   }  
-
-  setHighlight(terminalType, target) {
-    let newHighlights = { ...this.state.highlights };
-  
-    // Handle N-terminal highlight
-    if (terminalType === "N") {
-      // Update the highlight for N-terminal
-      this.highlightString(target.distal + target.proximal + target.pam, 'rgb(255, 255, 97)', "cutsite_N");
-      
-      // Set the new highlight for N-terminal
-      newHighlights.cutsite_N = {
-        color: 'rgb(255, 255, 97)',
-        name: "cutsite_N",
-        target: target,
-      };
-    } else if (terminalType === "C") {
-      // Update the highlight for C-terminal
-      this.highlightString(target.distal + target.proximal + target.pam, 'rgb(255, 255, 97)', "cutsite_C");
-      
-      // Set the new highlight for C-terminal
-      newHighlights.cutsite_C = {
-        color: 'rgb(255, 255, 97)',
-        name: "cutsite_C",
-        target: target,
-      };
-    }
-  
-    // Update the highlights state with the new highlights
-    this.setState({ highlights: newHighlights });
-  }
-  
   
   chooseOperation(e){
     if(e){
@@ -2188,179 +2168,150 @@ saveCurrentHighlight(color, name) {
     }
 
     const HomologyList = () => {
-      if(!this.state.primers){
+      if (!this.state.primers) {
         return;
       }
-
+    
       let primerKeys;
-      if (this.state.operation == "delete") {
+      if (this.state.operation === "delete") {
         primerKeys = Object.keys(this.state.primers.N);
-        primerKeys = Object.keys(this.state.primers.C);
-      }
-      else {
+      } else {
         primerKeys = Object.keys(this.state.primers);
       }
+    
       const order = ["hom5", "hom3", "seq5", "seq3"];
-
       primerKeys.sort((a, b) => order.indexOf(a) - order.indexOf(b));
-
-      let primerHTML = primerKeys.map((key)=>{
-        let primerOptions = this.state.primers[key];
-
-        console.log("key: ", key)
-
-        let primerLabelName = ""
-        if (this.state.operation == "delete") {
-          if (key === "hom5") {
-            primerLabelName = `forward homology arm primer`;
-          } else if (key === "hom3") {
-            primerLabelName = `reverse homology arm primer`;
-          } else if (key === "seq5") {
-            primerLabelName = `forward sequencing primer`;
-          } else if (key === "seq3") {
-            primerLabelName = `reverse sequencing primer`;
-          }
-        } else {
-          if (key == "hom5") {
-            primerLabelName = `${this.state.terminal} forward homology arm primer`;
-          } else if (key == "hom3") {
-            primerLabelName = `${this.state.terminal} reverse homology arm primer`;
-          } else if (key == "seq5") {
-            primerLabelName = `${this.state.terminal} forward sequencing primer`;
-          } else if (key == "seq3") {
-            primerLabelName = `${this.state.terminal} reverse sequencing primer`;
-          } else {
-            primerLabelName = "";
-            console.log("primer label name didn't get set");
-          }
-        }
-        console.log("Primer Label Name: ", primerLabelName)
-
-        if (this.state.operation === "delete") {
-          const nPrimers = this.state.primers.N[key] || [];
-          const cPrimers = this.state.primers.C[key] || [];
     
-          return (
-            <div key={key}>
-              <div className="homology-label">{primerLabelName}</div>
-              <div className="primer-section">
-                <div className="primer-group">
-                  <h4>N-Terminal</h4>
-                  {nPrimers.map((primerSingle, index) => (
-                    <div
-                      key={`N-${index}`}
-                      className="single-target"
-                      onMouseEnter={this.highlightString.bind(
-                        this,
-                        primerSingle[7],
-                        "rgba(86, 64, 155,0.3)",
-                        "homology"
-                      )}
-                      onMouseDown={this.selectDeleteHomologyArm.bind(this, primerSingle, key, "N")}
-                      onMouseLeave={this.clearHighlight.bind(this)}
-                    >
-                      <div>{primerSingle[7]}</div>
-                      <div>
-                        <div>Tm: </div>
-                        <div>{primerSingle[3]}</div>
-                      </div>
-                      <div>
-                        <div>GC%: </div>
-                        <div>{primerSingle[4]}</div>
-                      </div>
-                      <div>
-                        <div>Any (Self Complementarity): </div>
-                        <div>{primerSingle[5]}</div>
-                      </div>
-                      <div>
-                        <div>3' (Self Complementarity): </div>
-                        <div>{primerSingle[6]}</div>
-                      </div>
+      if (this.state.operation === "delete") {
+        return (
+          <div>
+            {["N", "C"].map((terminal) => (
+              <div key={terminal} className="primer-section">
+                <h3>{terminal}-Terminal</h3>
+                {primerKeys.map((key) => {
+                  const primers = this.state.primers[terminal][key] || [];
+                  let primerLabelName;
+                  if (key === "hom5") {
+                    primerLabelName = `${terminal} Forward Homology Arm Primer`;
+                  } else if (key === "hom3") {
+                    primerLabelName = `${terminal} Reverse Homology Arm Primer`;
+                  } else if (key === "seq5") {
+                    primerLabelName = `${terminal} Forward Sequencing Primer`;
+                  } else if (key === "seq3") {
+                    primerLabelName = `${terminal} Reverse Sequencing Primer`;
+                  } else {
+                    primerLabelName = "";
+                    console.log("Primer label name didn't get set");
+                  }
+    
+                  return (
+                    <div key={key}>
+                      <div className="homology-label">{primerLabelName}</div>
+                      {primers.map((primerSingle, index) => (
+                        <div
+                          key={`${terminal}-${key}-${index}`}
+                          className="single-target"
+                          onMouseEnter={this.highlightString.bind(
+                            this,
+                            primerSingle[7],
+                            "rgba(86, 64, 155,0.3)",
+                            "homology"
+                          )}
+                          onMouseDown={this.selectDeleteHomologyArm.bind(
+                            this,
+                            primerSingle,
+                            key,
+                            terminal
+                          )}
+                          onMouseLeave={this.clearHighlight.bind(this)}
+                        >
+                          <div>{primerSingle[7]}</div>
+                          <div>
+                            <div>Tm: </div>
+                            <div>{primerSingle[3]}</div>
+                          </div>
+                          <div>
+                            <div>GC%: </div>
+                            <div>{primerSingle[4]}</div>
+                          </div>
+                          <div>
+                            <div>Any (Self Complementarity): </div>
+                            <div>{primerSingle[5]}</div>
+                          </div>
+                          <div>
+                            <div>3' (Self Complementarity): </div>
+                            <div>{primerSingle[6]}</div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-                <div className="primer-group">
-                  <h4>C-Terminal</h4>
-                  {cPrimers.map((primerSingle, index) => (
-                    <div
-                      key={`C-${index}`}
-                      className="single-target"
-                      onMouseEnter={this.highlightString.bind(
-                        this,
-                        primerSingle[7],
-                        "rgba(86, 64, 155,0.3)",
-                        "homology"
-                      )}
-                      onMouseDown={this.selectDeleteHomologyArm.bind(this, primerSingle, key, "C")}
-                      onMouseLeave={this.clearHighlight.bind(this)}
-                    >
-                      <div>{primerSingle[7]}</div>
-                      <div>
-                        <div>Tm: </div>
-                        <div>{primerSingle[3]}</div>
-                      </div>
-                      <div>
-                        <div>GC%: </div>
-                        <div>{primerSingle[4]}</div>
-                      </div>
-                      <div>
-                        <div>Any (Self Complementarity): </div>
-                        <div>{primerSingle[5]}</div>
-                      </div>
-                      <div>
-                        <div>3' (Self Complementarity): </div>
-                        <div>{primerSingle[6]}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                  );
+                })}
               </div>
-            </div>
-          );
-        } else {
-          const primerOptions = this.state.primers[key];
+            ))}
+          </div>
+        );
+      }
     
-          return (
-            <div key={key}>
-              <div className="homology-label">{primerLabelName}</div>
-              {primerOptions.map((primerSingle, index) => (
-                <div
-                  key={index}
-                  className="single-target"
-                  onMouseEnter={this.highlightString.bind(
-                    this,
-                    primerSingle[7],
-                    "rgba(86, 64, 155,0.3)",
-                    "homology"
-                  )}
-                  onMouseDown={this.selectHomologyArm.bind(this, primerSingle, key)}
-                  onMouseLeave={this.clearHighlight.bind(this)}
-                >
-                  <div>{primerSingle[7]}</div>
-                  <div>
-                    <div>Tm: </div>
-                    <div>{primerSingle[3]}</div>
+      return (
+        <div>
+          {primerKeys.map((key) => {
+            const primerOptions = this.state.primers[key];
+            let primerLabelName;
+            let captializedTerm = `${this.state.terminal.charAt(0).toUpperCase()}${this.state.terminal.slice(1)}`
+            if (key === "hom5") {
+              primerLabelName = `${captializedTerm} Forward Homology Arm Primer`;
+            } else if (key === "hom3") {
+              primerLabelName = `${captializedTerm} Reverse Homology Arm Primer`;
+            } else if (key === "seq5") {
+              primerLabelName = `${captializedTerm} Forward Sequencing Primer`;
+            } else if (key === "seq3") {
+              primerLabelName = `${captializedTerm} Reverse Sequencing Primer`;
+            } else {
+              primerLabelName = "";
+              console.log("Primer label name didn't get set");
+            }
+            return (
+              <div key={key}>
+                <div className="homology-label">{primerLabelName}</div>
+                {primerOptions.map((primerSingle, index) => (
+                  <div
+                    key={index}
+                    className="single-target"
+                    onMouseEnter={this.highlightString.bind(
+                      this,
+                      primerSingle[7],
+                      "rgba(86, 64, 155,0.3)",
+                      "homology"
+                    )}
+                    onMouseDown={this.selectHomologyArm.bind(this, primerSingle, key)}
+                    onMouseLeave={this.clearHighlight.bind(this)}
+                  >
+                    <div>{primerSingle[7]}</div>
+                    <div>
+                      <div>Tm: </div>
+                      <div>{primerSingle[3]}</div>
+                    </div>
+                    <div>
+                      <div>GC%: </div>
+                      <div>{primerSingle[4]}</div>
+                    </div>
+                    <div>
+                      <div>Any (Self Complementarity): </div>
+                      <div>{primerSingle[5]}</div>
+                    </div>
+                    <div>
+                      <div>3' (Self Complementarity): </div>
+                      <div>{primerSingle[6]}</div>
+                    </div>
                   </div>
-                  <div>
-                    <div>GC%: </div>
-                    <div>{primerSingle[4]}</div>
-                  </div>
-                  <div>
-                    <div>Any (Self Complementarity): </div>
-                    <div>{primerSingle[5]}</div>
-                  </div>
-                  <div>
-                    <div>3' (Self Complementarity): </div>
-                    <div>{primerSingle[6]}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          );
-        }
-      });    
-      return <div>{primerHTML}</div>;
-    }
+                ))}
+              </div>
+            );
+          })}
+        </div>
+      );
+    };    
 
     const popup = () => {
       if(!this.state.popup){
