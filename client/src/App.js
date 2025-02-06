@@ -130,36 +130,63 @@ export default class App extends React.Component  {
     });
 
   }
-  viewFinishedDesign(){
+  viewFinishedDesign() {
     let targetKeys = Object.keys(this.state.targets[0]);
-    let targetHTML = targetKeys.map((prop)=>{
-
-      return <div><b>{prop}:</b> {this.state.targets[0][prop]}</div>;
+    let targetHTML = targetKeys.map((prop) => {
+        return <div><b>{prop}:</b> {this.state.targets[0][prop]}</div>;
     });
+
     let primerKeys = Object.keys(this.state.primers);
-      console.log('primer keys',primerKeys);
-      let primerHTML = primerKeys.map((key)=>{
+    console.log('primer keys', primerKeys);
+
+    const terminal = this.state.terminal.toUpperCase();
+
+    // Mapping for primer names based on terminal type
+    const primerNameMap = {
+        hom5: `${terminal} forward homology arm primer`,
+        hom3: `${terminal} reverse homology arm primer`,
+        seq5: `${terminal} forward sequencing primer`,
+        seq3: `${terminal} reverse sequencing primer`,
+    };
+
+    let primerHTML = primerKeys.map((key) => {
         let primerOptions = this.state.primers[key];
-        console.log('this primer',primerOptions);
-        if(this.state.selectedArms&&this.state.selectedArms[key]){
-          let primerSingle = this.state.selectedArms[key];
-          return <div><div className=""><b>{key}</b></div>
-            <div className="" >
-            <div >{primerSingle[7]}</div>
-            <div ><div>Tm: {primerSingle[3]}</div></div>
-            <div ><div>GC%: {primerSingle[4]}</div></div> 
-            <div ><div>Any (Self Complementarity): {primerSingle[5]}</div></div>
-            <div ><div>3' (Self Complementarity): {primerSingle[6]}</div></div>
-          </div><br/></div>;
+        console.log('this primer', primerOptions);
+
+        // Extract base name (e.g., "hom5", "seq3") by removing terminal suffix
+        const baseKey = key.replace(`_${terminal}`, "");
+
+        if (this.state.selectedArms && this.state.selectedArms[key]) {
+            let primerSingle = this.state.selectedArms[key];
+            return (
+                <div key={key}>
+                    <div className=""><b>{primerNameMap[baseKey] || key}</b></div>
+                    <div className="">
+                        <div>{primerSingle[7]}</div>
+                        <div><div>Tm: {primerSingle[3]}</div></div>
+                        <div><div>GC%: {primerSingle[4]}</div></div>
+                        <div><div>Any (Self Complementarity): {primerSingle[5]}</div></div>
+                        <div><div>3' (Self Complementarity): {primerSingle[6]}</div></div>
+                    </div>
+                    <br/>
+                </div>
+            );
         } else {
-          return <div><div className=""><b>{key}</b></div>{primerOptions.map((primerSingle)=>{
-            return <div className="">
-            <div >{primerSingle[7]}</div>
-            <div ><div>Tm: {primerSingle[3]}</div></div>
-            <div ><div>GC%: {primerSingle[4]}</div></div> 
-            <div ><div>Any (Self Complementarity): {primerSingle[5]}</div></div>
-            <div ><div>3' (Self Complementarity): {primerSingle[6]}</div></div>
-          </div>})}<br/></div>;
+            return (
+                <div key={key}>
+                    <div className=""><b>{primerNameMap[baseKey] || key}</b></div>
+                    {primerOptions.map((primerSingle, index) => (
+                        <div className="" key={index}>
+                            <div>{primerSingle[7]}</div>
+                            <div><div>Tm: {primerSingle[3]}</div></div>
+                            <div><div>GC%: {primerSingle[4]}</div></div>
+                            <div><div>Any (Self Complementarity): {primerSingle[5]}</div></div>
+                            <div><div>3' (Self Complementarity): {primerSingle[6]}</div></div>
+                        </div>
+                    ))}
+                    <br/>
+                </div>
+            );
         }
     });
 
@@ -228,15 +255,26 @@ export default class App extends React.Component  {
     ));
 
     const generatePrimerHTML = (terminalType, primers) => {
-      console.log("delete final design primers: ", primers)
+      console.log("delete final design primers: ", primers);
       const primerKeys = Object.keys(primers);
+  
+      const primerNameMap = {
+          hom5: `${terminalType} forward homology arm primer`,
+          hom3: `${terminalType} reverse homology arm primer`,
+          seq5: `${terminalType} forward sequencing primer`,
+          seq3: `${terminalType} reverse sequencing primer`,
+      };
+  
       return primerKeys.map((key) => {
-          // Filter primers based on terminal type (N or C)
           const primerSingle = this.state.selectedArms[key];
-          console.log("primer single: ", primerSingle)
+          console.log("primer single: ", primerSingle);
+  
+          // Extract base name (e.g., "hom5", "seq3")
+          const baseKey = key.replace(`_${terminalType}`, "");
+  
           return (
               <div key={`${terminalType}-${key}`}>
-                  <div><b>{key}</b></div>
+                  <div><b>{primerNameMap[baseKey] || key}</b></div>
                   <div>
                       <div>{primerSingle[7]}</div>
                       <div><div>Tm: {primerSingle[3]}</div></div>
@@ -246,8 +284,8 @@ export default class App extends React.Component  {
                   </div><br />
               </div>
           );
-      });
-  };
+        });
+      };
   
   const NprimersFiltered = Object.keys(this.state.selectedArms)
   .filter(key => key.endsWith('_N')) // Filter for keys ending with '_N'
