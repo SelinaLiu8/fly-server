@@ -77,18 +77,15 @@ export default class App extends React.Component  {
   changeThemeColor(e) {
     this.setState({themeColor:!this.state.themeColor});
   }
-  closeAllMenus(e) {
-    //this.setState({menu:null,hamburger:false});
-  }
   closePopup(e) {
     this.setState({popup:{show:false}});
   }
   highlight(e,data){
-    /*let highlight = parseInt(e.target.dataset.value);
-    console.log(highlight);*/
-    /*this.setState({highlight:highlight},()=>{
-      //console.log(this.state);
-    });*/
+    let highlight = parseInt(e.target.dataset.value);
+    console.log(highlight);
+    this.setState({highlight:highlight},()=>{
+      console.log(this.state);
+    });
   }
   fontMenu(e) {
     this.setState({fontMenu:!this.state.fontMenu});
@@ -408,28 +405,27 @@ saveCurrentHighlight(color, name) {
   const { currentHighlight, highlights } = this.state;
 
   if (!currentHighlight) {
-      console.error("No current highlight to save.");
-      return;
+    console.error("No current highlight to save.");
+    return;
   }
 
   // Assign color and name to the current highlight
   const newHighlight = {
-      ...currentHighlight,
-      color: color || currentHighlight.color,
-      name: name || currentHighlight.name
+    ...currentHighlight,
+    color: color || currentHighlight.color,
+    name: name || currentHighlight.name // Use the provided name or the current highlight's name
   };
 
   // Merge the new highlight into the existing highlights
   this.setState({
-      highlights: {
-          ...highlights,
-          [name]: newHighlight,
-      },
+    highlights: {
+      ...highlights,
+      [name || currentHighlight.name]: newHighlight, // Use the provided name or the current highlight's name as the key
+    },
   }, () => {
-      console.log("Updated highlights:", this.state.highlights);
+    console.log("Updated highlights:", this.state.highlights);
   });
 }
-
 
 changeCurrentHighlight(i){
   let currentHighlight = this.state.currentHighlight;
@@ -453,31 +449,30 @@ changeCurrentHighlight(i){
     return location;
   }
   
-  highlightString(string,color=null,type=null){
-    console.log('string: ',string,' color: ',color);
-    //console.log(this.state.sequence);
-    let location = this.stringLocation(string,type);
+  highlightString(string, color = null, type = null) {
+    console.log('string: ', string, ' color: ', color);
+    let location = this.stringLocation(string, type);
     console.log(location);
-    if(location==-1){
-      location = this.stringLocation(this.revComp(string),type);
+    if (location == -1) {
+      location = this.stringLocation(this.revComp(string), type);
     }
-    if(location==-1){
+    if (location == -1) {
       location = 0;
     }
     let length = string.length;
-    if(!color){
+    if (!color) {
       color = 'rgb(255, 255, 97)';
     }
-    //console.log('mousenter');
-    //console.log(location,length,color);
-    this.setState({currentHighlight:{
-      location:location,
-      length:length,
-      color:color,
-      name:!type?'cutsite':type
-    }
+    this.setState({
+      currentHighlight: {
+        location: location,
+        length: length,
+        color: color,
+        name: type || string
+      }
     });
   }
+
   clearHighlight(){
    //console.log('mouseleave');
    this.setState({currentHighlight:null});
@@ -780,83 +775,21 @@ changeCurrentHighlight(i){
     }
   }
 
-  // pickDeleteCutSite(target) {
-  //   const { terminalType } = target;
-  //   let newHighlights = this.state.highlights;
-  //   if (terminalType === "N") {
-  //     this.saveCurrentHighlight('rgb(255, 255, 97)', "cutsite_N");
-  //     // I want to add the this.state.currentHighlight to the rest of the highlight in the setstate
-  //     this.setState({ selectedNTarget: target});
-  //     console.log("selected N:", this.state.selectedNTarget)
-  //   } else if (terminalType === "C") {
-  //     this.saveCurrentHighlight('rgb(255, 255, 97)', "cutsite_C");
-  //     this.setState({ selectedCTarget: target,}, () => {
-  //       console.log("selected C:", this.state.selectedCTarget)
-  //       const { selectedNTarget, selectedCTarget } = this.state;
-        
-  //       if (selectedNTarget && selectedCTarget) {
-  //         this.setState(
-  //           {
-  //             targets: [selectedNTarget, selectedCTarget],
-  //             menu: 3,
-  //             screen: 3,
-  //           },
-  //           () => {
-  //             if (!this.state.primers || this.state.primers.length === 0) {
-  //               this.getDeletePrimers();
-  //               console.log("Primer has been set");
-  //             }
-  //           }
-  //         );
-  //       }
-  //     });
-  //   }
-  // }
-
   pickDeleteCutSite(target) {
     const { terminalType } = target;
-    let newHighlights = { ...this.state.highlights }; // Clone the highlights to avoid direct mutation
-  
-    // Concatenate distal, proximal, and pam
-    const cutSiteString = target.distal + target.proximal + target.pam;
-  
-    // Ensure the cutSiteString is valid before calling stringLocation
-    if (!cutSiteString || cutSiteString.length === 0) {
-      console.error("Invalid cutSiteString:", cutSiteString);
-      return; // Exit if the string is invalid
-    }
-  
+    let newHighlights = this.state.highlights;
     if (terminalType === "N") {
-      // Update N-terminal highlight
-      this.highlightString(cutSiteString, 'rgb(255, 255, 97)', "cutsite_N");
-  
-      // Update the selected N-terminal target
-      this.setState({ selectedNTarget: target }, () => {
-        console.log("selected N:", this.state.selectedNTarget);
-      });
-  
-      // Store the N-terminal target highlight in the state
-      // this location is very wrong
-      console.log("cutsite location: ", this.stringLocation(cutSiteString))
-      newHighlights.cutsite_N = {
-        location: this.stringLocation(cutSiteString), // Use the validated cutSiteString
-        length: cutSiteString.length,
-        color: 'rgb(255, 255, 97)',
-        name: "cutsite_N",
-      };
-  
+      this.saveCurrentHighlight('rgb(255, 255, 97)', "cutsite_N");
+      // I want to add the this.state.currentHighlight to the rest of the highlight in the setstate
+      this.setState({ selectedNTarget: target});
+      console.log("selected N:", this.state.selectedNTarget)
     } else if (terminalType === "C") {
-      // Update C-terminal highlight
-      this.highlightString(cutSiteString, 'rgb(255, 255, 97)', "cutsite_C");
-  
-      // Update the selected C-terminal target
-      this.setState({ selectedCTarget: target }, () => {
-        console.log("selected C:", this.state.selectedCTarget);
-  
-        // Check if both N and C-terminal are selected
+      this.saveCurrentHighlight('rgb(255, 255, 97)', "cutsite_C");
+      this.setState({ selectedCTarget: target,}, () => {
+        console.log("selected C:", this.state.selectedCTarget)
         const { selectedNTarget, selectedCTarget } = this.state;
+        
         if (selectedNTarget && selectedCTarget) {
-          // Both N and C targets are selected, so update the targets and set the menu/screen state
           this.setState(
             {
               targets: [selectedNTarget, selectedCTarget],
@@ -872,19 +805,8 @@ changeCurrentHighlight(i){
           );
         }
       });
-  
-      // Store the C-terminal target highlight in the state
-      newHighlights.cutsite_C = {
-        location: this.stringLocation(cutSiteString), // Use the validated cutSiteString
-        length: cutSiteString.length,
-        color: 'rgb(255, 255, 97)',
-        name: "cutsite_C",
-      };
     }
-  
-    // Update the highlights state with the new highlights (N or C terminal)
-    this.setState({ highlights: newHighlights });
-  }  
+  }
   
   chooseOperation(e){
     if(e){
@@ -2073,79 +1995,82 @@ changeCurrentHighlight(i){
     const currentHighlightLocation = !currentHighlight?null:currentHighlight.location;
 
     const geneInfoPrep = !this.state.sequence
-    ? null
-    : this.state.sequence.split("").map((letter, i) => {
-          let highlightClasses = [];
-          let highlightLocation = null;
+  ? null
+  : this.state.sequence.split("").map((letter, i) => {
+      let highlightClasses = [];
+      let highlightLocation = null;
 
-          // Check if the current letter is within the current highlight
-          if (
-              this.state.currentHighlight &&
-              i >= this.state.currentHighlight.location &&
-              i < this.state.currentHighlight.location + this.state.currentHighlight.length
-          ) {
-              highlightClasses.push("current-highlight");
-              highlightClasses.push(this.state.currentHighlight.name);
-              highlightLocation = this.state.currentHighlight.location;
+      // Check if the current letter is within the current highlight
+      if (
+        this.state.currentHighlight &&
+        i >= this.state.currentHighlight.location &&
+        i < this.state.currentHighlight.location + this.state.currentHighlight.length
+      ) {
+        highlightClasses.push("current-highlight");
+        highlightClasses.push(this.state.currentHighlight.name);
+        highlightLocation = this.state.currentHighlight.location;
+      }
+
+      // Check all highlights
+      Object.keys(this.state.highlights || {}).forEach((key) => {
+        const highlight = this.state.highlights[key];
+        const start = highlight.location;
+        const stop = start + highlight.length;
+
+        if (i >= start && i < stop) {
+          if (!highlightClasses.includes(key)) {
+            highlightClasses.push(key);
           }
 
-          // Check all highlights
-          Object.keys(this.state.highlights || {}).forEach((key) => {
-              const highlight = this.state.highlights[key];
-              const start = highlight.location;
-              const stop = start + highlight.length;
+          if (key.includes("potentialStart")) {
+            highlightClasses.push("is-start-select");
+          }
+          if (key.includes("potentialStop")) {
+            highlightClasses.push("is-stop-select");
+          }
 
-              if (i >= start && i < stop) {
-                  if (!highlightClasses.includes(key)) {
-                      highlightClasses.push(key);
-                  }
-
-                  if (key.includes("potentialStart")) {
-                      highlightClasses.push("is-start-select");
-                  }
-                  if (key.includes("potentialStop")) {
-                      highlightClasses.push("is-stop-select");
-                  }
-
-                  highlightLocation = start;
-              }
-          });
-
-          return (
-              <div
-                  key={i}
-                  className={`${highlightClasses.join(" ")} single-letter`}
-                  data-highlight-location={highlightLocation}
-                  onClick={
-                      highlightClasses.includes("is-start-select")
-                          ? this.selectStartCodon.bind(this)
-                          : highlightClasses.includes("is-stop-select")
-                          ? this.selectStopCodon.bind(this)
-                          : null
-                  }
-              >
-                  {letter}
-              </div>
-          );
+          highlightLocation = start;
+        }
       });
 
+      return (
+        <div
+          key={i}
+          className={`${highlightClasses.join(" ")} single-letter`}
+          data-highlight-location={highlightLocation}
+          onClick={
+            highlightClasses.includes("is-start-select")
+              ? this.selectStartCodon.bind(this)
+              : highlightClasses.includes("is-stop-select")
+              ? this.selectStopCodon.bind(this)
+              : null
+          }
+        >
+          {letter}
+        </div>
+      );
+    });
     // cut site list
     let targetList;
     if (this.state.operation == "delete") {
       const nTargetList = [];
       const cTargetList = [];
-    
+
       // Categorize targets using a for loop
       const targets = this.state.targets || [];
       for (let i = 0; i < targets.length; i++) {
         const target = targets[i];
-    
+
+        // Determine the highlight name based on terminalType
+        const highlightName = target.terminalType === "N" ? "cutsite_N" : "cutsite_C";
+
         const targetElement = (
           <div
             key={`target-${target.distal}-${target.proximal}-${target.terminalType}`}
             className={
               "single-target " +
-              (!currentHighlightLocation ? "disabled" : currentHighlightLocation)}
+              (!currentHighlightLocation ? "disabled" : currentHighlightLocation)
+            }
             onClick={
               !currentHighlightLocation
                 ? null
@@ -2155,7 +2080,7 @@ changeCurrentHighlight(i){
               this,
               target.distal + target.proximal + target.pam,
               "rgb(255, 255, 97)",
-              null
+              highlightName // Use "cutsite_N" or "cutsite_C" based on terminalType
             )}
             onMouseLeave={this.clearHighlight.bind(this)}
           >
@@ -2174,7 +2099,7 @@ changeCurrentHighlight(i){
             </div>
           </div>
         );
-    
+
         // Add to respective lists based on terminalType
         if (target.terminalType === "N") {
           nTargetList.push(targetElement);
@@ -2182,13 +2107,13 @@ changeCurrentHighlight(i){
           cTargetList.push(targetElement);
         }
       }
-    
+
       // Combine the lists into a single targetList
       targetList = (
         <div>
           <h5>N-terminal Targets</h5>
           {nTargetList.length > 0 ? nTargetList : <p>No N-terminal targets available</p>}
-    
+
           <h5>C-terminal Targets</h5>
           {cTargetList.length > 0 ? cTargetList : <p>No C-terminal targets available</p>}
         </div>
@@ -2196,7 +2121,10 @@ changeCurrentHighlight(i){
     }
     else {
       targetList = !this.state.targets?null:this.state.targets.map((target)=>{
-        return <div className={"single-target "+(!currentHighlightLocation?'disabled':currentHighlightLocation)} onClick={!currentHighlightLocation?null:this.pickCutSite.bind(this,target)} onMouseEnter={this.highlightString.bind(this,target.distal+target.proximal+target.pam,'rgb(255, 255, 97)',null)} onMouseLeave={this.clearHighlight.bind(this)}>
+        return <div className={"single-target "+(!currentHighlightLocation?'disabled':currentHighlightLocation)} 
+        onClick={!currentHighlightLocation?null:this.pickCutSite.bind(this,target)} 
+        onMouseEnter={this.highlightString.bind(this,target.distal+target.proximal+target.pam,'rgb(255, 255, 97)','cutsite')} 
+        onMouseLeave={this.clearHighlight.bind(this)}>
           <div>{target.distal+target.proximal+target.pam}</div>
           <div><span>Efficiency: </span>{!target.score?'-':target.score}</div>
           <div><span>Strand: </span>{target.strand}</div>
@@ -2432,7 +2360,7 @@ changeCurrentHighlight(i){
       </div>
     }
     return (
-    <div className="App" onClick={this.closeAllMenus.bind(this)}>
+    <div className="App">
       <header className="App-header">     
         <div className="main-logo"><img src={logo} alt="Logo" /></div> 
         <div className="menu"><img src={hamburger} alt="menu-icon" onClick={this.openMenu.bind(this)}/>

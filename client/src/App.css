@@ -821,11 +821,19 @@ form.search-form label {
   }
 }
 
-.single-letter.cutsite {
+.single-letter.cutsite, .single-letter.cutsite_N, .single-letter.cutsite_C {
   background-color: rgba(255, 97, 129, 0.5)
 }
 
 .single-letter.hom3,.single-letter.hom5,.single-letter.seq3,.single-letter.seq5 {
+  background-color: rgba(86,64,155,.3)
+}
+
+.single-letter.hom3_N,.single-letter.hom5_N,.single-letter.seq3_N,.single-letter.seq5_N {
+  background-color: rgba(86,64,155,.3)
+}
+
+.single-letter.hom3_C,.single-letter.hom5_C,.single-letter.seq3_C,.single-letter.seq5_C {
   background-color: rgba(86,64,155,.3)
 }
 
