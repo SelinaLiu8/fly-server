@@ -2292,21 +2292,20 @@ changeCurrentHighlight(i){
     const downloadOptions = () => {
       let plasmidOptions;
       if (this.state.operation === "delete") {
-        plasmidOptions = ["pHD-DsRed-X"]
+        plasmidOptions = ["pHD-DsRed-X", "pHD-dsRed-attP-X"]
       } else {
         plasmidOptions = ["N terminal SSPB and mCherry tag","N terminal EGFP and SSPB tag with Extended Linker","C terminal mCherry and SSPB tag","C terminal EGFP and SSPB tag with Extended Linker","C terminal EGFP and SSPB tag","C terminal mDendra2 and SSPB tag","C terminal mScarlett and SSPB tag","N terminal EGFP and SSPB tag","N terminal mDendra2 and SSPB tag","N terminal mScarlett and SSPB tag"];
       }
       let htmlOptions = [];
-      for(let i=-1;i<plasmidOptions.length;i++){
-        if(i===-1){
-          htmlOptions.push(<option default>Choose A Template</option>)
-        } else {
-          const terminal = this.state.terminal;
-          if (this.state.operation === "tag" && plasmidOptions[i].toLowerCase().includes(terminal+' terminal')) {
-            htmlOptions.push(<option key={i} value={plasmidOptions[i]}>{plasmidOptions[i]}</option>)
-          } else {
-            htmlOptions.push(<option key={i} value={plasmidOptions[i]}>{plasmidOptions[i]}</option>)
-          }
+      htmlOptions.push(<option default>Choose A Template</option>)
+      for(let i=0;i<plasmidOptions.length;i++){
+        const terminal = this.state.terminal;
+        if (this.state.operation === "tag" && plasmidOptions[i].toLowerCase().includes(terminal+' terminal')) {
+          htmlOptions.push(<option key={i} value={plasmidOptions[i]}>{plasmidOptions[i]}</option>)
+        } 
+        if (this.state.operation == "delete") {
+          console.log("plasmid Options", plasmidOptions)
+          htmlOptions.push(<option key={i} value={plasmidOptions[i]}>{plasmidOptions[i]}</option>)
         }
       }
       
