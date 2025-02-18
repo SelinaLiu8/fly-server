@@ -1768,7 +1768,7 @@ changeCurrentHighlight(i){
           const preSplit = data.split('**injection_start**')[0];
           const postSplit = data.split('**injection_end**')[1];
   
-          const oligoLength = oligo.length;
+          const oligoLength = oligo.sense.length;
           const oligoStart = u6EndPosition + 1;
           const oligoEnd = oligoStart + oligoLength - 1;
   
@@ -1792,7 +1792,7 @@ changeCurrentHighlight(i){
           }
   
           // Combine parts to form the final design
-          const design = modifiedPreSplit + oligo + postSplit;
+          const design = modifiedPreSplit + oligo.sense + postSplit;
   
           // Trigger the file download
           const blob = new Blob([design], { type: "text/plain;charset=utf-8" });
@@ -2443,10 +2443,7 @@ changeCurrentHighlight(i){
         
       </div>
       <div className="footer">
-        <div>Cabernard Lab</div>
-        <div>Sound Development Company</div>
-        <div>GPL3 License</div>
-        <div>API Docs</div>
+        <div>Website made by <strong>Sound Development Company</strong> and <strong>Selina Liu</strong></div>
       </div>
       <div className="popups" style={{display:(this.state.fontMenu===true?'flex':'none')}} >      
         <div className="font-size">
