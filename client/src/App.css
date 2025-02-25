@@ -407,7 +407,7 @@ form.search-form label {
 }
 
 .search-form input[type=text],input[type=number],select {
-  width: 300px;
+  width: 350px;
   height: 60px;
   border: 2px solid #bcad8a;
   font-size: 34px;

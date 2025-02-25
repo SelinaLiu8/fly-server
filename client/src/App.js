@@ -535,7 +535,7 @@ changeCurrentHighlight(i){
             } else if (!geneInfo.results.isoforms) {
               let error = (
                 <div className="popup-error">
-                  <h2>We could not find any results. Please try again with a different search term.</h2>
+                  <h2>We could not find any results. Please try again with the Fly Base ID or a different search term.</h2>
                 </div>
               );
               currentState.popup = {
@@ -2405,7 +2405,7 @@ changeCurrentHighlight(i){
               <div className="landing-icon" onClick={this.changeScreens.bind(this)} data-screen="1"><img src={landing1} alt=""/><div>Search Flybase</div></div>
             </div>
             <div className="screen screen-1"  style={{display:this.state.screen===1?'flex':'none',}}>
-              <form className="search-form" onSubmit={this.searchForGene.bind(this)} ><label>Search for a gene by name</label><input type="text" name="geneName" /><input className='btn' type="submit" value="Search"/></form>
+              <form className="search-form" onSubmit={this.searchForGene.bind(this)} ><label>Search for a gene</label><input type="text" placeholder='Name/FlyBase ID' name="geneName" /><input className='btn' type="submit" value="Search"/></form>
             </div>
             <div className="screen screen-custom"  style={{display:this.state.screen==='custom'?'flex':'none',}}>
               {customDataUpload()}
