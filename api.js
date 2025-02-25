@@ -42,13 +42,18 @@ async function getIdFromSearch(searchTerm) {
         }
     });
 
-    // Filter by the search term
-    let result = relevantData.filter(obj => {
-        return obj.current_symbol.toLowerCase() == searchTerm.toLowerCase();
-    });
-
-    // console.log("Filtered result: ", result);  // Add this log
-
+    // Filter by the search term by name or FBid
+    let result;
+    if (searchTerm.includes("FBgn")) {
+        result = relevantData.filter(obj => {
+            return obj.primary_FBid.toLowerCase() == searchTerm.toLowerCase();
+        });
+    } else {
+        result = relevantData.filter(obj => {
+            return obj.current_symbol.toLowerCase() == searchTerm.toLowerCase();
+        });
+    }
+    
     let response = { results: { isoforms: null } };
     if (!result.length) {
         return response;
@@ -62,11 +67,11 @@ async function getIdFromSearch(searchTerm) {
     console.log('in database ', idQueryResults[0]);
 
     if (idQueryResults[0].length != 0) {
-        response = { results: { name: searchTerm, id: result[0].primary_FBid, isoforms: idQueryResults[0][0].isoforms } };
+        response = { results: { name: result[0].current_symbol, id: result[0].primary_FBid, isoforms: idQueryResults[0][0].isoforms } };
     } else {
         let geneInfo = await getGeneticInfoFromId(result[0].primary_FBid);
         if (geneInfo) {
-            response = { results: { name: searchTerm, id: result[0].primary_FBid, isoforms: geneInfo } };
+            response = { results: { name: result[0].current_symbol, id: result[0].primary_FBid, isoforms: geneInfo } };
         }
     }
 
@@ -107,6 +112,7 @@ async function getGeneticInfoFromId(id){
     });
     return JSON.stringify(isoForms);
 }
+
 async function getIsoFormSequence(isoForm){
     let isoformQuery = "SELECT * FROM gene_info WHERE isoForm = ?";
     let geneInfoQuery = await pool.execute(isoformQuery,[

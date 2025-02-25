@@ -2,7 +2,7 @@ const { getIdFromSearch } = require('./api');  // Assuming your main code is in 
 const { getGeneticInfoFromId } = require('./api')
 
 // Test the function with a sample search term
-getIdFromSearch('polo').then(response => {
+getIdFromSearch('FBgn0020621').then(response => {
   console.log('Test Response:', response);
 }).catch(err => {
   console.error('Error during test:', err);
