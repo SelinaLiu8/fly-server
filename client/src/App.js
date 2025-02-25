@@ -2294,7 +2294,7 @@ changeCurrentHighlight(i){
       if (this.state.operation === "delete") {
         plasmidOptions = ["pHD-DsRed-X", "pHD-dsRed-attP-X"]
       } else {
-        plasmidOptions = ["N terminal SSPB and mCherry tag","N terminal EGFP and SSPB tag with Extended Linker","C terminal mCherry and SSPB tag","C terminal EGFP and SSPB tag with Extended Linker","C terminal EGFP and SSPB tag","C terminal mDendra2 and SSPB tag","C terminal mScarlett and SSPB tag","N terminal EGFP and SSPB tag","N terminal mDendra2 and SSPB tag","N terminal mScarlett and SSPB tag"];
+        plasmidOptions = ["N terminal SSPB and mCherry tag","N terminal EGFP and SSPB tag with Extended Linker","C terminal mCherry and SSPB tag","C terminal EGFP and SSPB tag with Extended Linker","C terminal EGFP and SSPB tag","N terminal EGFP and SSPB tag"];
       }
       let htmlOptions = [];
       htmlOptions.push(<option default>Choose A Template</option>)
