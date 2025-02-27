@@ -400,6 +400,28 @@ export default class App extends React.Component  {
         },
     });
 }
+
+bugReportForm() {
+  const container = document.getElementById("bug-report-container");
+
+  if (!document.getElementById("JotFormIFrame-250567387390163")) {
+    container.innerHTML = `
+      <iframe
+        id="JotFormIFrame-250567387390163"
+        title="Bug Tracker"
+        allow="geolocation; microphone; camera; fullscreen"
+        src="https://form.jotform.com/250567387390163"
+        frameborder="0"
+        style="min-width:100%;max-width:100%;height:539px;border:none;"
+        scrolling="yes"
+      ></iframe>
+      <script src='https://cdn.jotfor.ms/s/umd/latest/for-form-embed-handler.js'></script>
+      <script>
+        window.jotformEmbedHandler("iframe[id='JotFormIFrame-250567387390163']", "https://form.jotform.com/");
+      </script>
+    `;
+  }
+}
   
 saveCurrentHighlight(color, name) {
   const { currentHighlight, highlights } = this.state;
@@ -2374,6 +2396,8 @@ changeCurrentHighlight(i){
             <div className="menu-item" onClick={this.saveDesign.bind(this)} data-screen="0" >Save Project</div>
             <div className="menu-item"  onClick={this.changeThemeColor.bind(this)} ><div className={"theme-color "+(this.state.themeColor===false?'dark':'light')}></div>Switch to {(this.state.themeColor===false?'Dark':'Light')} Theme</div>
             <div className="menu-item" onClick={this.fontMenu.bind(this)} ><div className="font-size"><div className="large">A</div><div className="small">A</div></div> Font Size</div>
+            <div className='menu-item' onClick={this.bugReportForm.bind(this)}>Bug Report</div>
+            <div id="bug-report-container"></div>
           </div>
         </div>
       </header>

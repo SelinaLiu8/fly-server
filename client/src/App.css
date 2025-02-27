@@ -81,7 +81,7 @@ header .menu {
   position: absolute;
   padding-right: 80px;
   right: 0;
-  cursor: pointer
+  cursor: pointer;
 }
 
 header .menu>img {
@@ -937,4 +937,9 @@ div[class*=" potentialStop-"],div[class^=potentialStop-] {
 
 .warning-message {
   color: rgb(255, 98, 0);
+}
+
+.bug-report-container {
+  max-height: 100vh; /* Limits height to the viewport */
+  overflow-y: scroll;
 }
