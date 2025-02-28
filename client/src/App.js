@@ -8,6 +8,7 @@ import documentIcon from './assets/download.png';
 import landing1 from './assets/logo-1.png'; 
 import hamburger from './assets/hamburger-menu.png';
 import loading from './assets/loading.png';
+import manualPDF from './assets/CrisprBuildr1.0_manual.pdf';
 import { saveAs } from 'file-saver';
 import { Buffer } from 'buffer';
 
@@ -421,6 +422,10 @@ bugReportForm() {
       </script>
     `;
   }
+}
+
+userManual() {
+  window.open(manualPDF, '_blank');
 }
   
 saveCurrentHighlight(color, name) {
@@ -2316,7 +2321,7 @@ changeCurrentHighlight(i){
       if (this.state.operation === "delete") {
         plasmidOptions = ["pHD-DsRed-X", "pHD-dsRed-attP-X"]
       } else {
-        plasmidOptions = ["N terminal SSPB and mCherry tag","N terminal EGFP and SSPB tag with Extended Linker","C terminal mCherry and SSPB tag","C terminal EGFP and SSPB tag with Extended Linker","C terminal EGFP and SSPB tag","N terminal EGFP and SSPB tag"];
+        plasmidOptions = ["N terminal SSPB and mCherry tag","N terminal EGFP and SSPB","C terminal mCherry and SSPB tag","C terminal EGFP and SSPB"];
       }
       let htmlOptions = [];
       htmlOptions.push(<option default>Choose A Template</option>)
@@ -2396,6 +2401,7 @@ changeCurrentHighlight(i){
             <div className="menu-item" onClick={this.saveDesign.bind(this)} data-screen="0" >Save Project</div>
             <div className="menu-item"  onClick={this.changeThemeColor.bind(this)} ><div className={"theme-color "+(this.state.themeColor===false?'dark':'light')}></div>Switch to {(this.state.themeColor===false?'Dark':'Light')} Theme</div>
             <div className="menu-item" onClick={this.fontMenu.bind(this)} ><div className="font-size"><div className="large">A</div><div className="small">A</div></div> Font Size</div>
+            <div className='menu-item' onClick={this.userManual.bind(this)}>User Manual</div>
             <div className='menu-item' onClick={this.bugReportForm.bind(this)}>Bug Report</div>
             <div id="bug-report-container"></div>
           </div>
