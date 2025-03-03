@@ -35,7 +35,8 @@ export default class App extends React.Component  {
         image:null
       },
       currentPam:null,
-      }
+      selectedPrimer: [],
+    }
     // API
     this.changeMenus = this.changeMenus.bind(this);
     this.highlight = this.highlight.bind(this);
@@ -1302,6 +1303,17 @@ changeCurrentHighlight(i){
     });
   }
 
+  selectPrimer(primer, arm) {
+    this.setState((prevState) => ({
+      selectedPrimer: {
+        ...prevState.selectedPrimer,  // Keep other selections
+        [arm]: primer,  // Update selection for this category
+      },
+    })); 
+    console.log("selectedPrimer Arm: ", arm)
+    console.log("selectedPrimer: ", this.state.selectedPrimer)
+  }
+
   fetchOligoInformation() {
     const { selectedNTarget, selectedCTarget, targets } = this.state;
   
@@ -2203,19 +2215,17 @@ changeCurrentHighlight(i){
                       {primers.map((primerSingle, index) => (
                         <div
                           key={`${terminal}-${key}-${index}`}
-                          className="single-target"
+                          className={`single-target ${this.state.selectedPrimer[`${terminal}-${key}`] === primerSingle[7] ? "selected" : ""}`}
                           onMouseEnter={this.highlightString.bind(
                             this,
                             primerSingle[7],
                             "rgba(86, 64, 155,0.3)",
                             "homology"
                           )}
-                          onMouseDown={this.selectDeleteHomologyArm.bind(
-                            this,
-                            primerSingle,
-                            key,
-                            terminal
-                          )}
+                          onMouseDown={() => {
+                            this.selectPrimer(primerSingle[7], `${terminal}-${key}`);
+                            this.selectDeleteHomologyArm(primerSingle, key, terminal);
+                          }}
                           onMouseLeave={this.clearHighlight.bind(this)}
                         >
                           <div>{primerSingle[7]}</div>
@@ -2270,14 +2280,17 @@ changeCurrentHighlight(i){
                 {primerOptions.map((primerSingle, index) => (
                   <div
                     key={index}
-                    className="single-target"
+                    className={`single-target ${this.state.selectedPrimer[key] === primerSingle[7] ? "selected" : ""}`}
                     onMouseEnter={this.highlightString.bind(
                       this,
                       primerSingle[7],
                       "rgba(86, 64, 155,0.3)",
                       "homology"
                     )}
-                    onMouseDown={this.selectHomologyArm.bind(this, primerSingle, key)}
+                    onMouseDown={() => {
+                      this.selectPrimer(primerSingle[7], key);
+                      this.selectHomologyArm(primerSingle, key);
+                    }}
                     onMouseLeave={this.clearHighlight.bind(this)}
                   >
                     <div>{primerSingle[7]}</div>

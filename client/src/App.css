@@ -595,6 +595,11 @@ form.search-form label {
   font-weight: 400
 }
 
+.selected {
+  color: red;
+  font-weight: bold;
+}
+
 .pam-box {
   display: flex;
   position: fixed;
