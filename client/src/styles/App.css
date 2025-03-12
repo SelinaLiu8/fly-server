@@ -50,8 +50,7 @@ button, .btn {
 .App {
   display: flex;
   flex-direction: column;
-  font-family: "Poppins";
-  height: 100vh;
+  font-family: "Poppins"
 }
 
 #root,.App,body,html {
@@ -100,8 +99,7 @@ header .menu>img {
   display: flex;
   flex-direction: column;
   text-align: left;
-  border-top: 1px solid #fff;
-  z-index: 9999;
+  border-top: 1px solid #fff
 }
 
 .main-menu .menu-item {
@@ -155,12 +153,8 @@ header .menu>img {
   flex-direction: column;
   background: #ebe9e3;
   z-index: 9998;
-  position: fixed;
-  left: 0;
-  top: 70px;
-  bottom: 0;
-  width: 70px;
-  overflow-y: auto;
+  position: absolute;
+  left: 0
 }
 
 .menu-icon .menu-image-wrapper {
@@ -244,10 +238,7 @@ header .menu>img {
 .main {
   width: 100%;
   background: #fff;
-  color: #000;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
+  color: #000
 }
 
 .body.dark,.main.dark {
@@ -327,19 +318,18 @@ form.search-form label {
 
 .screen.screen-2,.screen.screen-3,.screen.screen-4,.screen.screen-custom-2 {
   flex-direction: column;
-  overflow-y: auto;
+  overflow-y: scroll;
   height: 100%;
   max-height: 100%;
-  justify-content: flex-start;
+  justify-content: start;
   align-items: flex-start;
   padding-top: 40px;
   margin-left: 280px;
-  width: calc(100% - 280px);
-  box-sizing: border-box;
+  width: calc(100% - 280px)
 }
 
 .screen.screen-2 {
-  justify-content: flex-start;
+  justify-content: start;
   align-items: flex-start;
   padding-top: 40px
 }
@@ -435,7 +425,7 @@ form.search-form label {
 }
 
 .popups {
-  position: fixed;
+  position: absolute;
   top: 0;
   left: 0;
   width: 100%;
@@ -496,9 +486,8 @@ form.search-form label {
   width: 100%;
   height: 100%;
   justify-content: center;
-  position: fixed;
-  background: rgba(0,0,0,.2);
-  z-index: 99999;
+  position: absolute;
+  background: rgba(0,0,0,.2)
 }
 
 .popup,.popup-wrapper {
@@ -766,7 +755,7 @@ form.search-form label {
 .homology-list {
   max-height: 861px;
   top: 73px;
-  overflow-y: auto;
+  overflow-y: scroll;
   overflow-x: hidden
 }
 
@@ -779,7 +768,7 @@ form.search-form label {
 
 .download-list {
   overflow: hidden;
-  overflow-y: auto;
+  overflow-y: scroll;
   height: 100%;
   min-height: 540px;
   padding-top: 10px
@@ -957,5 +946,5 @@ div[class*=" potentialStop-"],div[class^=potentialStop-] {
 
 .bug-report-container {
   max-height: 100vh; /* Limits height to the viewport */
-  overflow-y: auto;
+  overflow-y: scroll;
 }
