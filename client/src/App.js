@@ -1369,6 +1369,8 @@ const App = () => {
         onOpenDesign={openDesign}
         onSaveDesign={saveDesign}
         onFontMenuToggle={toggleFontMenu}
+        hamburger={hamburger}
+        toggleHamburgerMenu={toggleHamburgerMenu}
       />
       
       <div className={`body ${themeColor ? 'dark' : 'light'}`}>
@@ -1416,6 +1418,7 @@ const App = () => {
           {screen === 'custom' && (
             <CustomDataScreen onAddCustomData={addCustomData} />
           )}
+          
           
           <SequenceViewScreen
             screen={screen}

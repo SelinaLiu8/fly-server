@@ -956,6 +956,16 @@ div[class*=" potentialStop-"],div[class^=potentialStop-] {
 }
 
 .bug-report-container {
-  max-height: 100vh; /* Limits height to the viewport */
-  overflow-y: auto;
+  width: 100%;
+  max-height: 539px;
+  overflow: hidden;
+  background: #fff;
+  border-bottom: 1px solid #fff;
+}
+
+.main-menu .bug-report-container {
+  border-bottom: 1px solid #fff;
+  background: #fff;
+  padding: 0;
+  margin: 0;
 }
