@@ -50,7 +50,8 @@ button, .btn {
 .App {
   display: flex;
   flex-direction: column;
-  font-family: "Poppins"
+  font-family: "Poppins";
+  height: 100vh;
 }
 
 #root,.App,body,html {
@@ -99,7 +100,8 @@ header .menu>img {
   display: flex;
   flex-direction: column;
   text-align: left;
-  border-top: 1px solid #fff
+  border-top: 1px solid #fff;
+  z-index: 9999;
 }
 
 .main-menu .menu-item {
@@ -153,8 +155,12 @@ header .menu>img {
   flex-direction: column;
   background: #ebe9e3;
   z-index: 9998;
-  position: absolute;
-  left: 0
+  position: fixed;
+  left: 0;
+  top: 70px;
+  bottom: 0;
+  width: 70px;
+  overflow-y: auto;
 }
 
 .menu-icon .menu-image-wrapper {
@@ -238,7 +244,10 @@ header .menu>img {
 .main {
   width: 100%;
   background: #fff;
-  color: #000
+  color: #000;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .body.dark,.main.dark {
@@ -300,7 +309,7 @@ header .menu>img {
   padding-top: 100px
 }
 
-form.search-form {
+form.search-input-container {
   color: #bcad8a;
   font-size: 34px;
   display: flex;
@@ -311,25 +320,26 @@ form.search-form {
   justify-content: center
 }
 
-form.search-form label {
+form.search-input-container label {
   width: 100%;
   margin-bottom: 40px
 }
 
 .screen.screen-2,.screen.screen-3,.screen.screen-4,.screen.screen-custom-2 {
   flex-direction: column;
-  overflow-y: scroll;
+  overflow-y: auto;
   height: 100%;
   max-height: 100%;
-  justify-content: start;
+  justify-content: flex-start;
   align-items: flex-start;
   padding-top: 40px;
   margin-left: 280px;
-  width: calc(100% - 280px)
+  width: calc(100% - 280px);
+  box-sizing: border-box;
 }
 
 .screen.screen-2 {
-  justify-content: start;
+  justify-content: flex-start;
   align-items: flex-start;
   padding-top: 40px
 }
@@ -402,11 +412,11 @@ form.search-form label {
   background: #ff668e
 }
 
-.main.dark form.search-form label {
+.main.dark form.search-input-container label {
   color: #fff
 }
 
-.search-form input[type=text],input[type=number],select {
+.search-input-container input[type=text],input[type=number],select {
   width: 350px;
   height: 60px;
   border: 2px solid #bcad8a;
@@ -415,7 +425,7 @@ form.search-form label {
   border-radius: 4px 0 0 4px
 }
 
-.isoform-form input[type=submit],.search-form input[type=submit] {
+.isoform-form input[type=submit],.search-input-container input[type=submit] {
   width: 90px;
   background: #bcad8a;
   border: 0;
@@ -486,8 +496,9 @@ form.search-form label {
   width: 100%;
   height: 100%;
   justify-content: center;
-  position: absolute;
-  background: rgba(0,0,0,.2)
+  position: fixed;
+  background: rgba(0,0,0,.2);
+  z-index: 99999;
 }
 
 .popup,.popup-wrapper {
@@ -631,7 +642,7 @@ form.search-form label {
   padding: 20px;
   max-height: 80vh;
   overflow: hidden;
-  overflow-y: scroll
+  overflow-y: auto
 }
 
 .amino-table {
@@ -755,7 +766,7 @@ form.search-form label {
 .homology-list {
   max-height: 861px;
   top: 73px;
-  overflow-y: scroll;
+  overflow-y: auto;
   overflow-x: hidden
 }
 
@@ -768,7 +779,7 @@ form.search-form label {
 
 .download-list {
   overflow: hidden;
-  overflow-y: scroll;
+  overflow-y: auto;
   height: 100%;
   min-height: 540px;
   padding-top: 10px
@@ -823,6 +834,38 @@ form.search-form label {
 
   25%,75% {
       opacity: 0
+  }
+}
+
+.popup-image {
+  -webkit-animation: pulse 1.5s infinite ease-in-out;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+@-webkit-keyframes pulse {
+  0% {
+    -webkit-transform: scale(0.8);
+    transform: scale(0.8);
+  }
+  50% {
+    -webkit-transform: scale(1);
+    transform: scale(1);
+  }
+  100% {
+    -webkit-transform: scale(0.8);
+    transform: scale(0.8);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0.8);
+  }
+  50% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(0.8);
   }
 }
 
@@ -945,6 +988,9 @@ div[class*=" potentialStop-"],div[class^=potentialStop-] {
 }
 
 .bug-report-container {
-  max-height: 100vh; /* Limits height to the viewport */
-  overflow-y: scroll;
+  width: 100%;
+  max-height: 539px;
+  overflow: hidden;
+  background: #fff;
+  border-bottom: 1px solid #fff;
 }

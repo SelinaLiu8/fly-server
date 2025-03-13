@@ -15,7 +15,7 @@ const SearchScreen = ({ onSearchForGene }) => {
               placeholder="Gene name or Flybase ID"
               required
             />
-            <button type="submit" className="search-button">
+            <button type="submit" className="search-button btn">
               Search
             </button>
           </div>

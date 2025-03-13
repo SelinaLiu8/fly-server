@@ -16,20 +16,20 @@ const Popup = ({ popup, onClose }) => {
   }
 
   return (
-    <div className="popup-container">
+    <div className="popup-wrapper">
       <div className="popup">
         {popup.image && (
           <div className="popup-image">
             <img src={popup.image} alt="Popup" />
           </div>
         )}
-        <div className="popup-message">
+        <div>
           {popup.message}
         </div>
         {!popup.stayOpen && (
-          <button className="popup-close" onClick={onClose}>
+          <div className="popup-close" onClick={onClose}>
             Close
-          </button>
+          </div>
         )}
       </div>
     </div>

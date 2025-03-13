@@ -9,7 +9,7 @@ const LandingScreen = ({ onScreenChange }) => {
         
         <div className="landing-buttons">
           <button 
-            className="landing-button"
+            className="landing-button btn"
             data-screen="1"
             onClick={onScreenChange}
           >
