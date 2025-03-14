@@ -28,7 +28,9 @@ export const PrimerProvider = ({ children }) => {
     });
     
     try {
+      console.log('Fetching primers with targetLocation:', targetLocation, 'and sequence length:', sequence?.length);
       const primerData = await api.getPrimers(targetLocation, sequence);
+      console.log('Received primer data:', primerData);
       
       setPrimers(primerData);
       setMenu(3);
@@ -46,6 +48,8 @@ export const PrimerProvider = ({ children }) => {
       }
     } catch (error) {
       console.error('Error fetching primers:', error);
+      setPrimers(null); // Reset primers on error
+      setMenu(3); // Still switch to the homology tab to show the error message
       showPopup({
         message: (
           <div className="popup-error">
@@ -60,6 +64,16 @@ export const PrimerProvider = ({ children }) => {
   const getDeletePrimers = useCallback(async (highlights, sequence) => {
     if (!highlights || !highlights.start || !highlights.stop) {
       console.error("Highlights not properly set for delete primers.");
+      setPrimers(null);
+      setMenu(3); // Still switch to the homology tab to show the error message
+      showPopup({
+        message: (
+          <div className="popup-error">
+            <h2>Start and stop codons must be selected before retrieving primers.</h2>
+          </div>
+        ),
+        image: null,
+      });
       return;
     }
     
@@ -70,17 +84,21 @@ export const PrimerProvider = ({ children }) => {
     });
     
     try {
+      console.log('Fetching delete primers with start:', highlights.start.location, 'stop:', highlights.stop.location, 'and sequence length:', sequence?.length);
       const primerData = await api.getDeletePrimers(
         highlights.start.location,
         highlights.stop.location,
         sequence
       );
+      console.log('Received delete primer data:', primerData);
       
       setPrimers(primerData);
       setMenu(3);
       showPopup({ show: false });
     } catch (error) {
       console.error('Error fetching delete primers:', error);
+      setPrimers(null); // Reset primers on error
+      setMenu(3); // Still switch to the homology tab to show the error message
       showPopup({
         message: (
           <div className="popup-error">

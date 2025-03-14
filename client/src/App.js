@@ -279,12 +279,84 @@ const App = () => {
     }
   };
 
-  // Handle pick cut site based on operation
+  // Import getPrimers and getDeletePrimers from PrimerContext
+  const { getPrimers, getDeletePrimers } = usePrimer();
+
+  // Handle pick cut site for tag operation
   const handlePickCutSite = (target) => {
-    if (operation === 'delete') {
-      pickDeleteCutSite(target, saveCurrentHighlight);
+    console.log('handlePickCutSite called with target:', target);
+    
+    // For tag operation, call pickCutSite and fetch primers
+    pickCutSite(target, saveCurrentHighlight);
+    
+    // Calculate target location - this is typically the position in the sequence
+    // where the target is found. We can use the currentHighlight location if available.
+    let targetLocation;
+    
+    // Debug the target object to see what properties are available
+    console.log('Target object:', target);
+    
+    if (currentHighlight && currentHighlight.location) {
+      targetLocation = currentHighlight.location;
+      console.log('Using currentHighlight.location:', targetLocation);
+    } else if (target.location) {
+      targetLocation = target.location;
+      console.log('Using target.location:', targetLocation);
+    } else if (target.offset) {
+      // Some targets have an offset property that can be used as location
+      targetLocation = parseInt(target.offset, 10);
+      console.log('Using target.offset as location:', targetLocation);
     } else {
-      pickCutSite(target, saveCurrentHighlight);
+      // If no location is available, we can try to find the target in the sequence
+      // But first make sure we have the necessary properties
+      if (!target.distal || !target.proximal) {
+        console.error('Target missing distal or proximal properties:', target);
+        // Use a default location in the middle of the sequence as fallback
+        targetLocation = Math.floor(sequence.length / 2);
+        console.log('Using fallback location (middle of sequence):', targetLocation);
+      } else {
+        const targetSequence = target.distal + target.proximal;
+        targetLocation = sequence.indexOf(targetSequence);
+        if (targetLocation === -1) {
+          console.error('Could not find target in sequence, using fallback location');
+          // Use a default location in the middle of the sequence as fallback
+          targetLocation = Math.floor(sequence.length / 2);
+          console.log('Using fallback location (middle of sequence):', targetLocation);
+        } else {
+          console.log('Found target in sequence at position:', targetLocation);
+        }
+      }
+    }
+    
+    // Fetch primers immediately after selecting a target
+    console.log('Tag target selected, fetching primers with targetLocation:', targetLocation);
+    getPrimers(targetLocation, sequence);
+  };
+  
+  // Handle pick delete cut site for delete operation
+  const handlePickDeleteCutSite = (target) => {
+    console.log('handlePickDeleteCutSite called with target:', target);
+    
+    // Call the original pickDeleteCutSite function
+    pickDeleteCutSite(target, saveCurrentHighlight);
+    
+    // Check if both N and C targets are selected after this selection
+    const updatedNTarget = target.terminalType === 'N' ? target : selectedNTarget;
+    const updatedCTarget = target.terminalType === 'C' ? target : selectedCTarget;
+    
+    if (updatedNTarget && updatedCTarget) {
+      console.log('Both N and C targets selected, fetching delete primers');
+      
+      // Make sure highlights has start and stop locations
+      if (!highlights || !highlights.start || !highlights.stop) {
+        console.error('Missing start or stop highlights for delete primers');
+        return;
+      }
+      
+      // Log the highlights to help with debugging
+      console.log('Fetching delete primers with highlights:', highlights);
+      
+      getDeletePrimers(highlights, sequence);
     }
   };
 
@@ -335,7 +407,7 @@ const App = () => {
           targets={targets}
           currentHighlightLocation={currentHighlight ? currentHighlight.location : null}
           onPickCutSite={handlePickCutSite}
-          onPickDeleteCutSite={pickDeleteCutSite}
+          onPickDeleteCutSite={handlePickDeleteCutSite}
           onHighlightString={highlightString}
           onClearHighlight={clearHighlight}
           operation={operation}

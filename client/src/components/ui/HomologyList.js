@@ -10,6 +10,9 @@ const HomologyList = ({
   onClearHighlight,
   operation
 }) => {
+  console.log('HomologyList - primers:', primers, 'terminal:', terminal, 'operation:', operation);
+  console.log('HomologyList - primers keys:', primers ? Object.keys(primers) : 'no primers');
+  
   if (!primers || Object.keys(primers).length === 0) {
     return <div className="homology-list-empty">No primers available</div>;
   }
@@ -31,14 +34,38 @@ const HomologyList = ({
   };
 
   const renderPrimerSection = (title, primers, arm, terminalType = null) => {
+    console.log(`renderPrimerSection - title: ${title}, arm: ${arm}, terminalType: ${terminalType}, primers:`, primers);
+    
+    // Check if primers is undefined or not an array
+    if (!primers || !Array.isArray(primers)) {
+      console.error(`Invalid primers for ${title}: ${primers}`);
+      return (
+        <div className="primer-section">
+          <h4>{title}</h4>
+          <div className="primer-error">No valid primers available for this section</div>
+        </div>
+      );
+    }
+    
     return (
       <div className="primer-section">
         <h4>{title}</h4>
         <div className="primer-list">
           {primers.map((primer, index) => {
+            console.log(`Primer ${index}:`, primer);
             const isSelected = operation === 'delete'
               ? selectedArms[`${arm}_${terminalType}`] === primer
               : selectedArms[arm] === primer;
+            
+            // Check if primer has the expected structure
+            if (!primer || !Array.isArray(primer) || primer.length < 8) {
+              console.error(`Invalid primer structure at index ${index}:`, primer);
+              return (
+                <div key={index} className="primer-error">
+                  Invalid primer data
+                </div>
+              );
+            }
             
             return (
               <div

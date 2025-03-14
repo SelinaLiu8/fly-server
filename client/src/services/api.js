@@ -78,13 +78,60 @@ export const getTargetEfficiency = async (targets) => {
  */
 export const getPrimers = async (targetLocation, sequence) => {
   try {
-    const primerSections = { targetLocation, sequence };
-    const encodedData = Buffer.from(JSON.stringify(primerSections)).toString('base64');
-    const response = await fetch(`/api?type=primers&primerSections=${encodedData}`);
+    console.log('API getPrimers called with targetLocation:', targetLocation, 'sequence length:', sequence?.length);
+    
+    if (!targetLocation) {
+      console.error('Missing targetLocation parameter');
+      throw new Error('Target location is required');
+    }
+    
+    if (!sequence) {
+      console.error('Missing sequence parameter');
+      throw new Error('Sequence is required');
+    }
+    
+    // Instead of encoding the entire sequence, just send the relevant part
+    // Extract a smaller portion of the sequence around the target location
+    const startPos = Math.max(0, targetLocation - 2000);
+    const endPos = Math.min(sequence.length, targetLocation + 2000);
+    const relevantSequence = sequence.substring(startPos, endPos);
+    
+    // Adjust the target location to be relative to the extracted sequence
+    const adjustedTargetLocation = targetLocation - startPos;
+    
+    const primerSections = { 
+      targetLocation: adjustedTargetLocation, 
+      sequence: relevantSequence,
+      originalPosition: targetLocation // Include the original position for reference
+    };
+    
+    console.log('Using sequence segment from', startPos, 'to', endPos, 
+                'with adjusted targetLocation:', adjustedTargetLocation);
+    
+    // Use POST instead of GET to handle larger data
+    const response = await fetch('/api', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        type: 'primers',
+        primerSections: primerSections
+      })
+    });
+    
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    return await response.json();
+    
+    const data = await response.json();
+    
+    if (data.error) {
+      throw new Error(`Server error: ${data.error}`);
+    }
+    
+    console.log('API getPrimers response:', data);
+    return data;
   } catch (error) {
     console.error('Error getting primers:', error);
     throw error;
@@ -100,13 +147,63 @@ export const getPrimers = async (targetLocation, sequence) => {
  */
 export const getDeletePrimers = async (startLocation, stopLocation, sequence) => {
   try {
-    const primerSections = { startLocation, stopLocation, sequence };
-    const encodedData = Buffer.from(JSON.stringify(primerSections)).toString('base64');
-    const response = await fetch(`/api?type=primers&primerSections=${encodedData}`);
+    console.log('API getDeletePrimers called with startLocation:', startLocation, 'stopLocation:', stopLocation, 'sequence length:', sequence?.length);
+    
+    if (!startLocation || !stopLocation) {
+      console.error('Missing location parameters');
+      throw new Error('Start and stop locations are required');
+    }
+    
+    if (!sequence) {
+      console.error('Missing sequence parameter');
+      throw new Error('Sequence is required');
+    }
+    
+    // Extract relevant portions of the sequence around the start and stop locations
+    const startPos = Math.max(0, Math.min(startLocation, stopLocation) - 2000);
+    const endPos = Math.min(sequence.length, Math.max(startLocation, stopLocation) + 2000);
+    const relevantSequence = sequence.substring(startPos, endPos);
+    
+    // Adjust the locations to be relative to the extracted sequence
+    const adjustedStartLocation = startLocation - startPos;
+    const adjustedStopLocation = stopLocation - startPos;
+    
+    const primerSections = { 
+      startLocation: adjustedStartLocation, 
+      stopLocation: adjustedStopLocation,
+      sequence: relevantSequence,
+      originalStartPosition: startLocation,
+      originalStopPosition: stopLocation
+    };
+    
+    console.log('Using sequence segment from', startPos, 'to', endPos, 
+                'with adjusted startLocation:', adjustedStartLocation,
+                'and adjusted stopLocation:', adjustedStopLocation);
+    
+    // Use POST instead of GET to handle larger data
+    const response = await fetch('/api', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        type: 'primers',
+        primerSections: primerSections
+      })
+    });
+    
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    return await response.json();
+    
+    const data = await response.json();
+    
+    if (data.error) {
+      throw new Error(`Server error: ${data.error}`);
+    }
+    
+    console.log('API getDeletePrimers response:', data);
+    return data;
   } catch (error) {
     console.error('Error getting delete primers:', error);
     throw error;

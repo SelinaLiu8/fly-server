@@ -48,20 +48,25 @@ const SidebarContent = ({
         </div>
       )}
       
-      {activeMenu === 3 && primers && (
+      {activeMenu === 3 && (
         <div className="sidebar-panel">
           <h3 className="panel-title">Homology</h3>
           <div className="homology-list">
-            <HomologyList 
-              primers={primers}
-              terminal={terminal}
-              selectedArms={selectedArms}
-              onSelectHomologyArm={onSelectHomologyArm}
-              onSelectDeleteHomologyArm={onSelectDeleteHomologyArm}
-              onHighlightString={onHighlightString}
-              onClearHighlight={onClearHighlight}
-              operation={operation}
-            />
+            {console.log('SidebarContent - activeMenu:', activeMenu, 'primers:', primers, 'operation:', operation)}
+            {primers ? (
+              <HomologyList 
+                primers={primers}
+                terminal={terminal}
+                selectedArms={selectedArms}
+                onSelectHomologyArm={onSelectHomologyArm}
+                onSelectDeleteHomologyArm={onSelectDeleteHomologyArm}
+                onHighlightString={onHighlightString}
+                onClearHighlight={onClearHighlight}
+                operation={operation}
+              />
+            ) : (
+              <div className="homology-list-empty">No primers available. Please select a cut site first.</div>
+            )}
           </div>
         </div>
       )}

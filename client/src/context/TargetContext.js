@@ -176,11 +176,16 @@ export const TargetProvider = ({ children }) => {
   }, []);
 
   const pickCutSite = useCallback((target, saveCurrentHighlight) => {
+    console.log('pickCutSite called with target:', target);
     saveCurrentHighlight('rgb(255, 255, 97)');
     
     setTargets([target]);
     setMenu(3);
     // setScreen(3); // This will be handled by UIContext
+    
+    // Note: The primers should be fetched here, but it's handled in App.js
+    // This is just a debug message to help identify the issue
+    console.log('Target selected, menu set to 3. Primers should be fetched now.');
   }, [setMenu]);
 
   const pickDeleteCutSite = useCallback((target, saveCurrentHighlight) => {
