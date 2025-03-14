@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useCallback } from 'react';
+import React, { createContext, useState, useContext, useCallback, useEffect } from 'react';
 
 // Create the context
 const UIContext = createContext();
@@ -7,6 +7,11 @@ const UIContext = createContext();
 export const UIProvider = ({ children }) => {
   // State for UI
   const [menu, setMenu] = useState(null);
+  
+  // Debug: Log when menu changes
+  useEffect(() => {
+    console.log('UIContext: menu changed', { menu });
+  }, [menu]);
   const [screen, setScreen] = useState(1);
   const [hamburger, setHamburger] = useState(false);
   const [themeColor, setThemeColor] = useState(false);

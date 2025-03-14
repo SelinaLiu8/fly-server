@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useCallback } from 'react';
+import React, { createContext, useState, useContext, useCallback, useEffect } from 'react';
 import * as api from '../services/api';
 import { useUI } from './UIContext';
 import { useGene } from './GeneContext';
@@ -13,6 +13,14 @@ export const TargetProvider = ({ children }) => {
   
   // State for target data
   const [targets, setTargets] = useState(null);
+  
+  // Debug: Log when targets change
+  useEffect(() => {
+    console.log('TargetContext: targets changed', {
+      hasTargets: targets && targets.length > 0,
+      targetsCount: targets ? targets.length : 0
+    });
+  }, [targets]);
   const [selectedNTarget, setSelectedNTarget] = useState(null);
   const [selectedCTarget, setSelectedCTarget] = useState(null);
   const [mutatePam, setMutatePam] = useState(false);
@@ -21,31 +29,7 @@ export const TargetProvider = ({ children }) => {
   // Loading image
   const loading = require('../assets/loading.png');
 
-  const handleDeleteOperation = useCallback((highlights, sequence) => {
-    if (!highlights || !highlights.start || !highlights.stop) {
-      console.error("Highlights not properly set for delete operation.");
-      return;
-    }
-    
-    const nLocation = highlights.start.location;
-    const cLocation = highlights.stop.location;
-    
-    const nTargetGenes = sequence.substring(nLocation - 50, nLocation + 50);
-    const cTargetGenes = sequence.substring(cLocation - 50, cLocation + 50);
-    
-    showPopup({
-      message: (
-        <div>
-          <h2>Finding Potential Targets.<br /> This may take some time.</h2>
-        </div>
-      ),
-      image: loading,
-      stayOpen: true,
-    });
-    
-    processDeleteTargetSearch(nTargetGenes, cTargetGenes);
-  }, [showPopup, loading]);
-
+  // Define processDeleteTargetSearch first since it's used in handleDeleteOperation
   const processDeleteTargetSearch = useCallback(async (nGene, cGene) => {
     try {
       // Fetch the N-terminal and C-terminal target data separately
@@ -103,6 +87,26 @@ export const TargetProvider = ({ children }) => {
       });
     }
   }, [showPopup, setMenu, loading]);
+
+  // Now define handleDeleteOperation which uses processDeleteTargetSearch
+  const handleDeleteOperation = useCallback((highlights, sequence) => {
+    if (!highlights || !highlights.start || !highlights.stop) {
+      console.error("Highlights not properly set for delete operation.");
+      return;
+    }
+    
+    const nLocation = highlights.start.location;
+    const cLocation = highlights.stop.location;
+    
+    const nTargetGenes = sequence.substring(nLocation - 50, nLocation + 50);
+    const cTargetGenes = sequence.substring(cLocation - 50, cLocation + 50);
+    
+    // Note: The loading popup is now shown in App.js before this function is called
+    // to ensure the UI updates before the heavy processing begins
+    
+    // Process both N and C terminal targets for delete operation
+    processDeleteTargetSearch(nTargetGenes, cTargetGenes);
+  }, [processDeleteTargetSearch]);
 
   const processTagTargetSearch = useCallback(async (targetGenes) => {
     try {
@@ -198,9 +202,11 @@ export const TargetProvider = ({ children }) => {
       const updatedNTarget = terminalType === "N" ? target : selectedNTarget;
       const updatedCTarget = terminalType === "C" ? target : selectedCTarget;
       
+      // Update targets array with both selected targets
       setTargets([updatedNTarget, updatedCTarget]);
+      
+      // Move to the next menu
       setMenu(3);
-      // setScreen(3); // This will be handled by UIContext
     }
   }, [selectedNTarget, selectedCTarget, setMenu]);
 

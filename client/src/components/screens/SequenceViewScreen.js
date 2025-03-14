@@ -1,5 +1,6 @@
 import React from 'react';
 import GeneSequence from '../ui/GeneSequence';
+import './SequenceViewScreen.css';
 
 const SequenceViewScreen = ({
   screen,

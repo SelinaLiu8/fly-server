@@ -333,7 +333,7 @@ form.search-form label {
   justify-content: flex-start;
   align-items: flex-start;
   padding-top: 40px;
-  margin-left: 280px;
+  margin-left: 280px; /* Just the sidebar width */
   width: calc(100% - 280px);
   box-sizing: border-box;
 }
@@ -556,17 +556,89 @@ form.search-form label {
 .download-list,.target-list {
   position: absolute;
   left: 100%;
-  top: 75px;
+  top: 0;
   width: 214px;
-  display: flex;
+  display: flex !important;
   flex-direction: column;
   border-right: 1px solid #d5d9e0;
   border-bottom: 30px solid #56409b;
   box-shadow: inset 1px -7px 3px rgba(0,0,0,.2);
   background: #f5f6f9;
-  display: none;
   max-height: 600px;
-  overflow: auto
+  overflow: auto;
+  z-index: 9997;
+}
+
+
+.target-list {
+  z-index: 1000;
+  position: relative;
+  left: 0;
+  top: 0;
+  width: 100%;
+  border: none;
+  box-shadow: none;
+}
+
+.target-list h3 {
+  background: #56409b;
+  color: #fff;
+  padding: 10px;
+  margin: 0;
+  font-size: 16px;
+  text-align: center;
+}
+
+.target-list-header {
+  display: flex;
+  background: #ebe9e3;
+  padding: 8px 5px;
+  font-size: 12px;
+  font-weight: bold;
+  border-bottom: 1px solid #bcad8a;
+}
+
+.target-list-header span {
+  flex: 1;
+  text-align: center;
+}
+
+.target-list-items {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.target-item {
+  display: flex;
+  padding: 10px 5px;
+  font-size: 12px;
+  border-bottom: 1px solid #bcad8a;
+  cursor: pointer;
+}
+
+.target-item:hover {
+  background: hsla(0,0%,100%,.5);
+}
+
+.target-item.active {
+  background: rgba(86,64,155,.2);
+}
+
+.target-item span {
+  flex: 1;
+  text-align: center;
+  word-break: break-all;
+}
+
+.target-score {
+  font-weight: bold;
+}
+
+.target-list-empty {
+  padding: 20px;
+  text-align: center;
+  font-style: italic;
+  color: #666;
 }
 
 .target-list .single-target {
@@ -808,8 +880,25 @@ form.search-form label {
   padding: 10px 20px
 }
 
-.menu-icon.active .download-list {
-  display: flex
+.menu-icon.active .download-list,
+.menu-icon.active .target-list {
+  display: flex !important;
+}
+
+.target-list-visible {
+  display: flex !important;
+  flex-direction: column;
+  position: relative;
+  left: 0;
+  top: 0;
+  width: 100%;
+  background: #f5f6f9;
+  z-index: 9999;
+  border-right: 1px solid #d5d9e0;
+  border-bottom: 30px solid #56409b;
+  box-shadow: inset 1px -7px 3px rgba(0,0,0,.2);
+  max-height: 600px;
+  overflow: auto;
 }
 
 .blink {

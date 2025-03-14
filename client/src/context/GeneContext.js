@@ -186,10 +186,12 @@ export const GeneProvider = ({ children }) => {
     e.preventDefault();
     const selectedOperation = e.target.elements.operation.value;
     
+    console.log("Operation selected:", selectedOperation);
+    
+    // Set the operation state
     setOperation(selectedOperation);
     
-    console.log("Setting popup with isoform selection");
-    
+    // Show isoform selection popup
     showPopup({
       message: renderIsoForm(),
       image: null,
@@ -210,6 +212,12 @@ export const GeneProvider = ({ children }) => {
   }, [isoForms, operation, renderIsoForm, showPopup]);
 
   const createPopupForm = useCallback(() => {
+    // This form should only be shown for tag operations, not delete operations
+    if (operation === 'delete') {
+      console.warn("createPopupForm called for delete operation, which should not happen");
+      return null;
+    }
+    
     return (
       <div className="isoform-form">
         <h2>Choose Your Tag</h2>
@@ -222,7 +230,7 @@ export const GeneProvider = ({ children }) => {
         </form>
       </div>
     );
-  }, []);
+  }, [operation]);
 
   const pickIsoForm = useCallback(async (e) => {
     e.preventDefault();
@@ -256,19 +264,30 @@ export const GeneProvider = ({ children }) => {
       
       const fullSequence = geneInfo.upstream + geneInfo.sequence + geneInfo.downstream;
       
-      const popupConfig = operation === 'delete'
-        ? { show: false }
-        : {
-            message: createPopupForm(),
-            image: null,
-            stayOpen: true,
-          };
-      
       // Set state
       setIsoForm(geneInfo.isoForm);
       setIsoFormStrand(strand);
       setScreen(2);
-      showPopup(popupConfig);
+      
+      // For delete operation, don't show terminal selection popup
+      if (operation === 'delete') {
+        showPopup({
+          message: (
+            <div>
+              <h2>Finding Potential Targets.<br /> This may take some time.</h2>
+            </div>
+          ),
+          image: loading,
+          stayOpen: true,
+        });
+      } else {
+        // For tag operation, show terminal selection popup
+        showPopup({
+          message: createPopupForm(),
+          image: null,
+          stayOpen: true,
+        });
+      }
       
       // Emit a custom event with the data that other components can listen for
       const customEvent = new CustomEvent('isoformSelected', {
@@ -291,7 +310,7 @@ export const GeneProvider = ({ children }) => {
         image: null,
       });
     }
-  }, [isoForm, operation, createPopupForm, showPopup, setScreen]);
+  }, [isoForm, operation, createPopupForm, showPopup, setScreen, loading]);
 
   const makeIsoFormHighlights = useCallback((sequence, setHighlights, handleDeleteOperation) => {
     const startSequence = sequence.substr(0, 9);
@@ -339,8 +358,26 @@ export const GeneProvider = ({ children }) => {
     const selectedTerminal = terminalInput || e.target.tag.value;
     setTerminal(selectedTerminal);
     
-    // The rest of this function will be handled by the TargetContext
-  }, []);
+    // Show loading popup
+    showPopup({
+      message: (
+        <div>
+          <h2>Finding Potential Targets.<br /> This may take some time.</h2>
+        </div>
+      ),
+      image: loading,
+      stayOpen: true,
+    });
+    
+    // Emit a custom event to trigger target search
+    const customEvent = new CustomEvent('terminalSelected', {
+      detail: {
+        terminal: selectedTerminal,
+        operation: operation
+      }
+    });
+    document.dispatchEvent(customEvent);
+  }, [operation, showPopup, loading]);
 
   // Add custom data handling
   const addCustomData = useCallback((e, setSequence, setHighlights, chooseTerminalCallback) => {

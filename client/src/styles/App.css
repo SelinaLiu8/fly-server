@@ -163,6 +163,33 @@ header .menu>img {
   overflow-y: auto;
 }
 
+.sidebar-content {
+  position: fixed;
+  left: 70px;
+  top: 70px;
+  bottom: 0;
+  width: 214px;
+  background: #f5f6f9;
+  z-index: 9997;
+  overflow-y: auto;
+  border-right: 1px solid #d5d9e0;
+}
+
+.sidebar-panel {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.panel-title {
+  background: #56409b;
+  color: #fff;
+  padding: 15px 0;
+  font-size: 18px;
+  text-align: center;
+  margin: 0;
+}
+
 .menu-icon .menu-image-wrapper {
   width: 100%;
   cursor: pointer;
@@ -191,17 +218,12 @@ header .menu>img {
 }
 
 .menu-icon label {
-  display: none;
-  top: 0;
-  left: 70px;
-  width: 214px;
-  height: 100%;
-  position: absolute;
-  background: #56409b;
+  display: block;
   color: #fff;
-  font-size: 17.5px;
-  justify-content: center;
-  align-items: center
+  font-size: 12px;
+  text-align: center;
+  margin-top: 5px;
+  margin-bottom: 10px;
 }
 
 .menu-icon label .arrow-down {
@@ -223,7 +245,7 @@ header .menu>img {
 }
 
 .menu-icon.active label {
-  display: flex;
+  display: block;
   cursor: pointer
 }
 
@@ -333,8 +355,8 @@ form.search-input-container label {
   justify-content: flex-start;
   align-items: flex-start;
   padding-top: 40px;
-  margin-left: 280px;
-  width: calc(100% - 280px);
+  margin-left: 284px;
+  width: calc(100% - 284px);
   box-sizing: border-box;
 }
 
@@ -554,19 +576,71 @@ form.search-input-container label {
 }
 
 .download-list,.target-list {
-  position: absolute;
-  left: 100%;
-  top: 75px;
-  width: 214px;
+  width: 100%;
   display: flex;
   flex-direction: column;
-  border-right: 1px solid #d5d9e0;
   border-bottom: 30px solid #56409b;
   box-shadow: inset 1px -7px 3px rgba(0,0,0,.2);
   background: #f5f6f9;
-  display: none;
   max-height: 600px;
-  overflow: auto
+  overflow: auto;
+}
+
+.target-list h3 {
+  background: #56409b;
+  color: #fff;
+  padding: 15px 0;
+  font-size: 18px;
+  text-align: center;
+  margin: 0;
+}
+
+.target-item {
+  font-size: 14px;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  border-bottom: 1px solid #bcad8a;
+  word-break: break-all;
+  line-height: 20px;
+  font-family: "Poppins";
+  font-weight: 300;
+  cursor: pointer;
+}
+
+.target-item:hover {
+  background: hsla(0,0%,100%,.5);
+}
+
+.target-item.active {
+  background: rgba(86,64,155,.1);
+}
+
+.target-sequence {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  font-family: "Roboto Mono", monospace;
+  letter-spacing: 1px;
+}
+
+.target-distal {
+  color: #56409b;
+}
+
+.target-proximal {
+  color: #ff668e;
+}
+
+.target-details {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.target-efficiency, .target-strand, .target-offset, .target-terminal {
+  font-size: 13px;
 }
 
 .target-list .single-target {
@@ -770,6 +844,70 @@ form.search-input-container label {
   overflow-x: hidden
 }
 
+.homology-list h3, .download-options h3 {
+  background: #56409b;
+  color: #fff;
+  padding: 15px 0;
+  font-size: 18px;
+  text-align: center;
+  margin: 0;
+}
+
+.primer-section h4, .download-section h4 {
+  background: #7b6cbc;
+  color: #fff;
+  padding: 10px 0;
+  font-size: 16px;
+  text-align: center;
+  margin: 10px 0 0 0;
+}
+
+.primer-item {
+  font-size: 14px;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  border-bottom: 1px solid #bcad8a;
+  word-break: break-all;
+  line-height: 20px;
+  font-family: "Poppins";
+  font-weight: 300;
+  cursor: pointer;
+}
+
+.primer-item:hover {
+  background: hsla(0,0%,100%,.5);
+}
+
+.primer-item.selected {
+  background: rgba(86,64,155,.1);
+}
+
+.primer-sequence {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  font-family: "Roboto Mono", monospace;
+  letter-spacing: 1px;
+}
+
+.primer-details {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 13px;
+}
+
+.download-section {
+  padding: 0 15px 15px;
+}
+
+.download-button {
+  width: 100%;
+  margin-top: 10px;
+}
+
 .homology-label {
   background: #56409b;
   color: #fff;
@@ -808,9 +946,6 @@ form.search-input-container label {
   padding: 10px 20px
 }
 
-.menu-icon.active .download-list {
-  display: flex
-}
 
 .blink {
   -webkit-animation: blink 3s infinite both;

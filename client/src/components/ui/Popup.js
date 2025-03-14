@@ -5,7 +5,7 @@ const Popup = ({ popup, onClose }) => {
     if (!popup.stayOpen) {
       const timer = setTimeout(() => {
         onClose();
-      }, 5000);
+      }, popup.timeout || 5000);
       
       return () => clearTimeout(timer);
     }

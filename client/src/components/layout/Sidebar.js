@@ -1,38 +1,10 @@
 import React from 'react';
-import TargetList from '../ui/TargetList';
-import HomologyList from '../ui/HomologyList';
-import DownloadOptions from '../ui/DownloadOptions';
 
 const Sidebar = ({
   activeMenu,
   screen,
   onMenuChange,
-  onScreenChange,
-  targets,
-  currentHighlightLocation,
-  onPickCutSite,
-  onPickDeleteCutSite,
-  onHighlightString,
-  onClearHighlight,
-  operation,
-  primers,
-  terminal,
-  selectedArms,
-  onSelectHomologyArm,
-  onSelectDeleteHomologyArm,
-  selectedPrimer,
-  onSelectPrimer,
-  geneName,
-  oligos,
-  onViewFinishedDesign,
-  onViewDeleteFinishedDesign,
-  onDownloadApeFile,
-  onDownloadDeleteApeFile,
-  onDownloadGuideRna,
-  onDownloadDeleteGuideRna,
-  onChangePlasmidTemplate,
-  onDownloadPlasmidTemplate,
-  onDownloadDeletePlasmidTemplate
+  onScreenChange
 }) => {
   return (
     <div className="sidebar">
@@ -59,18 +31,6 @@ const Sidebar = ({
                 <img src={require('../../assets/cutcite.png')} alt="Cut Site" />
               </div>
               <label>Cut Site</label>
-              
-              {activeMenu === 2 && targets && targets.length > 0 && (
-                <TargetList 
-                  targets={targets}
-                  currentHighlightLocation={currentHighlightLocation}
-                  onPickCutSite={onPickCutSite}
-                  onPickDeleteCutSite={onPickDeleteCutSite}
-                  onHighlightString={onHighlightString}
-                  onClearHighlight={onClearHighlight}
-                  operation={operation}
-                />
-              )}
             </div>
             
             <div 
@@ -82,21 +42,6 @@ const Sidebar = ({
                 <img src={require('../../assets/homology.png')} alt="Homology" />
               </div>
               <label>Homology</label>
-              
-              {activeMenu === 3 && primers && (
-                <div className="homology-list">
-                  <HomologyList 
-                    primers={primers}
-                    terminal={terminal}
-                    selectedArms={selectedArms}
-                    onSelectHomologyArm={onSelectHomologyArm}
-                    onSelectDeleteHomologyArm={onSelectDeleteHomologyArm}
-                    onHighlightString={onHighlightString}
-                    onClearHighlight={onClearHighlight}
-                    operation={operation}
-                  />
-                </div>
-              )}
             </div>
             
             <div 
@@ -108,25 +53,6 @@ const Sidebar = ({
                 <img src={require('../../assets/download.png')} alt="Download" />
               </div>
               <label>Download</label>
-              
-              {activeMenu === 4 && (
-                <div className="download-list">
-                  <DownloadOptions 
-                    geneName={geneName}
-                    oligos={oligos}
-                    operation={operation}
-                    onViewFinishedDesign={onViewFinishedDesign}
-                    onViewDeleteFinishedDesign={onViewDeleteFinishedDesign}
-                    onDownloadApeFile={onDownloadApeFile}
-                    onDownloadDeleteApeFile={onDownloadDeleteApeFile}
-                    onDownloadGuideRna={onDownloadGuideRna}
-                    onDownloadDeleteGuideRna={onDownloadDeleteGuideRna}
-                    onChangePlasmidTemplate={onChangePlasmidTemplate}
-                    onDownloadPlasmidTemplate={onDownloadPlasmidTemplate}
-                    onDownloadDeletePlasmidTemplate={onDownloadDeletePlasmidTemplate}
-                  />
-                </div>
-              )}
             </div>
           </>
         )}

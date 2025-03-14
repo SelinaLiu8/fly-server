@@ -1,0 +1,45 @@
+.gene-sequence {
+  font-family: 'Roboto Mono', monospace;
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-height: 600px;
+  padding: 10px;
+  white-space: normal;
+  word-wrap: break-word;
+  width: 100%;
+}
+
+.gene-sequence-empty {
+  font-style: italic;
+  color: #999;
+  padding: 20px;
+}
+
+.sequence-text, .sequence-highlight {
+  display: inline;
+  white-space: normal;
+  word-wrap: break-word;
+}
+
+.sequence-highlight-overlap {
+  position: relative;
+  box-sizing: border-box;
+}
+
+/* Ensure start/stop codons are always on top */
+.sequence-highlight.start,
+.sequence-highlight.stop,
+.sequence-highlight[class*="potentialStart-"],
+.sequence-highlight[class*="potentialStop-"] {
+  z-index: 3 !important;
+}
+
+/* Current highlight should be second priority */
+.sequence-highlight.current {
+  z-index: 2 !important;
+}
+
+/* Other highlights have lowest priority */
+.sequence-highlight {
+  z-index: 1;
+}
