@@ -16,9 +16,8 @@ const DownloadOptions = ({
 }) => {
   const [mutatePam, setMutatePam] = useState(false);
 
-  if (!oligos) {
-    return <div className="download-options-empty">No download options available</div>;
-  }
+  // Even if oligos is null, we still want to show download options
+  const hasOligos = oligos !== null;
 
   const handleMutatePamToggle = () => {
     setMutatePam(prev => !prev);
@@ -90,34 +89,44 @@ const DownloadOptions = ({
         </div>
       </div>
       
-      <div className="download-section">
-        <h4>Mutate PAM</h4>
-        <button 
-          className="download-button"
-          onClick={handleMutatePamToggle}
-        >
-          {mutatePam ? 'Cancel' : 'Mutate PAM'}
-        </button>
-        
-        {mutatePam && (
-          <form onSubmit={handleMutatePamSubmit} className="mutate-pam-form">
-            <div className="form-group">
-              <label htmlFor="newPam">New PAM Sequence</label>
-              <input
-                type="text"
-                id="newPam"
-                name="newPam"
-                placeholder="Enter new PAM sequence"
-                maxLength="3"
-                required
-              />
-            </div>
-            <button type="submit" className="mutate-pam-submit">
-              Submit
-            </button>
-          </form>
-        )}
-      </div>
+      {hasOligos && (
+        <div className="download-section">
+          <h4>Mutate PAM</h4>
+          <button 
+            className="download-button"
+            onClick={handleMutatePamToggle}
+          >
+            {mutatePam ? 'Cancel' : 'Mutate PAM'}
+          </button>
+          
+          {mutatePam && (
+            <form onSubmit={handleMutatePamSubmit} className="mutate-pam-form">
+              <div className="form-group">
+                <label htmlFor="newPam">New PAM Sequence</label>
+                <input
+                  type="text"
+                  id="newPam"
+                  name="newPam"
+                  placeholder="Enter new PAM sequence"
+                  maxLength="3"
+                  required
+                />
+              </div>
+              <button type="submit" className="mutate-pam-submit">
+                Submit
+              </button>
+            </form>
+          )}
+        </div>
+      )}
+      
+      {!hasOligos && (
+        <div className="download-section">
+          <div className="oligo-info-note">
+            <p>Note: Oligo information could not be retrieved. You can still download templates and APE files.</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

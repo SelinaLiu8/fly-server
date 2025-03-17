@@ -8,7 +8,8 @@ const HomologyList = ({
   onSelectDeleteHomologyArm,
   onHighlightString,
   onClearHighlight,
-  operation
+  operation,
+  targets
 }) => {
   console.log('HomologyList - primers:', primers, 'terminal:', terminal, 'operation:', operation);
   console.log('HomologyList - primers keys:', primers ? Object.keys(primers) : 'no primers');
@@ -29,6 +30,7 @@ const HomologyList = ({
     if (operation === 'delete') {
       onSelectDeleteHomologyArm(primer, arm, terminalType);
     } else {
+      // The saveCurrentHighlight parameter is handled inside the onSelectHomologyArm function in App.js
       onSelectHomologyArm(primer, arm);
     }
   };

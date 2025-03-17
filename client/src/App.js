@@ -273,9 +273,9 @@ const App = () => {
   // Handle select homology arm based on operation
   const handleSelectHomologyArm = (selection, arm) => {
     if (operation === 'delete') {
-      selectDeleteHomologyArm(selection, arm, terminal, saveCurrentHighlight);
+      selectDeleteHomologyArm(selection, arm, terminal, saveCurrentHighlight, selectedNTarget, selectedCTarget);
     } else {
-      selectHomologyArm(selection, arm, saveCurrentHighlight);
+      selectHomologyArm(selection, arm, saveCurrentHighlight, targets);
     }
   };
 

@@ -110,7 +110,7 @@ export const PrimerProvider = ({ children }) => {
     }
   }, [showPopup, setMenu, loading]);
 
-  const selectHomologyArm = useCallback((selection, arm, saveCurrentHighlight) => {
+  const selectHomologyArm = useCallback((selection, arm, saveCurrentHighlight, targets) => {
     const currentArms = { ...selectedArms };
     currentArms[arm] = selection;
     
@@ -127,11 +127,45 @@ export const PrimerProvider = ({ children }) => {
         stayOpen: true,
       });
       
-      fetchOligoInformation();
+      // Create a timeout to ensure we don't get stuck
+      setTimeout(() => {
+        // If we're still showing the popup after 30 seconds, proceed to download options
+        showPopup({ show: false });
+        setMenu(4);
+      }, 30000);
+      
+      // Call getOligos directly instead of using fetchOligoInformation
+      if (targets && targets.length > 0) {
+        const target = targets[0];
+        const targetSequence = target.distal + target.proximal + target.pam;
+        
+        // Create a timeout promise
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Oligo retrieval timed out')), 30000); // 30 second timeout
+        });
+        
+        // Fetch oligos with timeout
+        Promise.race([api.getOligos(targetSequence), timeoutPromise])
+          .then(oligoData => {
+            setOligos(oligoData);
+            showPopup({ show: false });
+            setMenu(4);
+          })
+          .catch(error => {
+            console.error('Error fetching oligos:', error);
+            // Proceed to download options even if oligo retrieval fails
+            setOligos(null);
+            setMenu(4);
+            showPopup({ show: false });
+          });
+      } else {
+        console.error("No targets available for fetching oligos");
+        setMenu(4);
+      }
     }
-  }, [selectedArms, showPopup, loading]);
+  }, [selectedArms, setMenu, showPopup, loading]);
 
-  const selectDeleteHomologyArm = useCallback((selection, arm, terminal, saveCurrentHighlight) => {
+  const selectDeleteHomologyArm = useCallback((selection, arm, terminal, saveCurrentHighlight, selectedNTarget, selectedCTarget) => {
     const currentArms = { ...selectedArms };
     const terminalKey = `${arm}_${terminal}`;
     currentArms[terminalKey] = selection;
@@ -142,9 +176,57 @@ export const PrimerProvider = ({ children }) => {
     
     const totalSelected = Object.keys(currentArms);
     if (totalSelected.length === 8) { // Expecting 4 arms × 2 terminals = 8
-      fetchOligoInformation();
+      // GET OLIGO INFO
+      showPopup({
+        message: <h2>Retrieving Oligo Information</h2>,
+        image: loading,
+        stayOpen: true,
+      });
+      
+      // Create a timeout to ensure we don't get stuck
+      setTimeout(() => {
+        // If we're still showing the popup after 30 seconds, proceed to download options
+        showPopup({ show: false });
+        setMenu(4);
+      }, 30000);
+      
+      // Call getOligos directly instead of using fetchOligoInformation
+      if (selectedNTarget && selectedCTarget) {
+        // Create a timeout promise
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Oligo retrieval timed out')), 30000); // 30 second timeout
+        });
+        
+        // Fetch oligos for N target with timeout
+        const nTargetSequence = selectedNTarget.distal + selectedNTarget.proximal + selectedNTarget.pam;
+        const cTargetSequence = selectedCTarget.distal + selectedCTarget.proximal + selectedCTarget.pam;
+        
+        // Fetch oligos for N and C targets
+        Promise.all([
+          Promise.race([api.getOligos(nTargetSequence), timeoutPromise]),
+          Promise.race([api.getOligos(cTargetSequence), timeoutPromise])
+        ])
+          .then(([nOligos, cOligos]) => {
+            setOligos({
+              N: nOligos,
+              C: cOligos
+            });
+            showPopup({ show: false });
+            setMenu(4);
+          })
+          .catch(error => {
+            console.error('Error fetching oligos:', error);
+            // Proceed to download options even if oligo retrieval fails
+            setOligos(null);
+            setMenu(4);
+            showPopup({ show: false });
+          });
+      } else {
+        console.error("Both selectedNTarget and selectedCTarget are required for fetching oligos.");
+        setMenu(4);
+      }
     }
-  }, [selectedArms, showPopup, loading]);
+  }, [selectedArms, setMenu, showPopup, loading]);
 
   const selectPrimer = useCallback((primer, arm) => {
     setSelectedPrimer(prev => ({
@@ -166,16 +248,26 @@ export const PrimerProvider = ({ children }) => {
         stayOpen: true,
       });
       
+      // Create a timeout promise
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Oligo retrieval timed out')), 30000); // 30 second timeout
+      });
+      
       try {
-        // Fetch oligos for N target
-        const nOligos = await api.getOligos(
+        // Fetch oligos for N target with timeout
+        const nOligosPromise = api.getOligos(
           selectedNTarget.distal + selectedNTarget.proximal + selectedNTarget.pam
         );
         
-        // Fetch oligos for C target
-        const cOligos = await api.getOligos(
+        // Race between the fetch and the timeout
+        const nOligos = await Promise.race([nOligosPromise, timeoutPromise]);
+        
+        // Fetch oligos for C target with timeout
+        const cOligosPromise = api.getOligos(
           selectedCTarget.distal + selectedCTarget.proximal + selectedCTarget.pam
         );
+        
+        const cOligos = await Promise.race([cOligosPromise, timeoutPromise]);
         
         setOligos({
           N: nOligos,
@@ -185,14 +277,10 @@ export const PrimerProvider = ({ children }) => {
         setMenu(4);
       } catch (error) {
         console.error('Error fetching oligos:', error);
-        showPopup({
-          message: (
-            <div className="popup-error">
-              <h2>An error occurred while retrieving oligo information. Please try again later.</h2>
-            </div>
-          ),
-          image: null,
-        });
+        // Proceed to download options even if oligo retrieval fails
+        setOligos(null);
+        setMenu(4);
+        showPopup({ show: false });
       }
     } else {
       if (!targets || targets.length === 0) {
@@ -206,30 +294,28 @@ export const PrimerProvider = ({ children }) => {
         stayOpen: true,
       });
       
+      // Create a timeout promise
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Oligo retrieval timed out')), 30000); // 30 second timeout
+      });
+      
       try {
-        const oligoData = await api.getOligos(
+        // Race between the fetch and the timeout
+        const oligoPromise = api.getOligos(
           targets[0].distal + targets[0].proximal + targets[0].pam
         );
         
-        if (!oligoData.sense) {
-          setMenu(4);
-          showPopup({ show: false });
-          return;
-        }
+        const oligoData = await Promise.race([oligoPromise, timeoutPromise]);
         
         setOligos(oligoData);
         setMenu(4);
         showPopup({ show: false });
       } catch (error) {
         console.error('Error fetching oligos:', error);
-        showPopup({
-          message: (
-            <div className="popup-error">
-              <h2>An error occurred while retrieving oligo information. Please try again later.</h2>
-            </div>
-          ),
-          image: null,
-        });
+        // Proceed to download options even if oligo retrieval fails
+        setOligos(null);
+        setMenu(4);
+        showPopup({ show: false });
       }
     }
   }, [showPopup, setMenu, loading]);
@@ -316,11 +402,19 @@ export const PrimerProvider = ({ children }) => {
           <h3>Homology Info</h3>
           {primerHTML}
         </div>
-        <div>
-          <h3>Oligo Info</h3>
-          <div><b>Sense: </b>{oligos.sense}</div>
-          <div><b>Antisense: </b>{oligos.antisense}</div>
-        </div>
+        {oligos && (
+          <div>
+            <h3>Oligo Info</h3>
+            <div><b>Sense: </b>{oligos.sense}</div>
+            <div><b>Antisense: </b>{oligos.antisense}</div>
+          </div>
+        )}
+        {!oligos && (
+          <div>
+            <h3>Oligo Info</h3>
+            <div>Oligo information could not be retrieved.</div>
+          </div>
+        )}
         <button onClick={handlePrint}>Print</button>
       </div>
     );
@@ -453,19 +547,27 @@ export const PrimerProvider = ({ children }) => {
             {CprimerHTML}
           </div>
         </div>
-        <div>
-          <h3>Oligo Info</h3>
+        {oligos && (
           <div>
-            <h4>N Terminal</h4>
-            <div><b>Sense: </b>{oligos.N.sense}</div>
-            <div><b>Antisense: </b>{oligos.N.antisense}</div>
+            <h3>Oligo Info</h3>
+            <div>
+              <h4>N Terminal</h4>
+              <div><b>Sense: </b>{oligos.N.sense}</div>
+              <div><b>Antisense: </b>{oligos.N.antisense}</div>
+            </div>
+            <div>
+              <h4>C Terminal</h4>
+              <div><b>Sense: </b>{oligos.C.sense}</div>
+              <div><b>Antisense: </b>{oligos.C.antisense}</div>
+            </div>
           </div>
+        )}
+        {!oligos && (
           <div>
-            <h4>C Terminal</h4>
-            <div><b>Sense: </b>{oligos.C.sense}</div>
-            <div><b>Antisense: </b>{oligos.C.antisense}</div>
+            <h3>Oligo Info</h3>
+            <div>Oligo information could not be retrieved.</div>
           </div>
-        </div>
+        )}
         <button onClick={handlePrint}>Print</button>
       </div>
     );

@@ -63,6 +63,7 @@ const SidebarContent = ({
                 onHighlightString={onHighlightString}
                 onClearHighlight={onClearHighlight}
                 operation={operation}
+                targets={targets}
               />
             ) : (
               <div className="homology-list-empty">No primers available. Please select a cut site first.</div>
