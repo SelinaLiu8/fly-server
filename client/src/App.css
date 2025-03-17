@@ -91,7 +91,7 @@ header .menu>img {
 
 .main-menu {
   position: absolute;
-  top: 70px;
+  top: 80px; /* Adjusted to match sidebar and sidebar-content */
   background: #56409b;
   color: #fff;
   font-size: 16px;
@@ -157,10 +157,22 @@ header .menu>img {
   z-index: 9998;
   position: fixed;
   left: 0;
-  top: 70px;
+  top: 200px;
   bottom: 0;
-  width: 70px;
+  width: 150px;
   overflow-y: auto;
+}
+
+.sidebar-content {
+  position: fixed;
+  left: 70px;
+  top: 200px;
+  bottom: 0;
+  width: 214px;
+  background: #f5f6f9;
+  z-index: 9997;
+  overflow-y: auto;
+  border-right: 1px solid #d5d9e0;
 }
 
 .menu-icon .menu-image-wrapper {
