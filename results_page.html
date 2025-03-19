@@ -1,0 +1,278 @@
+<!DOCTYPE html><html lang="en"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" type="text/css" href="/css/DRSC15.css">
+    <link rel="stylesheet" type="text/css" href="/css/DRSC15_banner.css">
+
+    <link rel="stylesheet" href="/css/font-awesome.min.css">
+    <script type="text/javascript" src="/js/jquery-1.9.1.js"></script>
+    <script type="text/javascript" src="/js/jquery.smartmenus.js"></script>
+
+    <!-- Google Analytics, just because it's useful to know how much use our tools are getting when grant renewal comes up -->
+    <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-Z9623D36P8"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-Z9623D36P8');
+    </script>
+
+    <!-- SmartMenus jQuery init -->
+    <script type="text/javascript">
+        $(function() {
+            $('#main-menu').smartmenus({
+                subMenusSubOffsetX: 1,
+                subMenusSubOffsetY: -8
+            });
+        });
+    </script>
+
+    <!-- SmartMenus core CSS (required) -->
+    <link href="/css/sm-core-css.css" rel="stylesheet" type="text/css">
+
+    <!-- "sm-blue" menu theme (optional, you can use your own CSS, too) -->
+    <!--link href="css/sm-trip_menu1.css" rel="stylesheet" type="text/css" / -->
+    <link href="/css/sm-menus/sm-drsc.css" rel="stylesheet" type="text/css">
+    <!--link href="css/sm-trip_menu1.css" rel="stylesheet" type="text/css" /-->
+
+    <!-- #main-menu config - instance specific stuff not covered in the theme -->
+    <style type="text/css">
+        #main-menu {
+            position:relative;
+            z-index:99;
+            width:auto;
+        }
+        #main-menu ul {
+            width:12em; /* fixed width only please - you can use the "subMenusMinWidth"/"subMenusMaxWidth" script options to override this if you like */
+        }
+    </style>
+
+
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="description" content="DRSC tool for search and view of pre-computed CRISPR designs for genome engineering (knock-out or knock-in) in Drosophila.">
+    <script type="text/javascript" src="js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="js/crisprEvaluate.js"></script>
+
+
+</head>
+<body>
+<table>
+   <tbody><tr> <!-- Banner Row -->
+    <td colspan="9" align="left" class="DRSCBannerCell">
+        <!--img src="images/DRSC-n-TRiP-banner770x140-v1.jpg"
+             alt="Drosophila RNAi Screening Center" class="DRSCbanner"-->
+        <div id="banner_wrap"><a href="/">
+            <img src="/images/DRSC-banner-mosaic.jpg" alt="Drosophila RNAi Screening Center" class="bannerimg">
+            <div id="banner_inner_element">
+
+                DRSC
+                <div style="clear:both"></div>
+                <div style="font-size: .35em; float:left"><span style="font-size: 1em; font-style: italic; ">Drosophila</span>  RNAi Screening Center</div>
+                <div style="font-size: .35em; float:right">  Harvard Medical School</div>
+            </div>
+        </a></div><a href="/">
+    </a></td>
+</tr>
+
+                                                        
+</tbody></table>
+   <ul id="main-menu" class="sm sm-blue">
+    <li><a href="../crispr/index.html">Find CRISPRs</a></li>
+    <li><a href="../evaluateCrispr/">Efficiency Prediction Tool</a></li>
+    <li><a href="help.jsp">Help</a></li>
+    <li><a href="../crispr/contact.html">Contact</a></li>
+</ul>
+    
+
+<a href="http://www.flyrnai.org">
+    <div id="header">CRISPR Browser Version 2</div>
+</a>
+
+<div class="plain_body">
+    <h2>Predicted Efficiency Scores For The Input</h2>
+    <p>Please note that this tool reports a predicted efficiency based on nucleotide sequence.
+        It does not run an analysis of potential off-target effects or other gene annotation-related aspects of design.</p>
+    <p>Score reflects cumulative p value, the higher is the better <a href="javascript:" onclick="CrisprEvaluate.openWindow('/evaluateCrispr/help.jsp');">
+    <strong>(see help page for more information)</strong>.</a></p>
+    
+    <button id="downloadButton" onclick="CrisprEvaluate.downloadExcel()" style="color: darkred"><strong>Download Results</strong></button>
+    
+    <table width="100%" cellpadding="10" border="1px solid black" id="dataTable">
+        <thead style="text-align: left">
+            <tr><th>Identifier</th><th>Input Sequence</th><th>Input Sequence Length</th>
+                <th>Analyzed Sequence</th><th>Analyzed Sequence Length</th><th>Number of Bases Analyzed</th>
+                <th>Start Index</th><th>End Index</th><th>Score</th>
+                <th>Comments</th><th>U6 Terminator</th>
+         
+            </tr>
+        </thead>
+        <tbody>
+            
+            <tr>
+                <td>1</td>
+                <td>CTCTCCTTTCTTCTTTACTA</td>
+                <td>20</td>
+                <td>CTCTCCTTTCTTCTTTACTA</td>
+                <td>20</td>
+                <td>20</td>
+                <td>1</td>
+                <td>20</td>
+                <td>7.09621</td>
+                <td>None</td>
+                <td>None</td>
+
+               
+                          </tr>
+        
+            <tr>
+                <td>2</td>
+                <td>CAAGATGGCCGCGAAGCCCG</td>
+                <td>20</td>
+                <td>CAAGATGGCCGCGAAGCCCG</td>
+                <td>20</td>
+                <td>20</td>
+                <td>1</td>
+                <td>20</td>
+                <td>7.14657</td>
+                <td>None</td>
+                <td>None</td>
+
+               
+                          </tr>
+        
+            <tr>
+                <td>3</td>
+                <td>GCTCTTATCCTCGGGCTTCG</td>
+                <td>20</td>
+                <td>GCTCTTATCCTCGGGCTTCG</td>
+                <td>20</td>
+                <td>20</td>
+                <td>1</td>
+                <td>20</td>
+                <td>7.72088</td>
+                <td>None</td>
+                <td>None</td>
+
+               
+                          </tr>
+        
+            <tr>
+                <td>4</td>
+                <td>GGATAAGAGCACGGATATTC</td>
+                <td>20</td>
+                <td>GGATAAGAGCACGGATATTC</td>
+                <td>20</td>
+                <td>20</td>
+                <td>1</td>
+                <td>20</td>
+                <td>7.81857</td>
+                <td>None</td>
+                <td>None</td>
+
+               
+                          </tr>
+        
+            <tr>
+                <td>5</td>
+                <td>CAGTCCGTAGTAAAGAAGAA</td>
+                <td>20</td>
+                <td>CAGTCCGTAGTAAAGAAGAA</td>
+                <td>20</td>
+                <td>20</td>
+                <td>1</td>
+                <td>20</td>
+                <td>4.60726</td>
+                <td>None</td>
+                <td>None</td>
+
+               
+                          </tr>
+        
+            <tr>
+                <td>6</td>
+                <td>AAGAAGAAAGGAGAGCAAGA</td>
+                <td>20</td>
+                <td>AAGAAGAAAGGAGAGCAAGA</td>
+                <td>20</td>
+                <td>20</td>
+                <td>1</td>
+                <td>20</td>
+                <td>4.14861</td>
+                <td>None</td>
+                <td>None</td>
+
+               
+                          </tr>
+        
+            <tr>
+                <td>7</td>
+                <td>GAAGCCCGAGGATAAGAGCA</td>
+                <td>20</td>
+                <td>GAAGCCCGAGGATAAGAGCA</td>
+                <td>20</td>
+                <td>20</td>
+                <td>1</td>
+                <td>20</td>
+                <td>3.39005</td>
+                <td>None</td>
+                <td>None</td>
+
+               
+                          </tr>
+        
+            <tr>
+                <td>8</td>
+                <td>ATATCCGTGCTCTTATCCTC</td>
+                <td>20</td>
+                <td>ATATCCGTGCTCTTATCCTC</td>
+                <td>20</td>
+                <td>20</td>
+                <td>1</td>
+                <td>20</td>
+                <td>9.17672</td>
+                <td>None</td>
+                <td>None</td>
+
+               
+                          </tr>
+        
+            <tr>
+                <td>9</td>
+                <td>AATATCCGTGCTCTTATCCT</td>
+                <td>20</td>
+                <td>AATATCCGTGCTCTTATCCT</td>
+                <td>20</td>
+                <td>20</td>
+                <td>1</td>
+                <td>20</td>
+                <td>6.49379</td>
+                <td>None</td>
+                <td>None</td>
+
+               
+                          </tr>
+        
+
+        </tbody>
+    </table>
+
+<br><br><br>
+
+</div>
+<div class="hidden">
+    <form name="downloadTable" id="downloadTable" method="post" action="/evaluateCrispr/download" target="downloadFrame">
+        <input type="hidden" name="action" value="generateExcel">
+        <input type="hidden" name="tableData" id="tableData">
+    </form>
+</div>
+
+
+<iframe id="downloadFrame" name="downloadFrame" height="0" width="0" class="hidden"></iframe>
+<!-- /.container -->
+
+<script type="text/javascript" src="/_Incapsula_Resource?SWJIYLWA=719d34d31c8e3a6e6fffd425f7e032f3&amp;ns=12&amp;cb=898467759" async=""></script>
+</body></html>
