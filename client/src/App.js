@@ -116,6 +116,12 @@ const App = () => {
     changeCurrentHighlight
   } = useSequence();
 
+  // Import getPrimers and getDeletePrimers from PrimerContext
+  const { getPrimers, getDeletePrimers } = usePrimer();
+  
+  // Import processTagTargetSearch from TargetContext
+  const { processTagTargetSearch } = useTarget();
+
   // Create a design object for saving
   const designData = {
     geneName,
@@ -165,6 +171,8 @@ const App = () => {
       
       // If this is a delete operation, call handleDeleteOperation
       if (isDelete) {
+        console.log('Delete operation detected in isoformSelected event');
+        
         // Show loading popup immediately for delete operation
         showPopup({
           message: (
@@ -178,6 +186,7 @@ const App = () => {
         
         // Small delay to ensure UI updates before heavy processing
         setTimeout(() => {
+          console.log('Calling handleDeleteOperation with highlights:', highlights);
           handleDeleteOperation(highlights, sequence);
         }, 100);
       }
@@ -190,16 +199,49 @@ const App = () => {
     return () => {
       document.removeEventListener('isoformSelected', handleIsoformSelected);
     };
-  }, [setSequence, setHighlights, handleDeleteOperation, showPopup]);
+  }, [setSequence, setHighlights, handleDeleteOperation, showPopup, loading]);
 
-  const { processTagTargetSearch } = useTarget();
+  // Listen for the deleteTargetsSelected custom event
+  useEffect(() => {
+    const handleDeleteTargetsSelected = (event) => {
+      const { nTarget, cTarget } = event.detail;
+      
+      console.log("Delete targets automatically selected:", { nTarget, cTarget });
+      
+      // Make sure highlights has start and stop locations
+      if (!highlights || !highlights.start || !highlights.stop) {
+        console.error('Missing start or stop highlights for delete primers');
+        return;
+      }
+      
+      // Log the highlights to help with debugging
+      console.log('Fetching delete primers with highlights:', highlights);
+      
+      // Fetch delete primers
+      getDeletePrimers(highlights, sequence);
+    };
+    
+    // Add event listener
+    document.addEventListener('deleteTargetsSelected', handleDeleteTargetsSelected);
+    
+    // Clean up
+    return () => {
+      document.removeEventListener('deleteTargetsSelected', handleDeleteTargetsSelected);
+    };
+  }, [highlights, sequence, getDeletePrimers]);
 
   // Listen for the terminalSelected custom event
   useEffect(() => {
     const handleTerminalSelected = (event) => {
-      const { terminal } = event.detail;
+      const { terminal, operation: eventOperation } = event.detail;
       
-      console.log("Terminal selected:", terminal);
+      console.log("Terminal selected:", terminal, "Operation:", eventOperation);
+      
+      // Skip processing for delete operations since they're handled by the isoformSelected event
+      if (eventOperation === 'delete') {
+        console.log("Skipping terminal selection processing for delete operation");
+        return;
+      }
       
       // Get the current sequence and highlights from state
       if (sequence && highlights) {
@@ -278,9 +320,6 @@ const App = () => {
       selectHomologyArm(selection, arm, saveCurrentHighlight, targets);
     }
   };
-
-  // Import getPrimers and getDeletePrimers from PrimerContext
-  const { getPrimers, getDeletePrimers } = usePrimer();
 
   // Handle pick cut site for tag operation
   const handlePickCutSite = (target) => {
