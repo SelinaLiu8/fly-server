@@ -32,6 +32,13 @@ export const TargetProvider = ({ children }) => {
   // Define processDeleteTargetSearch first since it's used in handleDeleteOperation
   const processDeleteTargetSearch = useCallback(async (nGene, cGene) => {
     try {
+      // Show searching for target popup immediately
+      showPopup({
+        message: <h2>Searching for Targets</h2>,
+        image: loading,
+        stayOpen: true,
+      });
+      
       // Fetch the N-terminal and C-terminal target data separately
       const [nResponse, cResponse] = await Promise.all([
         api.searchForTargets(nGene),
@@ -45,6 +52,7 @@ export const TargetProvider = ({ children }) => {
         (target) => target.distal + target.proximal
       );
       
+      // Update popup to show checking efficiency
       showPopup({
         message: <h2>Checking Target Efficiency</h2>,
         image: loading,

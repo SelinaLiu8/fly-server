@@ -292,35 +292,27 @@ export const GeneProvider = ({ children }) => {
       console.log("pickIsoForm - Operation after API call:", operation);
       console.log("pickIsoForm - Current operation (direct) after API call:", currentOperation);
       
-      // For delete operation, don't show terminal selection popup
-      // Use the direct operation state to ensure we have the latest value
-      if (currentOperation === 'delete') {
-        console.log("pickIsoForm - Delete operation detected, skipping terminal selection");
-        
-        showPopup({
-          message: (
-            <div>
-              <h2>Finding Potential Targets.<br /> This may take some time.</h2>
-            </div>
-          ),
-          image: loading,
-          stayOpen: true,
-        });
-        
-        // For delete operation, set a default terminal value (both)
-        setTerminal('both');
-        
-        console.log("pickIsoForm - Terminal set to:", 'both');
-      } else {
-        console.log("pickIsoForm - Tag operation detected, showing terminal selection");
-        
-        // For tag operation, show terminal selection popup
-        showPopup({
-          message: createPopupForm(),
-          image: null,
-          stayOpen: true,
-        });
-      }
+    // For delete operation, don't show terminal selection popup
+    // Use the direct operation state to ensure we have the latest value
+    if (currentOperation === 'delete') {
+      console.log("pickIsoForm - Delete operation detected, skipping terminal selection");
+      
+      // For delete operation, set a default terminal value (both)
+      setTerminal('both');
+      
+      console.log("pickIsoForm - Terminal set to:", 'both');
+      
+      // Don't show a popup here, it will be shown in processDeleteTargetSearch
+    } else {
+      console.log("pickIsoForm - Tag operation detected, showing terminal selection");
+      
+      // For tag operation, show terminal selection popup
+      showPopup({
+        message: createPopupForm(),
+        image: null,
+        stayOpen: true,
+      });
+    }
       
       // Emit a custom event with the data that other components can listen for
       const customEvent = new CustomEvent('isoformSelected', {

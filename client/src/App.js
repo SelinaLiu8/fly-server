@@ -173,17 +173,6 @@ const App = () => {
       if (isDelete) {
         console.log('Delete operation detected in isoformSelected event');
         
-        // Show loading popup immediately for delete operation
-        showPopup({
-          message: (
-            <div>
-              <h2>Finding Potential Targets.<br /> This may take some time.</h2>
-            </div>
-          ),
-          image: loading,
-          stayOpen: true,
-        });
-        
         // Small delay to ensure UI updates before heavy processing
         setTimeout(() => {
           console.log('Calling handleDeleteOperation with highlights:', highlights);
