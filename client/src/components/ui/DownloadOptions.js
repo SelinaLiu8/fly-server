@@ -36,7 +36,14 @@ const DownloadOptions = ({
         <h4>View Design</h4>
         <button 
           className="download-button"
-          onClick={operation === 'delete' ? onViewDeleteFinishedDesign : onViewFinishedDesign}
+          onClick={(e) => {
+            e.preventDefault(); // Prevent default button behavior
+            if (operation === 'delete') {
+              onViewDeleteFinishedDesign();
+            } else {
+              onViewFinishedDesign();
+            }
+          }}
         >
           View Design
         </button>
@@ -46,7 +53,14 @@ const DownloadOptions = ({
         <h4>APE Files</h4>
         <button 
           className="download-button"
-          onClick={operation === 'delete' ? onDownloadDeleteApeFile : onDownloadApeFile}
+          onClick={(e) => {
+            e.preventDefault();
+            if (operation === 'delete') {
+              onDownloadDeleteApeFile();
+            } else {
+              onDownloadApeFile();
+            }
+          }}
         >
           Download APE File
         </button>
@@ -56,7 +70,14 @@ const DownloadOptions = ({
         <h4>Guide RNA</h4>
         <button 
           className="download-button"
-          onClick={operation === 'delete' ? onDownloadDeleteGuideRna : onDownloadGuideRna}
+          onClick={(e) => {
+            e.preventDefault();
+            if (operation === 'delete') {
+              onDownloadDeleteGuideRna();
+            } else {
+              onDownloadGuideRna();
+            }
+          }}
         >
           Download Guide RNA
         </button>
@@ -65,7 +86,7 @@ const DownloadOptions = ({
       <div className="download-section">
         <h4>Plasmid Template</h4>
         <div className="plasmid-template-selector">
-          <select onChange={onChangePlasmidTemplate}>
+          <select onChange={(e) => onChangePlasmidTemplate(e)}>
             <option value="">Select a plasmid template</option>
             <option value="pHD-DsRed-X">pHD-DsRed-X</option>
             <option value="pHD-dsRed-attP-X">pHD-dsRed-attP-X</option>
@@ -82,7 +103,14 @@ const DownloadOptions = ({
           </select>
           <button 
             className="download-button"
-            onClick={operation === 'delete' ? onDownloadDeletePlasmidTemplate : onDownloadPlasmidTemplate}
+            onClick={(e) => {
+              e.preventDefault();
+              if (operation === 'delete') {
+                onDownloadDeletePlasmidTemplate();
+              } else {
+                onDownloadPlasmidTemplate();
+              }
+            }}
           >
             Download Plasmid Template
           </button>
@@ -94,7 +122,10 @@ const DownloadOptions = ({
           <h4>Mutate PAM</h4>
           <button 
             className="download-button"
-            onClick={handleMutatePamToggle}
+            onClick={(e) => {
+              e.preventDefault();
+              handleMutatePamToggle();
+            }}
           >
             {mutatePam ? 'Cancel' : 'Mutate PAM'}
           </button>

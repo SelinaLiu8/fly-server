@@ -67,7 +67,7 @@ export const GeneProvider = ({ children }) => {
   // Define chooseTerminal first since it's used in createPopupForm
   const chooseTerminal = useCallback((e, terminalInput = null) => {
     e.preventDefault();
-    
+    console.log("chooseTerminal is triggered!");
     console.log("chooseTerminal - Current operation:", operation);
     
     const selectedTerminal = terminalInput || (e.target.tag ? e.target.tag.value : null);
@@ -107,7 +107,11 @@ export const GeneProvider = ({ children }) => {
     const geneNameInput = e.target.elements.geneName.value;
     
     showPopup({
-      message: <h2>Searching For Gene</h2>,
+      message: (
+        <div>
+          <h2>Finding Potential Targets.<br /> This may take some time.</h2>
+      </div>
+      ),
       image: loading,
       stayOpen: true,
     });
@@ -140,8 +144,6 @@ export const GeneProvider = ({ children }) => {
         setScreen(1);
         return;
       }
-      
-      console.log("Isoforms from API:", geneInfo.results.isoforms);
       
       // Check if isoforms is already an array or a JSON string
       let parsedIsoForms;
@@ -179,12 +181,7 @@ export const GeneProvider = ({ children }) => {
   }, [showPopup, setScreen, loading]);
 
   const createPopupForm = useCallback(() => {
-    // This form should only be shown for tag operations, not delete operations
-    if (operation === 'delete') {
-      console.warn("createPopupForm called for delete operation, which should not happen");
-      return null;
-    }
-    
+    console.log("createPopupForm is triggered!");
     return (
       <div className="isoform-form">
         <h2>Choose Your Tag</h2>
@@ -197,7 +194,7 @@ export const GeneProvider = ({ children }) => {
         </form>
       </div>
     );
-  }, [operation, chooseTerminal]);
+  }, [chooseTerminal]);
 
   const renderOperationForm = useCallback(() => {
     return (
@@ -241,25 +238,17 @@ export const GeneProvider = ({ children }) => {
     );
   }, [isoForms, operation]);
 
-  // Define pickIsoForm first since it's used in pickDeleteOrTag
   const pickIsoForm = useCallback(async (e) => {
     e.preventDefault();
     const selectedIsoForm = e.target.elements.isoform.value;
-    
+
+    console.log("pickIsoForm is called")
+
     // Get the current operation state from the form's data attribute
     const formOperation = e.target.getAttribute('data-operation');
-    console.log("pickIsoForm - Form operation attribute:", formOperation);
     
     // Get the current operation state directly
     const currentOperation = formOperation || operation;
-    console.log("pickIsoForm - Current operation (direct):", currentOperation);
-    console.log("pickIsoForm - Current operation (closure):", operation);
-    
-    if (selectedIsoForm === isoForm) {
-      // We can't call makeIsoFormHighlights here since we don't have setHighlights and handleDeleteOperation
-      // This case should be handled differently or these functions should be accessed from context
-      return;
-    }
     
     try {
       const geneInfo = await api.getIsoform(selectedIsoForm);
@@ -292,27 +281,23 @@ export const GeneProvider = ({ children }) => {
       console.log("pickIsoForm - Operation after API call:", operation);
       console.log("pickIsoForm - Current operation (direct) after API call:", currentOperation);
       
-    // For delete operation, don't show terminal selection popup
-    // Use the direct operation state to ensure we have the latest value
-    if (currentOperation === 'delete') {
-      console.log("pickIsoForm - Delete operation detected, skipping terminal selection");
-      
-      // For delete operation, set a default terminal value (both)
-      setTerminal('both');
-      
-      console.log("pickIsoForm - Terminal set to:", 'both');
-      
-      // Don't show a popup here, it will be shown in processDeleteTargetSearch
-    } else {
-      console.log("pickIsoForm - Tag operation detected, showing terminal selection");
-      
-      // For tag operation, show terminal selection popup
-      showPopup({
-        message: createPopupForm(),
-        image: null,
-        stayOpen: true,
-      });
-    }
+      // For delete operation, don't show terminal selection popup
+      // Use the direct operation state to ensure we have the latest value
+      if (currentOperation === 'delete') {
+        console.log("pickIsoForm - Delete operation detected, skipping terminal selection");
+        setTerminal('both');
+        
+        console.log("pickIsoForm - Terminal set to:", 'both');
+      } else {
+        console.log("pickIsoForm - Tag operation detected, showing terminal selection");
+        
+        showPopup({
+          message: createPopupForm(),
+          image: null,
+          stayOpen: true,
+          key: Date.now()
+        });
+      }
       
       // Emit a custom event with the data that other components can listen for
       const customEvent = new CustomEvent('isoformSelected', {
@@ -340,13 +325,7 @@ export const GeneProvider = ({ children }) => {
   const pickDeleteOrTag = useCallback((e) => {
     e.preventDefault();
     const selectedOperation = e.target.elements.operation.value;
-    
-    console.log("Operation selected:", selectedOperation);
-    
-    // Set the operation state
     setOperation(selectedOperation);
-    
-    // Log the operation state after setting it
     console.log("pickDeleteOrTag - Operation state set to:", selectedOperation);
     
     // Create a custom renderIsoForm function that includes the selected operation
@@ -381,6 +360,7 @@ export const GeneProvider = ({ children }) => {
   
   // Update popup content when isoForms changes and we're in the middle of the operation flow
   useEffect(() => {
+    if (!operation || isoForms.length === 0) return;
     if (operation && isoForms.length > 0) {
       console.log("Updating popup with latest isoform selection");
       console.log("useEffect - Current operation:", operation);
@@ -434,36 +414,6 @@ export const GeneProvider = ({ children }) => {
         color: '#FF668E',
       },
     };
-    
-    console.log("makeIsoFormHighlights - Current operation:", operation);
-    
-    if (operation === 'delete') {
-      console.log("makeIsoFormHighlights - Delete operation detected, skipping terminal selection");
-      
-      // Skip terminal selection for delete operation
-      setHighlights(newHighlights);
-      setScreen(2);
-      showPopup({ show: false });
-      
-      // For delete operation, set a default terminal value (both)
-      setTerminal('both');
-      
-      console.log("makeIsoFormHighlights - Terminal set to:", 'both');
-      
-      // Proceed with delete operation
-      handleDeleteOperation(newHighlights);
-    } else {
-      console.log("makeIsoFormHighlights - Tag operation detected, showing terminal selection");
-      
-      const popupForm = createPopupForm();
-      setHighlights(newHighlights);
-      setScreen(2);
-      showPopup({
-        message: popupForm,
-        image: null,
-        stayOpen: true,
-      });
-    }
   }, [operation, createPopupForm, showPopup, setScreen]);
 
   // Add custom data handling

@@ -28,7 +28,8 @@ const HomologyList = ({
 
   const handleClick = (primer, arm, terminalType = null) => {
     if (operation === 'delete') {
-      onSelectDeleteHomologyArm(primer, arm, terminalType);
+      // Use onSelectHomologyArm for both operations, as it handles the operation type internally
+      onSelectHomologyArm(primer, arm, terminalType);
     } else {
       // The saveCurrentHighlight parameter is handled inside the onSelectHomologyArm function in App.js
       onSelectHomologyArm(primer, arm);

@@ -427,6 +427,17 @@ export const PrimerProvider = ({ children }) => {
   }, [showPopup]);
 
   const viewDeleteFinishedDesign = useCallback((targets, selectedArms, selectedNTarget, selectedCTarget, oligos) => {
+    // Add detailed console logs to identify what's missing
+    console.log("viewDeleteFinishedDesign DETAILED DEBUG:", {
+      targets: targets,
+      targetsLength: targets ? targets.length : 0,
+      selectedArms: selectedArms,
+      selectedArmsKeys: selectedArms ? Object.keys(selectedArms) : [],
+      selectedNTarget: selectedNTarget,
+      selectedCTarget: selectedCTarget,
+      oligos: oligos
+    });
+    
     if (!targets || targets.length === 0 || !selectedArms || !selectedNTarget || !selectedCTarget) {
       console.error("Missing required data for viewing delete design");
       return;

@@ -16,7 +16,7 @@ export const UIProvider = ({ children }) => {
   const [hamburger, setHamburger] = useState(false);
   const [themeColor, setThemeColor] = useState(false);
   const [fontSize, setFontSize] = useState(23);
-  const [fontMenu, setFontMenu] = useState(false);
+  const [fontMenu, setFontMenu] = useState(false);                                                                                                                                                                                                                                            
   const [popup, setPopup] = useState({ show: false });
 
   // UI handlers
@@ -43,11 +43,6 @@ export const UIProvider = ({ children }) => {
     setScreen(screenInt);
     setHamburger(false);
     setMenu(newMenu);
-    
-    if (screenInt === 3) {
-      // This will need to be moved to the appropriate context
-      // setMutatePam(false);
-    }
   }, []);
 
   const toggleHamburgerMenu = useCallback(() => {

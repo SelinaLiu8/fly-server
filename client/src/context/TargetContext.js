@@ -34,7 +34,11 @@ export const TargetProvider = ({ children }) => {
     try {
       // Show searching for target popup immediately
       showPopup({
-        message: <h2>Searching for Targets</h2>,
+        message: (
+          <div>
+            <h2>Finding Potential Targets.<br /> This may take some time.</h2>
+          </div>
+        ),
         image: loading,
         stayOpen: true,
       });
@@ -200,18 +204,20 @@ setSelectedCTarget(null);
   // Get the operation from the GeneContext
   const { operation } = useGene();
 
-  // Combined function for picking cut sites for both tag and delete operations
-  const pickCutSite = useCallback((target, saveCurrentHighlight) => {
-    console.log('pickCutSite called with target:', target);
+  // Function for picking cut sites for tag operations only
+  const pickTagCutSite = useCallback((target, saveCurrentHighlight) => {
+    console.log('pickTagCutSite called with target:', target);
     
     // For tag operation, just save the highlight and move to the next menu
-    if (operation !== 'delete') {
-      saveCurrentHighlight('rgb(255, 255, 97)');
-      setTargets([target]);
-      setMenu(3);
-      console.log('Tag target selected, menu set to 3. Primers should be fetched now.');
-      return;
-    }
+    saveCurrentHighlight('rgb(255, 255, 97)');
+    setTargets([target]);
+    setMenu(3);
+    console.log('Tag target selected, menu set to 3. Primers should be fetched now.');
+  }, [setMenu]);
+
+  // Function for picking cut sites for delete operations
+  const pickDeleteCutSite = useCallback((target, saveCurrentHighlight) => {
+    console.log('pickDeleteCutSite called with target:', target);
     
     // For delete operation, handle N and C terminal targets separately
     const { terminalType } = target;
@@ -275,23 +281,7 @@ setSelectedCTarget(null);
         C: updatedCTarget ? updatedCTarget.distal + updatedCTarget.proximal : 'none'
       });
     }
-  }, [operation, selectedNTarget, selectedCTarget, targets, setMenu]);
-
-  // Alias for pickCutSite to maintain backward compatibility
-  const pickDeleteCutSite = useCallback((target, saveCurrentHighlight) => {
-    // Just call pickCutSite with the same arguments
-    pickCutSite(target, saveCurrentHighlight);
-  }, [pickCutSite]);
-
-  const mutatePamHandler = useCallback((e) => {
-    e.preventDefault();
-    const newPam = e.target.elements.newPam.value;
-    
-    setCurrentPam(newPam);
-    setMenu(4);
-    // setScreen(4); // This will be handled by UIContext
-    setMutatePam(false);
-  }, [setMenu]);
+  }, [operation, selectedNTarget, selectedCTarget, setMenu]);
 
   return (
     <TargetContext.Provider
@@ -310,9 +300,8 @@ setSelectedCTarget(null);
         processDeleteTargetSearch,
         processTagTargetSearch,
         scrollToTerminal,
-        pickCutSite,
+        pickTagCutSite,
         pickDeleteCutSite,
-        mutatePamHandler
       }}
     >
       {children}

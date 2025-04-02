@@ -73,12 +73,10 @@ const App = () => {
     targets,
     selectedNTarget,
     selectedCTarget,
-    mutatePam,
     currentPam,
     handleDeleteOperation,
-    pickCutSite,
+    pickTagCutSite,
     pickDeleteCutSite,
-    mutatePamHandler
   } = useTarget();
 
   const {
@@ -267,44 +265,152 @@ const App = () => {
 
   // Handle view finished design based on operation
   const handleViewFinishedDesign = () => {
+    // Add detailed console logs to identify what's happening
+    console.log("handleViewFinishedDesign DETAILED DEBUG:", {
+      operation: operation,
+      targets: targets,
+      targetsLength: targets ? targets.length : 0,
+      selectedArms: selectedArms,
+      selectedArmsKeys: selectedArms ? Object.keys(selectedArms) : [],
+      selectedNTarget: selectedNTarget,
+      selectedCTarget: selectedCTarget,
+      terminal: terminal,
+      oligos: oligos
+    });
+    
     if (operation === 'delete') {
+      console.log("Calling viewDeleteFinishedDesign with:", {
+        targetsLength: targets ? targets.length : 0,
+        selectedArmsCount: selectedArms ? Object.keys(selectedArms).length : 0,
+        hasSelectedNTarget: !!selectedNTarget,
+        hasSelectedCTarget: !!selectedCTarget,
+        hasOligos: !!oligos
+      });
       viewDeleteFinishedDesign(targets, selectedArms, selectedNTarget, selectedCTarget, oligos);
     } else {
+      console.log("Calling viewFinishedDesign with:", {
+        targetsLength: targets ? targets.length : 0,
+        selectedArmsCount: selectedArms ? Object.keys(selectedArms).length : 0,
+        terminal: terminal,
+        hasOligos: !!oligos
+      });
       viewFinishedDesign(targets, selectedArms, terminal, oligos);
     }
   };
 
   // Handle download APE file based on operation
   const handleDownloadApeFile = () => {
+    // Add detailed console logs to identify what's happening
+    console.log("handleDownloadApeFile DETAILED DEBUG:", {
+      operation: operation,
+      geneName: geneName,
+      sequenceLength: sequence ? sequence.length : 0,
+      highlights: highlights,
+      highlightsKeys: highlights ? Object.keys(highlights) : [],
+      targets: targets,
+      targetsLength: targets ? targets.length : 0,
+      selectedNTarget: selectedNTarget,
+      selectedCTarget: selectedCTarget,
+      currentPam: currentPam,
+      isoFormStrand: isoFormStrand
+    });
+    
     if (operation === 'delete') {
+      console.log("Calling downloadDeleteApeFile with:", {
+        geneName: geneName,
+        sequenceLength: sequence ? sequence.length : 0,
+        highlightsKeys: highlights ? Object.keys(highlights) : [],
+        hasSelectedNTarget: !!selectedNTarget,
+        hasSelectedCTarget: !!selectedCTarget,
+        currentPam: currentPam
+      });
       downloadDeleteApeFile(geneName, sequence, highlights, selectedNTarget, selectedCTarget, currentPam);
     } else {
+      console.log("Calling downloadApeFile with:", {
+        geneName: geneName,
+        sequenceLength: sequence ? sequence.length : 0,
+        highlightsKeys: highlights ? Object.keys(highlights) : [],
+        targetsLength: targets ? targets.length : 0,
+        currentPam: currentPam,
+        isoFormStrand: isoFormStrand
+      });
       downloadApeFile(geneName, sequence, highlights, targets, currentPam, isoFormStrand);
     }
   };
 
   // Handle download guide RNA based on operation
   const handleDownloadGuideRna = () => {
+    // Add detailed console logs to identify what's happening
+    console.log("handleDownloadGuideRna DETAILED DEBUG:", {
+      operation: operation,
+      geneName: geneName,
+      oligos: oligos,
+      hasOligos: !!oligos,
+      oligosKeys: oligos ? Object.keys(oligos) : [],
+      oligosN: oligos && oligos.N ? oligos.N : null,
+      oligosC: oligos && oligos.C ? oligos.C : null
+    });
+    
     if (operation === 'delete') {
+      console.log("Calling downloadDeleteGuideRna with:", {
+        geneName: geneName,
+        hasOligos: !!oligos,
+        hasOligosN: oligos ? !!oligos.N : false,
+        hasOligosC: oligos ? !!oligos.C : false
+      });
       downloadDeleteGuideRna(geneName, oligos);
     } else {
+      console.log("Calling downloadGuideRna with:", {
+        geneName: geneName,
+        hasOligos: !!oligos
+      });
       downloadGuideRna(geneName, oligos);
     }
   };
 
   // Handle download plasmid template based on operation
   const handleDownloadPlasmidTemplate = () => {
+    // Add detailed console logs to identify what's happening
+    console.log("handleDownloadPlasmidTemplate DETAILED DEBUG:", {
+      operation: operation,
+      plasmidTemplate: plasmidTemplate,
+      geneName: geneName,
+      sequenceLength: sequence ? sequence.length : 0,
+      highlights: highlights,
+      highlightsKeys: highlights ? Object.keys(highlights) : [],
+      targets: targets,
+      targetsLength: targets ? targets.length : 0,
+      terminal: terminal,
+      currentPam: currentPam
+    });
+    
     if (operation === 'delete') {
+      console.log("Calling downloadDeletePlasmidTemplate with:", {
+        plasmidTemplate: plasmidTemplate,
+        geneName: geneName,
+        sequenceLength: sequence ? sequence.length : 0,
+        highlightsKeys: highlights ? Object.keys(highlights) : []
+      });
       downloadDeletePlasmidTemplate(plasmidTemplate, geneName, sequence, highlights);
     } else {
+      console.log("Calling downloadPlasmidTemplate with:", {
+        plasmidTemplate: plasmidTemplate,
+        geneName: geneName,
+        sequenceLength: sequence ? sequence.length : 0,
+        targetsLength: targets ? targets.length : 0,
+        highlightsKeys: highlights ? Object.keys(highlights) : [],
+        terminal: terminal,
+        currentPam: currentPam
+      });
       downloadPlasmidTemplate(plasmidTemplate, geneName, sequence, targets, highlights, terminal, currentPam);
     }
   };
 
   // Handle select homology arm based on operation
-  const handleSelectHomologyArm = (selection, arm) => {
+  const handleSelectHomologyArm = (selection, arm, terminalType = null) => {
     if (operation === 'delete') {
-      selectDeleteHomologyArm(selection, arm, terminal, saveCurrentHighlight, selectedNTarget, selectedCTarget);
+      // For delete operations, use the terminalType passed from HomologyList
+      selectDeleteHomologyArm(selection, arm, terminalType, saveCurrentHighlight, selectedNTarget, selectedCTarget);
     } else {
       selectHomologyArm(selection, arm, saveCurrentHighlight, targets);
     }
@@ -314,8 +420,8 @@ const App = () => {
   const handlePickCutSite = (target) => {
     console.log('handlePickCutSite called with target:', target);
     
-    // For tag operation, call pickCutSite and fetch primers
-    pickCutSite(target, saveCurrentHighlight);
+    // For tag operation, call pickTagCutSite and fetch primers
+    pickTagCutSite(target, saveCurrentHighlight);
     
     // Calculate target location - this is typically the position in the sequence
     // where the target is found. We can use the currentHighlight location if available.
