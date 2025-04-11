@@ -10,12 +10,12 @@ const TargetList = ({
   operation
 }) => {
   // Debug logs
-  console.log('TargetList rendered with:', {
-    targetsCount: targets ? targets.length : 0,
-    targets,
-    currentHighlightLocation,
-    operation
-  });
+  // console.log('TargetList rendered with:', {
+  //   targetsCount: targets ? targets.length : 0,
+  //   targets,
+  //   currentHighlightLocation,
+  //   operation
+  // });
   
   if (!targets || targets.length === 0) {
     console.log('TargetList: No targets available');

@@ -16,10 +16,10 @@ export const TargetProvider = ({ children }) => {
   
   // Debug: Log when targets change
   useEffect(() => {
-    console.log('TargetContext: targets changed', {
-      hasTargets: targets && targets.length > 0,
-      targetsCount: targets ? targets.length : 0
-    });
+    // console.log('TargetContext: targets changed', {
+    //   hasTargets: targets && targets.length > 0,
+    //   targetsCount: targets ? targets.length : 0
+    // });
   }, [targets]);
   const [selectedNTarget, setSelectedNTarget] = useState(null);
   const [selectedCTarget, setSelectedCTarget] = useState(null);
@@ -92,15 +92,15 @@ export const TargetProvider = ({ children }) => {
       const bestCTarget = updatedCTargets.reduce((best, current) => 
         (current.score > (best?.score || 0)) ? current : best, null);
       
-// Always show all targets for manual selection instead of auto-selecting
-showPopup({ show: false });
-setTargets(updatedTargets);
-setMenu(2);
+    // Always show all targets for manual selection instead of auto-selecting
+    showPopup({ show: false });
+    setTargets(updatedTargets);
+    setMenu(2);
 
-// Don't pre-select any targets, let the user select them manually
-console.log('Found targets, waiting for user selection');
-setSelectedNTarget(null);
-setSelectedCTarget(null);
+    // Don't pre-select any targets, let the user select them manually
+    console.log('Found targets, waiting for user selection');
+    setSelectedNTarget(null);
+    setSelectedCTarget(null);
     } catch (error) {
       console.error('Error processing delete target search:', error);
       showPopup({
@@ -126,9 +126,6 @@ setSelectedCTarget(null);
     
     const nTargetGenes = sequence.substring(nLocation - 50, nLocation + 50);
     const cTargetGenes = sequence.substring(cLocation - 50, cLocation + 50);
-    
-    // Note: The loading popup is now shown in App.js before this function is called
-    // to ensure the UI updates before the heavy processing begins
     
     // Process both N and C terminal targets for delete operation
     processDeleteTargetSearch(nTargetGenes, cTargetGenes);
@@ -217,71 +214,31 @@ setSelectedCTarget(null);
 
   // Function for picking cut sites for delete operations
   const pickDeleteCutSite = useCallback((target, saveCurrentHighlight) => {
-    console.log('pickDeleteCutSite called with target:', target);
-    
-    // For delete operation, handle N and C terminal targets separately
     const { terminalType } = target;
-    
-    // Store the current selected targets
-    const currentSelectedNTarget = selectedNTarget;
-    const currentSelectedCTarget = selectedCTarget;
-    
-    console.log('Delete operation - Current selected targets:', { 
-      N: currentSelectedNTarget ? currentSelectedNTarget.distal + currentSelectedNTarget.proximal : 'none',
-      C: currentSelectedCTarget ? currentSelectedCTarget.distal + currentSelectedCTarget.proximal : 'none'
-    });
-    
-    // Determine which targets will be selected after this operation
-    let updatedNTarget = currentSelectedNTarget;
-    let updatedCTarget = currentSelectedCTarget;
-    
+  
+    // Save highlight and update selected target
     if (terminalType === "N") {
-      // Save the highlight for the N terminal target
       saveCurrentHighlight('rgb(255, 255, 97)', "cutsite_N");
-      
-      // Update the N target
-      updatedNTarget = target;
-      
-      // Update state
       setSelectedNTarget(target);
-      
-      console.log('N terminal target selected:', target.distal + target.proximal);
     } else if (terminalType === "C") {
-      // Save the highlight for the C terminal target
       saveCurrentHighlight('rgb(255, 255, 97)', "cutsite_C");
-      
-      // Update the C target
-      updatedCTarget = target;
-      
-      // Update state
       setSelectedCTarget(target);
-      
-      console.log('C terminal target selected:', target.distal + target.proximal);
     }
-    
-    // Check if both targets are now selected
-    if (updatedNTarget && updatedCTarget) {
-      console.log('Both targets now selected, moving to homology arms menu');
-      
-      // Move to the next menu
+
+    console.log("selected target in delete", target);
+    console.warn("🔥 pickDeleteCutSite called with target:", target);
+  
+    const nTarget = terminalType === "N" ? target : selectedNTarget;
+    const cTarget = terminalType === "C" ? target : selectedCTarget;
+  
+    // If both targets are selected, move on and trigger primer search
+    if (nTarget && cTarget) {
       setMenu(3);
-      
-      // Dispatch a custom event to trigger primer fetching
-      const customEvent = new CustomEvent('deleteTargetsSelected', {
-        detail: {
-          nTarget: updatedNTarget,
-          cTarget: updatedCTarget
-        }
-      });
-      document.dispatchEvent(customEvent);
-    } else {
-      console.log('Waiting for other target to be selected...');
-      console.log('Current targets:', {
-        N: updatedNTarget ? updatedNTarget.distal + updatedNTarget.proximal : 'none',
-        C: updatedCTarget ? updatedCTarget.distal + updatedCTarget.proximal : 'none'
-      });
+      document.dispatchEvent(new CustomEvent('deleteTargetsSelected', {
+        detail: { nTarget, cTarget },
+      }));
     }
-  }, [operation, selectedNTarget, selectedCTarget, setMenu]);
+  }, [selectedNTarget, selectedCTarget, setMenu]);
 
   return (
     <TargetContext.Provider

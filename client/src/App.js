@@ -286,6 +286,21 @@ const App = () => {
         hasSelectedCTarget: !!selectedCTarget,
         hasOligos: !!oligos
       });
+      
+      // Make sure we're passing all the required parameters
+      if (!targets || targets.length === 0) {
+        console.error("Missing targets for viewDeleteFinishedDesign");
+      }
+      if (!selectedArms || Object.keys(selectedArms).length === 0) {
+        console.error("Missing selectedArms for viewDeleteFinishedDesign");
+      }
+      if (!selectedNTarget) {
+        console.error("Missing selectedNTarget for viewDeleteFinishedDesign");
+      }
+      if (!selectedCTarget) {
+        console.error("Missing selectedCTarget for viewDeleteFinishedDesign");
+      }
+      
       viewDeleteFinishedDesign(targets, selectedArms, selectedNTarget, selectedCTarget, oligos);
     } else {
       console.log("Calling viewFinishedDesign with:", {
@@ -507,13 +522,6 @@ const App = () => {
   const handleSelectStopCodon = (e) => {
     selectStopCodon(e, highlights, setHighlights);
   };
-
-  // Debug logs
-  console.log('App render:', {
-    menu,
-    targets: targets ? targets.length : 0,
-    hasTargets: targets && targets.length > 0
-  });
 
   return (
     <div className={`App ${themeColor ? 'dark' : 'light'}`}>

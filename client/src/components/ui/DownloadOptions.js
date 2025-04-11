@@ -38,9 +38,12 @@ const DownloadOptions = ({
           className="download-button"
           onClick={(e) => {
             e.preventDefault(); // Prevent default button behavior
+            console.log("View Design button clicked, operation:", operation);
             if (operation === 'delete') {
+              console.log("Calling onViewDeleteFinishedDesign");
               onViewDeleteFinishedDesign();
             } else {
+              console.log("Calling onViewFinishedDesign");
               onViewFinishedDesign();
             }
           }}
@@ -56,7 +59,8 @@ const DownloadOptions = ({
           onClick={(e) => {
             e.preventDefault();
             if (operation === 'delete') {
-              onDownloadDeleteApeFile();
+              console.log("Using onDownloadApeFile for delete operation");
+              onDownloadApeFile();
             } else {
               onDownloadApeFile();
             }

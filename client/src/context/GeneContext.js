@@ -67,8 +67,6 @@ export const GeneProvider = ({ children }) => {
   // Define chooseTerminal first since it's used in createPopupForm
   const chooseTerminal = useCallback((e, terminalInput = null) => {
     e.preventDefault();
-    console.log("chooseTerminal is triggered!");
-    console.log("chooseTerminal - Current operation:", operation);
     
     const selectedTerminal = terminalInput || (e.target.tag ? e.target.tag.value : null);
     console.log("chooseTerminal - Selected terminal:", selectedTerminal);

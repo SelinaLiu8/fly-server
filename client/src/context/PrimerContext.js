@@ -2,6 +2,7 @@ import React, { createContext, useState, useContext, useCallback } from 'react';
 import * as api from '../services/api';
 import { useUI } from './UIContext';
 import { useGene } from './GeneContext';
+import { useTarget } from './TargetContext';
 
 // Create the context
 const PrimerContext = createContext();
@@ -30,22 +31,22 @@ export const PrimerProvider = ({ children }) => {
     try {
       console.log('Fetching primers with targetLocation:', targetLocation, 'and sequence length:', sequence?.length);
       const primerData = await api.getPrimers(targetLocation, sequence);
-      console.log('Received primer data:', primerData);
+      // console.log('Received primer data:', primerData);
       
       setPrimers(primerData);
       setMenu(3);
       showPopup({ show: false });
       
-      if (terminal === 'c') {
-        const screen = document.getElementsByClassName('screen-3')[0];
-        if (screen) {
-          const scrollTop = screen.scrollHeight;
-          screen.scrollTo({
-            top: scrollTop - (window.innerHeight / 2),
-            behavior: 'smooth'
-          });
-        }
-      }
+      // if (terminal === 'c') {
+      //   const screen = document.getElementsByClassName('screen-3')[0];
+      //   if (screen) {
+      //     const scrollTop = screen.scrollHeight;
+      //     screen.scrollTo({
+      //       top: scrollTop - (window.innerHeight / 2),
+      //       behavior: 'smooth'
+      //     });
+      //   }
+      // }
     } catch (error) {
       console.error('Error fetching primers:', error);
       setPrimers(null); // Reset primers on error
@@ -166,6 +167,15 @@ export const PrimerProvider = ({ children }) => {
   }, [selectedArms, setMenu, showPopup, loading]);
 
   const selectDeleteHomologyArm = useCallback((selection, arm, terminal, saveCurrentHighlight, selectedNTarget, selectedCTarget) => {
+    console.log("selectDeleteHomologyArm called with:", {
+      selection: selection,
+      arm: arm,
+      terminal: terminal,
+      currentSelectedArms: {...selectedArms},
+      selectedNTarget: selectedNTarget ? selectedNTarget.distal + selectedNTarget.proximal : 'undefined',
+      selectedCTarget: selectedCTarget ? selectedCTarget.distal + selectedCTarget.proximal : 'undefined'
+    });
+    
     const currentArms = { ...selectedArms };
     const terminalKey = `${arm}_${terminal}`;
     currentArms[terminalKey] = selection;
@@ -175,6 +185,8 @@ export const PrimerProvider = ({ children }) => {
     setSelectedArms(currentArms);
     
     const totalSelected = Object.keys(currentArms);
+    console.log("Total selected arms:", totalSelected.length, "Arms:", totalSelected);
+    
     if (totalSelected.length === 8) { // Expecting 4 arms × 2 terminals = 8
       // GET OLIGO INFO
       showPopup({
@@ -190,8 +202,14 @@ export const PrimerProvider = ({ children }) => {
         setMenu(4);
       }, 30000);
       
+      console.log("All 8 arms selected, proceeding to fetch oligos");
+      
       // Call getOligos directly instead of using fetchOligoInformation
       if (selectedNTarget && selectedCTarget) {
+        console.log("Both targets available for oligo fetching:", {
+          nTarget: selectedNTarget.distal + selectedNTarget.proximal,
+          cTarget: selectedCTarget.distal + selectedCTarget.proximal
+        });
         // Create a timeout promise
         const timeoutPromise = new Promise((_, reject) => {
           setTimeout(() => reject(new Error('Oligo retrieval timed out')), 30000); // 30 second timeout
@@ -236,6 +254,13 @@ export const PrimerProvider = ({ children }) => {
   }, []);
 
   const fetchOligoInformation = useCallback(async (operation, selectedNTarget, selectedCTarget, targets) => {
+    console.log("fetchOligoInformation called with:", {
+      operation: operation,
+      selectedNTarget: selectedNTarget ? selectedNTarget.distal + selectedNTarget.proximal : 'undefined',
+      selectedCTarget: selectedCTarget ? selectedCTarget.distal + selectedCTarget.proximal : 'undefined',
+      targets: targets ? targets.length : 'undefined'
+    });
+    
     if (operation === "delete") {
       if (!selectedNTarget || !selectedCTarget) {
         console.error("Both selectedNTarget and selectedCTarget are required for fetching oligos.");
@@ -269,10 +294,17 @@ export const PrimerProvider = ({ children }) => {
         
         const cOligos = await Promise.race([cOligosPromise, timeoutPromise]);
         
-        setOligos({
+        const oligosData = {
           N: nOligos,
           C: cOligos
+        };
+        
+        console.log("Successfully fetched oligos for both targets:", {
+          nOligos: nOligos ? 'available' : 'undefined',
+          cOligos: cOligos ? 'available' : 'undefined'
         });
+        
+        setOligos(oligosData);
         showPopup({ show: false });
         setMenu(4);
       } catch (error) {
@@ -426,33 +458,59 @@ export const PrimerProvider = ({ children }) => {
     });
   }, [showPopup]);
 
-  const viewDeleteFinishedDesign = useCallback((targets, selectedArms, selectedNTarget, selectedCTarget, oligos) => {
+  // Get targets from the TargetContext
+  const { targets, selectedNTarget, selectedCTarget } = useTarget();
+
+  const viewDeleteFinishedDesign = useCallback((targetsParam, selectedArmsParam, selectedNTargetParam, selectedCTargetParam, oligosParam) => {
     // Add detailed console logs to identify what's missing
     console.log("viewDeleteFinishedDesign DETAILED DEBUG:", {
-      targets: targets,
-      targetsLength: targets ? targets.length : 0,
-      selectedArms: selectedArms,
-      selectedArmsKeys: selectedArms ? Object.keys(selectedArms) : [],
-      selectedNTarget: selectedNTarget,
-      selectedCTarget: selectedCTarget,
-      oligos: oligos
+      oligos: oligosParam,
+      selectedArms: selectedArmsParam,
+      selectedArmsKeys: selectedArmsParam ? Object.keys(selectedArmsParam) : [],
+      selectedCTarget: selectedCTargetParam,
+      selectedNTarget: selectedNTargetParam,
+      targets: targetsParam,
+      targetsLength: targetsParam ? targetsParam.length : 0
     });
     
-    if (!targets || targets.length === 0 || !selectedArms || !selectedNTarget || !selectedCTarget) {
+    // Log the current state from context
+    console.log("Current state from context:", {
+      contextOligos: oligos,
+      contextSelectedArms: selectedArms,
+      contextSelectedArmsKeys: selectedArms ? Object.keys(selectedArms) : [],
+      contextTargets: targets
+    });
+    
+    // Check if we're using the parameters or the context values
+    const finalTargets = targetsParam || targets;
+    const finalSelectedArms = selectedArmsParam || selectedArms;
+    const finalSelectedNTarget = selectedNTargetParam || selectedNTarget;
+    const finalSelectedCTarget = selectedCTargetParam || selectedCTarget;
+    const finalOligos = oligosParam || oligos;
+    
+    console.log("Using values:", {
+      usingTargets: finalTargets ? (targetsParam ? "parameters" : "context") : "neither",
+      usingSelectedArms: finalSelectedArms ? (selectedArmsParam ? "parameters" : "context") : "neither",
+      usingSelectedNTarget: finalSelectedNTarget ? (selectedNTargetParam ? "parameters" : "context") : "neither",
+      usingSelectedCTarget: finalSelectedCTarget ? (selectedCTargetParam ? "parameters" : "context") : "neither",
+      usingOligos: finalOligos ? (oligosParam ? "parameters" : "context") : "neither"
+    });
+    
+    if (!finalTargets || finalTargets.length === 0 || !finalSelectedArms || !finalSelectedNTarget || !finalSelectedCTarget) {
       console.error("Missing required data for viewing delete design");
       return;
     }
     
-    const targetKeys = Object.keys(targets[0]).filter(
+    const targetKeys = Object.keys(finalTargets[0]).filter(
       (key) => !["terminalType", "distal", "proximal", "pam"].includes(key)
     );
     
     const targetHTML = targetKeys.map((prop) => (
-      <div key={`target-${prop}`}><b>{prop}:</b> {targets[0][prop]}</div>
+      <div key={`target-${prop}`}><b>{prop}:</b> {finalTargets[0][prop]}</div>
     ));
 
-    const generatePrimerHTML = (terminalType, primers) => {
-      const primerKeys = Object.keys(primers)
+    const generatePrimerHTML = (terminalType, primerArms) => {
+      const primerKeys = Object.keys(primerArms)
         .filter(key => key.endsWith(`_${terminalType}`));
       
       const primerNameMap = {
@@ -463,7 +521,7 @@ export const PrimerProvider = ({ children }) => {
       };
       
       return primerKeys.map((key) => {
-        const primerSingle = selectedArms[key];
+        const primerSingle = finalSelectedArms[key];
         
         // Extract base name (e.g., "hom5", "seq3")
         const baseKey = key.replace(`_${terminalType}`, "");
@@ -484,22 +542,22 @@ export const PrimerProvider = ({ children }) => {
     };
     
     // Generate HTML for N-terminal and C-terminal primers
-    const NprimerHTML = generatePrimerHTML('N', selectedArms);
-    const CprimerHTML = generatePrimerHTML('C', selectedArms);
+    const NprimerHTML = generatePrimerHTML('N', finalSelectedArms);
+    const CprimerHTML = generatePrimerHTML('C', finalSelectedArms);
     
     const cutSitesHTML = (
       <div>
         <div>
           <h4>N Terminal</h4>
-          <div><b>Distal:</b> {selectedNTarget.distal || "Not Available"}</div>
-          <div><b>Proximal:</b> {selectedNTarget.proximal || "Not Available"}</div>
-          <div><b>PAM:</b> {selectedNTarget.pam || "Not Available"}</div>
+          <div><b>Distal:</b> {finalSelectedNTarget.distal || "Not Available"}</div>
+          <div><b>Proximal:</b> {finalSelectedNTarget.proximal || "Not Available"}</div>
+          <div><b>PAM:</b> {finalSelectedNTarget.pam || "Not Available"}</div>
         </div>
         <div>
           <h4>C Terminal</h4>
-          <div><b>Distal:</b> {selectedCTarget.distal || "Not Available"}</div>
-          <div><b>Proximal:</b> {selectedCTarget.proximal || "Not Available"}</div>
-          <div><b>PAM:</b> {selectedCTarget.pam || "Not Available"}</div>
+          <div><b>Distal:</b> {finalSelectedCTarget.distal || "Not Available"}</div>
+          <div><b>Proximal:</b> {finalSelectedCTarget.proximal || "Not Available"}</div>
+          <div><b>PAM:</b> {finalSelectedCTarget.pam || "Not Available"}</div>
         </div>
       </div>
     );
@@ -558,22 +616,22 @@ export const PrimerProvider = ({ children }) => {
             {CprimerHTML}
           </div>
         </div>
-        {oligos && (
+        {finalOligos && (
           <div>
             <h3>Oligo Info</h3>
             <div>
               <h4>N Terminal</h4>
-              <div><b>Sense: </b>{oligos.N.sense}</div>
-              <div><b>Antisense: </b>{oligos.N.antisense}</div>
+              <div><b>Sense: </b>{finalOligos.N.sense}</div>
+              <div><b>Antisense: </b>{finalOligos.N.antisense}</div>
             </div>
             <div>
               <h4>C Terminal</h4>
-              <div><b>Sense: </b>{oligos.C.sense}</div>
-              <div><b>Antisense: </b>{oligos.C.antisense}</div>
+              <div><b>Sense: </b>{finalOligos.C.sense}</div>
+              <div><b>Antisense: </b>{finalOligos.C.antisense}</div>
             </div>
           </div>
         )}
-        {!oligos && (
+        {!finalOligos && (
           <div>
             <h3>Oligo Info</h3>
             <div>Oligo information could not be retrieved.</div>
@@ -588,7 +646,7 @@ export const PrimerProvider = ({ children }) => {
       image: null,
       stayOpen: false,
     });
-  }, [showPopup]);
+  }, [showPopup, oligos, selectedArms, selectedNTarget, selectedCTarget, targets]);
 
   return (
     <PrimerContext.Provider
