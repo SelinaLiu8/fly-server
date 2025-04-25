@@ -22,10 +22,10 @@ export const downloadTextFile = (content, filename, type = 'text/plain;charset=u
  */
 export const downloadApeFile = async (geneName, sequence, highlights, targets, currentPam, isoFormStrand) => {
   try {
-    const emptyApeResponse = await fetch(window.location.origin + '/fly_templates/empty_ape.txt');
+    const emptyApeResponse = await fetch(window.location.origin + '/build/fly_templates/empty_ape.txt');
     const emptyApeData = await emptyApeResponse.text();
     
-    const featureResponse = await fetch(window.location.origin + '/fly_templates/feature.txt');
+    const featureResponse = await fetch(window.location.origin + '/build/fly_templates/feature.txt');
     const featureTemplate = await featureResponse.text();
     
     const newFeature = (loc, name, color) => {
@@ -127,10 +127,10 @@ export const downloadApeFile = async (geneName, sequence, highlights, targets, c
  */
 export const downloadDeleteApeFile = async (geneName, sequence, highlights, selectedNTarget, selectedCTarget, currentPam) => {
   try {
-    const emptyApeResponse = await fetch(window.location.origin + '/fly_templates/empty_ape.txt');
+    const emptyApeResponse = await fetch(window.location.origin + '/build/fly_templates/empty_ape.txt');
     const emptyApeData = await emptyApeResponse.text();
     
-    const featureResponse = await fetch(window.location.origin + '/fly_templates/feature.txt');
+    const featureResponse = await fetch(window.location.origin + '/build/fly_templates/feature.txt');
     const featureTemplate = await featureResponse.text();
     
     const newFeature = (loc, name, color) => {
@@ -147,16 +147,28 @@ export const downloadDeleteApeFile = async (geneName, sequence, highlights, sele
     // Match targets for N-Terminal
     const targetMatchN = gene.toLowerCase().match(nTargetSequence.toLowerCase());
     const revTargetMatchN = gene.toLowerCase().match(reverseComplement(nTargetSequence.toLowerCase()));
-    let targetIN = targetMatchN ? targetMatchN.index + 1 : revTargetMatchN.index;
+    
+    // Check if either match was found for N-Terminal
+    if (!targetMatchN && !revTargetMatchN) {
+      console.error("Could not find N-Terminal target in sequence");
+      throw new Error("Could not find N-Terminal target in sequence");
+    }
+    let targetIN = targetMatchN ? targetMatchN.index + 1 : revTargetMatchN.index + 1;
 
     // Match targets for C-Terminal
     const targetMatchC = gene.toLowerCase().match(cTargetSequence.toLowerCase());
     const revTargetMatchC = gene.toLowerCase().match(reverseComplement(cTargetSequence.toLowerCase()));
-    let targetIC = targetMatchC ? targetMatchC.index + 1 : revTargetMatchC.index;
+    
+    // Check if either match was found for C-Terminal
+    if (!targetMatchC && !revTargetMatchC) {
+      console.error("Could not find C-Terminal target in sequence");
+      throw new Error("Could not find C-Terminal target in sequence");
+    }
+    let targetIC = targetMatchC ? targetMatchC.index + 1 : revTargetMatchC.index + 1;
 
     // Define PAM positions for N and C
-    const pamStartN = revTargetMatchN ? targetIN - 2 : targetIN + 20;
-    const pamStartC = revTargetMatchC ? targetIC - 2 : targetIC + 20;
+    const pamStartN = (revTargetMatchN && !targetMatchN) ? targetIN - 2 : targetIN + 20;
+    const pamStartC = (revTargetMatchC && !targetMatchC) ? targetIC - 2 : targetIC + 20;
 
     const start = parseInt(highlights.start.location) + 1;
     const stop = parseInt(highlights.stop.location) + 1;
@@ -223,7 +235,7 @@ export const downloadPlasmidTemplate = async (plasmidTemplate, geneName, sequenc
   if (!plasmidTemplate) return;
   
   try {
-    const url = `${window.location.origin}/plasmid_folder/${plasmidTemplate.split(' ').join('%20')}.txt`;
+    const url = `${window.location.origin}/build/plasmid_folder/${plasmidTemplate.split(' ').join('%20')}.txt`;
     const response = await fetch(url);
     const data = await response.text();
     
@@ -292,7 +304,7 @@ export const downloadDeletePlasmidTemplate = async (plasmidTemplate, geneName, s
   if (!plasmidTemplate) return;
   
   try {
-    const url = `${window.location.origin}/plasmid_folder/${plasmidTemplate.split(' ').join('%20')}.txt`;
+    const url = `${window.location.origin}/build/plasmid_folder/${plasmidTemplate.split(' ').join('%20')}.txt`;
     const response = await fetch(url);
     const data = await response.text();
     
@@ -341,7 +353,7 @@ export const downloadDeletePlasmidTemplate = async (plasmidTemplate, geneName, s
  */
 export const downloadGuideRna = async (geneName, oligos) => {
   try {
-    const url = window.location.origin + '/templates/pU6.txt';
+    const url = window.location.origin + '/build/templates/pU6.txt';
     const response = await fetch(url);
     
     if (!response.ok) {
@@ -402,7 +414,29 @@ export const downloadGuideRna = async (geneName, oligos) => {
  */
 export const downloadDeleteGuideRna = async (geneName, oligos) => {
   try {
-    const url = window.location.origin + '/templates/pU6.txt';
+    // Log the oligos object to help with debugging
+    console.log("downloadDeleteGuideRna oligos:", oligos);
+    
+    // Validate input parameters
+    if (!geneName) {
+      console.error("Missing geneName for downloadDeleteGuideRna");
+      throw new Error("Missing geneName for downloadDeleteGuideRna");
+    }
+    
+    if (!oligos || !oligos.N || !oligos.C) {
+      console.error("Missing oligos data for downloadDeleteGuideRna");
+      throw new Error("Missing oligos data for downloadDeleteGuideRna");
+    }
+    
+    // Ensure oligos.N and oligos.C have the expected structure
+    if (!oligos.N.sense || !oligos.C.sense) {
+      console.error("Oligos missing sense property:", oligos);
+      throw new Error("Oligos missing sense property");
+    }
+    
+    const url = window.location.origin + '/build/templates/pU6.txt';
+    console.log("Fetching template from:", url);
+    
     const response = await fetch(url);
     
     if (!response.ok) {
@@ -456,10 +490,16 @@ export const downloadDeleteGuideRna = async (geneName, oligos) => {
     };
     
     // Generate files for N and C
+    console.log("Generating N-terminal guide RNA file");
     generateFile(oligos.N, "delete-N", `rna-delete-N-${geneName}`);
+    
+    console.log("Generating C-terminal guide RNA file");
     generateFile(oligos.C, "delete-C", `rna-delete-C-${geneName}`);
+    
+    console.log("Guide RNA files generated successfully");
   } catch (error) {
     console.error('Error downloading delete guide RNA:', error);
+    throw error; // Re-throw to allow caller to handle the error
   }
 };
 

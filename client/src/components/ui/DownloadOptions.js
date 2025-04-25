@@ -59,8 +59,8 @@ const DownloadOptions = ({
           onClick={(e) => {
             e.preventDefault();
             if (operation === 'delete') {
-              console.log("Using onDownloadApeFile for delete operation");
-              onDownloadApeFile();
+              console.log("Using onDownloadDeleteApeFile for delete operation");
+              onDownloadDeleteApeFile();
             } else {
               onDownloadApeFile();
             }

@@ -406,6 +406,21 @@ const App = () => {
         sequenceLength: sequence ? sequence.length : 0,
         highlightsKeys: highlights ? Object.keys(highlights) : []
       });
+      
+      // Make sure we're passing all the required parameters
+      if (!plasmidTemplate) {
+        console.error("Missing plasmidTemplate for downloadDeletePlasmidTemplate");
+      }
+      if (!geneName) {
+        console.error("Missing geneName for downloadDeletePlasmidTemplate");
+      }
+      if (!sequence) {
+        console.error("Missing sequence for downloadDeletePlasmidTemplate");
+      }
+      if (!highlights) {
+        console.error("Missing highlights for downloadDeletePlasmidTemplate");
+      }
+      
       downloadDeletePlasmidTemplate(plasmidTemplate, geneName, sequence, highlights);
     } else {
       console.log("Calling downloadPlasmidTemplate with:", {
