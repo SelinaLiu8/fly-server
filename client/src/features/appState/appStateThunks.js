@@ -1,10 +1,10 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { urlBase } from './appConfig';
-import { setPopup, setOperation, setIsoform, setMenu, setScreen, clearPopup } from './appStateSlicer';
+import { setPopup, setOperation, setIsoform, setMenu, setScreen, clearPopup, setTerminals } from './appStateSlicer';
 
 export const searchForGeneAsync = createAsyncThunk(
     'appState/searchForGene',
-    async (geneName, {dispatch}) => {
+    async (geneName, {dispatch, getState}) => {
       const response = await fetch(`${urlBase}/api/?type=search&gene=${geneName}`);
       const data = await response.json();
 
@@ -20,8 +20,8 @@ export const searchForGeneAsync = createAsyncThunk(
           { label: 'Tag', value: 'tag' },
           { label: 'Delete', value: 'delete' },
         ],
-        onSelect: (operation) => {
-          dispatch(setOperation(operation.value));
+        onSelect: (operationObj) => {
+          dispatch(setOperation(operationObj.value));
           dispatch(setPopup({
             type: 'question',
             question: 'Choose your isoform',
@@ -29,13 +29,31 @@ export const searchForGeneAsync = createAsyncThunk(
               label: iso,
               value: iso,
             })),
-            onSelect: (isoform) => {
-                dispatch(setIsoform(isoform));
+            onSelect: (isoformObj) => {
+                dispatch(setIsoform(isoformObj));
                 dispatch(setMenu(2));
                 dispatch(setScreen(2));
-                console.log("isoform: ", isoform);
-                dispatch(fetchSequenceAsync(isoform.value));
-                dispatch(clearPopup());
+                dispatch(fetchSequenceAsync(isoformObj.value));
+                const operation = getState().appState.operation;
+                console.log("operation: ", operation);
+                if (operation === "tag") {
+                    dispatch(setPopup({
+                        type: 'question',
+                        question: 'Choose your terminal',
+                        choices: [
+                            { label: "N Terminal", value: 'n'},
+                            { label: "C Terminal", value: 'c'},
+                        ],
+                        onSelect: (terminalObj) => {
+                            dispatch(setTerminals([terminalObj.value]))
+                            dispatch(searchForTargetsAsync)
+                            dispatch(clearPopup());
+                        }
+                    }))
+                } else if (operation === "delete") {
+                    dispatch(setTerminals(['n', 'c']))
+                    dispatch(clearPopup());
+                }
             }
           }));
         },
@@ -67,3 +85,20 @@ export const fetchSequenceAsync = createAsyncThunk(
     }
 );
 
+export const searchForTargetsAsync = createAsyncThunk(
+    'appState/searchForTargets',
+    async (geneSequence, { dispatch }) => {
+        const response = await fetch(`${urlBase}/api?type=targetSearch&targetArea=${encodeURIComponent(geneSequence)}`);
+        const data = await response.json();
+        return data;
+    }
+);
+
+export const getTargetEfficiencyAsync = createAsyncThunk(
+    'appState/getTargetEfficiency',
+    async (targets, { dispatch }) => {
+        const response = await fetch(`${urlBase}/api?type=targetEfficiency&targets=${encodeURIComponent(JSON.stringify(targets))}`);
+        const data = await response.json();
+        return data;
+    }
+);

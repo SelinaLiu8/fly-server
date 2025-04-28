@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { searchForGeneAsync, fetchSequenceAsync } from './appStateThunks';
+import { searchForGeneAsync, fetchSequenceAsync, searchForTargetsAsync, getTargetEfficiencyAsync } from './appStateThunks';
 import { act } from 'react';
 
 const initialState = {
@@ -24,7 +24,10 @@ const initialState = {
     sequence: null,
     operation: null,
     isoform: null,
+    terminals: [],
     //Target
+    targetList: [],
+    targets: [],
     //Primer
     //File
     //Async State
@@ -89,6 +92,15 @@ export const appStateSlice = createSlice({
         setIsoform: (state, action) => {
             state.isoform = action.payload;
         },
+        setTerminals: (state, action) => {
+            state.terminals = action.payload;
+        },
+        setTargetList: (state, action) => {
+            state.targetList = action.payload;
+        },
+        setTargets: (state, action) => {
+            state.targets = action.payload;
+        }
     },
     extraReducers: (builder) => {
         builder
@@ -106,15 +118,37 @@ export const appStateSlice = createSlice({
                 state.error = action.error.message;
             })
             .addCase(fetchSequenceAsync.pending, (state) => {
-                state.loading = true;
-                state.loadingMessage = "Preparing your sequnce."
                 state.error = null;
             })
             .addCase(fetchSequenceAsync.fulfilled, (state, action) => {
-                state.loading = false;
                 state.sequenceData = action.payload;
             })
             .addCase(fetchSequenceAsync.rejected, (state, action) => {
+                state.error = action.error.message;
+            })
+            .addCase(searchForTargetsAsync.pending, (state) => {
+                state.loading = true;
+                state.loadingMessage = "Searching for targets. This might take awhile.";
+                state.error = null;
+            })
+            .addCase(searchForTargetsAsync.fulfilled, (state, action) => {
+                state.loading = false;
+                state.targetList = action.payload;
+            })
+            .addCase(searchForTargetsAsync.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(getTargetEfficiencyAsync.pending, (state) => {
+                state.loading = true;
+                state.loadingMessage = "Getting efficiency scores.";
+                state.error = null;
+            })
+            .addCase(getTargetEfficiencyAsync.fulfilled, (state, action) => {
+                state.loading = false;
+                state.gene = action.payload;
+            })
+            .addCase(getTargetEfficiencyAsync.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             });
@@ -135,6 +169,9 @@ export const {
     setIsoform,
     setPopup,
     clearPopup,
+    setTerminals,
+    setTargetList,
+    setTargets
 } = appStateSlice.actions;
 
 export default appStateSlice.reducer;
