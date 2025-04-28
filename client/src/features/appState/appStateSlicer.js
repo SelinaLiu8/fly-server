@@ -21,10 +21,10 @@ const initialState = {
     },
     //Gene
     gene: null,
-    sequence: null,
+    sequenceData: null,
     operation: null,
     isoform: null,
-    terminals: [],
+    terminals: null,
     //Target
     targetList: [],
     targets: [],
@@ -83,7 +83,7 @@ export const appStateSlice = createSlice({
         setGene: (state, action) => {
             state.gene = action.payload;
         },
-        setSequnce: (state, action) => {
+        setSequenceData: (state, action) => {
             state.sequence = action.payload;
         },
         setOperation: (state, action) => {
@@ -118,12 +118,16 @@ export const appStateSlice = createSlice({
                 state.error = action.error.message;
             })
             .addCase(fetchSequenceAsync.pending, (state) => {
+                state.loading = true;
+                state.loadingMessage = "Loading Sequence";
                 state.error = null;
             })
             .addCase(fetchSequenceAsync.fulfilled, (state, action) => {
+                state.loading = false;
                 state.sequenceData = action.payload;
             })
             .addCase(fetchSequenceAsync.rejected, (state, action) => {
+                state.loading = false;
                 state.error = action.error.message;
             })
             .addCase(searchForTargetsAsync.pending, (state) => {
@@ -164,7 +168,7 @@ export const {
     setHighlights,
     setCurrentHighlights,
     setGene,
-    setSequnce,
+    setSequenceData,
     setOperation,
     setIsoform,
     setPopup,

@@ -14,7 +14,7 @@ const SequenceViewScreen = () => {
     return <div>Loading sequence...</div>;
   }
 
-  const { isoform, downstream, upstream ,sequence, strand } = sequenceData;
+  const { isoform, downstream, upstream , fullSequence, strand } = sequenceData;
 
   console.log("Current Screen:", screen);
 
@@ -27,7 +27,7 @@ const SequenceViewScreen = () => {
 
       <div className="sequence-container">
         <GeneSequence
-          sequence={upstream + sequence + downstream}
+          sequence={fullSequence}
           highlights={highlights}
           currentHighlight={currentHighlight}
           fontSize={fontSize}
