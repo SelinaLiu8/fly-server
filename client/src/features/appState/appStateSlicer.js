@@ -11,6 +11,14 @@ const initialState = {
     menu: null,
     highlights: [],
     currentHighlight: null,
+    popup: {
+        visible: false,    // Is a popup currently open?
+        type: null,        // Optional - What kind of popup? ('question', 'error', etc.)
+        question: null,    // The main question/message to show
+        choices: [],       // An array of { label, value } options for buttons
+        onSelect: null,    // A function to call when user selects a choice
+        stayOpen: false,   // Optional: Should popup auto-close after choice?
+    },
     //Gene
     gene: null,
     sequence: null,
@@ -50,6 +58,23 @@ export const appStateSlice = createSlice({
         },
         setCurrentHighlights: (state, action) => {
             state.currentHighlight = action.payload;
+        },
+        setPopup: (state, action) => {
+            const { type, question, choices, onSelect, stayOpen, image } = action.payload;
+            state.popup.visible = true;
+            state.popup.type = type || 'question';
+            state.popup.question = question || 'Please select:';
+            state.popup.choices = choices || [];
+            state.popup.onSelect = onSelect || null;
+            state.popup.stayOpen = stayOpen || false;
+          },
+        clearPopup: (state) => {
+            state.popup.visible = false;
+            state.popup.type = null;
+            state.popup.question = null;
+            state.popup.choices = [];
+            state.popup.onSelect = null;
+            state.popup.stayOpen = false;
         },
         //Gene
         setGene: (state, action) => {
@@ -94,7 +119,9 @@ export const {
     setGene,
     setSequnce,
     setOperation,
-    setIsoform
+    setIsoform,
+    setPopup,
+    clearPopup,
 } = appStateSlice.actions;
 
 export default appStateSlice.reducer;
