@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { searchForGeneAsync } from './appStateThunks';
+import { searchForGeneAsync, fetchSequenceAsync } from './appStateThunks';
 import { act } from 'react';
 
 const initialState = {
@@ -102,6 +102,19 @@ export const appStateSlice = createSlice({
                 state.gene = action.payload;
             })
             .addCase(searchForGeneAsync.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(fetchSequenceAsync.pending, (state) => {
+                state.loading = true;
+                state.loadingMessage = "Preparing your sequnce."
+                state.error = null;
+            })
+            .addCase(fetchSequenceAsync.fulfilled, (state, action) => {
+                state.loading = false;
+                state.sequenceData = action.payload;
+            })
+            .addCase(fetchSequenceAsync.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             });

@@ -1,6 +1,6 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { urlBase } from './appConfig';
-import { setPopup, setOperation, setIsoform } from './appStateSlicer';
+import { setPopup, setOperation, setIsoform, setMenu, setScreen, clearPopup } from './appStateSlicer';
 
 export const searchForGeneAsync = createAsyncThunk(
     'appState/searchForGene',
@@ -11,8 +11,10 @@ export const searchForGeneAsync = createAsyncThunk(
       console.log("search data:", data);
 
       const isoforms = JSON.parse(data.results.isoforms);
+      console.log("isoform selections: ", isoforms)
 
       dispatch(setPopup({
+        type: 'question',
         question: 'Choose your operation',
         choices: [
           { label: 'Tag', value: 'tag' },
@@ -21,12 +23,20 @@ export const searchForGeneAsync = createAsyncThunk(
         onSelect: (operation) => {
           dispatch(setOperation(operation.value));
           dispatch(setPopup({
+            type: 'question',
             question: 'Choose your isoform',
-            choices: isoforms.map((isoform) => ({
-              label: isoform,
-              value: isoform,
+            choices: isoforms.map((iso) => ({
+              label: iso,
+              value: iso,
             })),
-            onSelect: (isoform) => dispatch(setIsoform(isoform)),
+            onSelect: (isoform) => {
+                dispatch(setIsoform(isoform));
+                dispatch(setMenu(2));
+                dispatch(setScreen(2));
+                console.log("isoform: ", isoform);
+                dispatch(fetchSequenceAsync(isoform.value));
+                dispatch(clearPopup());
+            }
           }));
         },
       }));
@@ -34,3 +44,26 @@ export const searchForGeneAsync = createAsyncThunk(
       return data;
     }
 );
+
+export const fetchSequenceAsync = createAsyncThunk(
+    'appState/fetchSequence',
+    async (isoform, { dispatch }) => {
+    
+        const response = await fetch(`${urlBase}/api/?type=isoform&isoform=${isoform}`);
+        const data = await response.json();
+        
+        console.log("sequence data:", data);
+    
+        return {
+            isoform: data.isoForm,
+            sequence: data.sequence,
+            strand: data.strand,
+            locStart: data.locStart,
+            locEnd: data.locEnd,
+            locDesc: data.locDesc,
+            upstream: data.upstream,
+            downstream: data.downstream
+        };
+    }
+);
+

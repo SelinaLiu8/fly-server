@@ -6,6 +6,7 @@ import SearchScreen from './components/SearchScreen';
 import LoadingScreen from './components/LoadingScreen';
 import QuestionPopup from './components/QuestionPopUpScreen';
 import Sidebar from './components/SideBar';
+import SequenceViewScreen from './components/SequenceViewScreen';
 import Footer from './components/Footer';
 
 
@@ -23,9 +24,15 @@ export default function App() {
       <Header/>
       <div className='content-container'>
         <Sidebar/>
-        {screen === 1 && (
+        {screen === 1 ? (
           <>
             <SearchScreen />
+            {loading && <LoadingScreen message={loadingMessage} />}
+            {popupVisible && <QuestionPopup />}
+          </>
+        ) : (
+          <>
+            <SequenceViewScreen />
             {loading && <LoadingScreen message={loadingMessage} />}
             {popupVisible && <QuestionPopup />}
           </>

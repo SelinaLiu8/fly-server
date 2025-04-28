@@ -21,8 +21,15 @@ const QuestionPopup = () => {
     };
 
     useEffect(() => {
+        console.log("useeffect used");
+        setSelectedChoice(null);
         setFadeClass('fade-in'); // When popup first opens
     }, [question]);
+
+    const handleSelect = (choice) => {
+        setSelectedChoice(choice);
+        popup.onSelect && popup.onSelect(choice);
+    };
   
     return (
       <div className="popup-wrapper">
@@ -30,16 +37,19 @@ const QuestionPopup = () => {
           <h2>{question}</h2>
   
           <div className="popup-choices">
-            <select onChange={(e) => {
-              const selected = choices.find(choice => choice.label === e.target.value);
-              setSelectedChoice(selected);
-            }}>
-              <option value="">Select an option...</option>
-              {choices.map((choice, index) => (
+          <select
+            value={selectedChoice ? selectedChoice.label : ''}
+            onChange={(e) => {
+                const selected = choices.find(choice => choice.label === e.target.value);
+                setSelectedChoice(selected || null);
+            }}
+            >
+            <option value="">Select an option...</option>
+            {choices.map((choice, index) => (
                 <option key={index} value={choice.label}>
-                  {choice.label}
+                {choice.label}
                 </option>
-              ))}
+            ))}
             </select>
           </div>
   
