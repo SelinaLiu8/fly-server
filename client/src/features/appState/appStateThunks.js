@@ -1,7 +1,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { urlBase } from './appConfig';
 import { setPopup, setOperation, setIsoform, setMenu, setScreen, setHighlights, clearPopup, setTerminal } from './appStateSlicer';
-import { computeIsoformHighlights, computeTargetAreaLocations} from '../../components/utilities/highlightUtils';
+import { computeIsoformHighlights, computeTargetAreaLocations} from '../../utilities/highlightUtils';
 
 export const searchForGeneAsync = createAsyncThunk(
     'appState/searchForGene',
@@ -116,7 +116,8 @@ export const searchForTargetsAsync = createAsyncThunk(
                 distal: target.distal,
                 proximal: target.proximal,
                 pam: target.pam,
-                strand: target.strand
+                strand: target.strand,
+                targetSequence: `${target.distal}${target.proximal}`
             }));
             organizedTargets[terminal] = parsedTargets;
         } else if (terminal === 'both') {
@@ -140,7 +141,8 @@ export const searchForTargetsAsync = createAsyncThunk(
                 distal: target.distal,
                 proximal: target.proximal,
                 pam: target.pam,
-                strand: target.strand
+                strand: target.strand,
+                targetSequence: `${target.distal}${target.proximal}`
             }));
 
             const parsedTargetsC = (dataC.results || []).map((target, index) => ({
@@ -149,7 +151,8 @@ export const searchForTargetsAsync = createAsyncThunk(
                 distal: target.distal,
                 proximal: target.proximal,
                 pam: target.pam,
-                strand: target.strand
+                strand: target.strand,
+                targetSequence: `${target.distal}${target.proximal}`
             }));
     
             organizedTargets.n = parsedTargetsN;
@@ -159,6 +162,27 @@ export const searchForTargetsAsync = createAsyncThunk(
         }
 
         console.log("targets: ", organizedTargets);
+
+        const allTargetSequences = [
+            ...organizedTargets.n.map(t => t.targetSequence),
+            ...organizedTargets.c.map(t => t.targetSequence)
+        ];
+    
+        const efficiencyData = await dispatch(getTargetEfficiencyAsync(allTargetSequences)).unwrap();
+    
+        console.log("Efficiency Data:", efficiencyData);
+
+        organizedTargets.n = organizedTargets.n.map(target => ({
+            ...target,
+            score: efficiencyData[target.targetSequence] || null
+        }));
+    
+        organizedTargets.c = organizedTargets.c.map(target => ({
+            ...target,
+            score: efficiencyData[target.targetSequence] || null
+        }));
+
+        console.log("targets after efficiency score: ", organizedTargets);
   
         return organizedTargets;
       } catch (error) {
@@ -168,11 +192,21 @@ export const searchForTargetsAsync = createAsyncThunk(
     }
   );
 
-export const getTargetEfficiencyAsync = createAsyncThunk(
+  export const getTargetEfficiencyAsync = createAsyncThunk(
     'appState/getTargetEfficiency',
-    async (targetList, { dispatch }) => {
-        const response = await fetch(`${urlBase}/api?type=targetEfficiency&targets=${encodeURIComponent(JSON.stringify(targets))}`);
+    async (targetSequences, { rejectWithValue }) => {
+      try {
+        const response = await fetch(`${urlBase}/api?type=targetEfficiency&targets=${encodeURIComponent(targetSequences.join('\n'))}`);
+        console.log(response)
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
         const data = await response.json();
         return data;
+      } catch (error) {
+        console.error('Error getting target efficiency:', error);
+        return rejectWithValue(error.message);
+      }
     }
-);
+  );
+  
