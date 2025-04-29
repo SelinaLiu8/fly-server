@@ -24,7 +24,7 @@ const initialState = {
     sequenceData: null,
     operation: null,
     isoform: null,
-    terminals: null,
+    terminal: null,
     //Target
     targetList: [],
     targets: [],
@@ -92,8 +92,8 @@ export const appStateSlice = createSlice({
         setIsoform: (state, action) => {
             state.isoform = action.payload;
         },
-        setTerminals: (state, action) => {
-            state.terminals = action.payload;
+        setTerminal: (state, action) => {
+            state.terminal = action.payload;
         },
         setTargetList: (state, action) => {
             state.targetList = action.payload;
@@ -173,7 +173,7 @@ export const {
     setIsoform,
     setPopup,
     clearPopup,
-    setTerminals,
+    setTerminal,
     setTargetList,
     setTargets
 } = appStateSlice.actions;

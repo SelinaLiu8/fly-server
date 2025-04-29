@@ -1,3 +1,5 @@
+
+
 export function computeIsoformHighlights(fullSequence, isoformSequence) {
     if (!fullSequence || !isoformSequence) {
       console.error("Missing sequence or isoform sequence for highlighting");
@@ -19,5 +21,15 @@ export function computeIsoformHighlights(fullSequence, isoformSequence) {
       { key: 'start', location: startIndex, length: 3, color: '#93E593' },
       { key: 'stop', location: stopIndex, length: 3, color: '#FF668E' },
     ];
+}
+
+export function computeTargetAreaLocations(sequence, terminal, highlights) {
+    let location = '';
+    if (terminal === 'n') {
+        location = highlights[0].location;
+    } else if (terminal === 'c') {
+        location = highlights[1].location;
+    }
+    return sequence.substring(location - 50, location + 50);
 }
   

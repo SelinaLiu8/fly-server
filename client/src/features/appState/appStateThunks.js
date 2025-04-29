@@ -1,7 +1,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { urlBase } from './appConfig';
-import { setPopup, setOperation, setIsoform, setMenu, setScreen, setHighlights, clearPopup, setTerminals } from './appStateSlicer';
-import { computeIsoformHighlights } from '../../components/utilities/highlightUtils';
+import { setPopup, setOperation, setIsoform, setMenu, setScreen, setHighlights, clearPopup, setTerminal } from './appStateSlicer';
+import { computeIsoformHighlights, computeTargetAreaLocations} from '../../components/utilities/highlightUtils';
 
 export const searchForGeneAsync = createAsyncThunk(
     'appState/searchForGene',
@@ -50,14 +50,14 @@ export const searchForGeneAsync = createAsyncThunk(
                             { label: "C Terminal", value: 'c'},
                         ],
                         onSelect: (terminalObj) => {
-                            dispatch(setTerminals(terminalObj.value));
-                            // dispatch(searchForTargetsAsync(terminalObj.value));
+                            dispatch(setTerminal(terminalObj.value));
+                            dispatch(searchForTargetsAsync());
                             dispatch(clearPopup());
                         }
                     }))
                 } else if (operation === "delete") {
-                    dispatch(setTerminals('both'))
-                    // dispatch(searchForTargetsAsync('both'));
+                    dispatch(setTerminal('both'))
+                    dispatch(searchForTargetsAsync());
                     dispatch(clearPopup());
                 }
             }
@@ -92,19 +92,20 @@ export const fetchSequenceAsync = createAsyncThunk(
 
 export const searchForTargetsAsync = createAsyncThunk(
     'appState/searchForTargets',
-    async (terminal, { dispatch, getState, rejectWithValue }) => {
+    async (_, { dispatch, getState, rejectWithValue }) => {
       try {
-        // Have to use stop and start codon to determinal the api calls
-        const geneSequence = getState().appState.sequenceData;
-        const { sequence } = geneSequence;
-        console.log("sequence:", sequence);
-        console.log("terminal:", terminal)
+        console.log("searchForTargetsAsync got called")
+        const state = getState().appState;
+        const highlights = state.highlights;
+        const terminal = state.terminal;
+        const sequence = state.sequenceData.fullSequence;
   
         const organizedTargets = { n: [], c: [] };
   
         if (terminal === 'n' || terminal === 'c') {
-            console.log("Went into the tag target search")
-            const response = await fetch(`${urlBase}/api?type=targetSearch&targetArea=${encodeURIComponent(sequence)}`);
+            const targetArea = computeTargetAreaLocations(sequence, terminal, highlights);
+            console.log("targetfetch url:", `${urlBase}/api?type=targetSearch&targetArea=${targetArea}`);
+            const response = await fetch(`${urlBase}/api?type=targetSearch&targetArea=${targetArea}`);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
@@ -112,9 +113,10 @@ export const searchForTargetsAsync = createAsyncThunk(
             console.log("tag target data:", data)
             organizedTargets[terminal] = data.targets || [];
         } else if (terminal === 'both') {
-            //Search both terminals
-            const fetchN = fetch(`${urlBase}/api?type=targetSearch&targetArea=${encodeURIComponent(sequence)}&terminal=n`);
-            const fetchC = fetch(`${urlBase}/api?type=targetSearch&targetArea=${encodeURIComponent(sequence)}&terminal=c`);
+            const NtargetArea = computeTargetAreaLocations(sequence, 'n', highlights);
+            const CtargetArea = computeTargetAreaLocations(sequence, 'c', highlights);
+            const fetchN = fetch(`${urlBase}/api?type=targetSearch&targetArea=${NtargetArea}`);
+            const fetchC = fetch(`${urlBase}/api?type=targetSearch&targetArea=${CtargetArea}`);
     
             const [responseN, responseC] = await Promise.all([fetchN, fetchC]);
     
