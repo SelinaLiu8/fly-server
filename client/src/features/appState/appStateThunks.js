@@ -110,8 +110,15 @@ export const searchForTargetsAsync = createAsyncThunk(
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             const data = await response.json();
-            console.log("tag target data:", data)
-            organizedTargets[terminal] = data.targets || [];
+            const parsedTargets = (data.results || []).map((target, index) => ({
+                label: target.label || `Target ${index + 1}`, // fallback just in case
+                offtarget: parseInt(target.offtarget, 10),    // convert to integer
+                distal: target.distal,
+                proximal: target.proximal,
+                pam: target.pam,
+                strand: target.strand
+            }));
+            organizedTargets[terminal] = parsedTargets;
         } else if (terminal === 'both') {
             const NtargetArea = computeTargetAreaLocations(sequence, 'n', highlights);
             const CtargetArea = computeTargetAreaLocations(sequence, 'c', highlights);
@@ -126,9 +133,27 @@ export const searchForTargetsAsync = createAsyncThunk(
     
             const dataN = await responseN.json();
             const dataC = await responseC.json();
+
+            const parsedTargetsN = (dataN.results || []).map((target, index) => ({
+                label: target.label || `Target ${index + 1}`, // fallback just in case
+                offtarget: parseInt(target.offtarget, 10),    // convert to integer
+                distal: target.distal,
+                proximal: target.proximal,
+                pam: target.pam,
+                strand: target.strand
+            }));
+
+            const parsedTargetsC = (dataC.results || []).map((target, index) => ({
+                label: target.label || `Target ${index + 1}`, // fallback just in case
+                offtarget: parseInt(target.offtarget, 10),    // convert to integer
+                distal: target.distal,
+                proximal: target.proximal,
+                pam: target.pam,
+                strand: target.strand
+            }));
     
-            organizedTargets.n = dataN.targets || [];
-            organizedTargets.c = dataC.targets || [];
+            organizedTargets.n = parsedTargetsN;
+            organizedTargets.c = parsedTargetsC;
         } else {
             throw new Error(`Invalid terminal value: ${terminal}`);
         }
