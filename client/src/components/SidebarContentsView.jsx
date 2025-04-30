@@ -1,14 +1,20 @@
 import React from 'react'
 import { useSelector } from 'react-redux';
-import '../App.css'
+import TargetList from './sidebar_contents/TargetList';
+import '../styles/SidebarContents.css'
 
 const SidebarContents = () => {
     const activeMenu = useSelector((state) => state.appState.menu);
     const targetList = useSelector((state) => state.appState.targetList);
     const operation = useSelector((state) => state.appState.operation);
+    const targetsReady = useSelector((state) => state.appState.targetsReady);
+
+    console.log("targetReady", targetsReady);
 
     return (
-        <div>SidebarContents</div>
+        <div className='sidebar-container'>
+            {activeMenu === 2 && targetsReady && <TargetList />}
+        </div>
     )
 };
 

@@ -17,18 +17,35 @@ export function computeIsoformHighlights(fullSequence, isoformSequence) {
       return [];
     }
   
-    return [
-      { key: 'start', location: startIndex, length: 3, color: '#93E593' },
-      { key: 'stop', location: stopIndex, length: 3, color: '#FF668E' },
-    ];
+    return {
+      start: {
+        location: startIndex,
+        length: 3,
+        color: '#93E593'
+      },
+      stop: {
+        location: stopIndex,
+        length: 3,
+        color: '#FF668E'
+      }
+    };
+}
+
+export function getHighlightClass(key) {
+    if (key === 'start') return 'highlight-start';
+    if (key === 'stop') return 'highlight-stop';
+    if (key === 'current') return 'highlight-current';
+    if (key.includes('potentialStart')) return 'highlight-potential-start';
+    if (key.includes('potentialStop')) return 'highlight-potential-stop';
+    return 'highlight-generic';
 }
 
 export function computeTargetAreaLocations(sequence, terminal, highlights) {
     let location = '';
     if (terminal === 'n') {
-        location = highlights[0].location;
+        location = highlights.start.location;
     } else if (terminal === 'c') {
-        location = highlights[1].location;
+        location = highlights.stop.location;
     }
     return sequence.substring(location - 50, location + 50);
 }

@@ -1,0 +1,120 @@
+.sidebar-container {
+    width: 214px;
+    z-index: 9997;
+}
+
+.sidebar-content {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+/* Targets */
+.target-list {
+    z-index: 1000;
+    position: relative;
+    left: 0;
+    top: 0;
+    width: 100%;
+    border: none;
+    box-shadow: none;
+}
+  
+  .target-list h3 {
+    background: #56409b;
+    color: #fff;
+    padding: 10px;
+    margin: 0;
+    font-size: 16px;
+    text-align: center;
+}
+  
+.target-list-header {
+    display: flex;
+    background: #ebe9e3;
+    padding: 8px 5px;
+    font-size: 12px;
+    font-weight: bold;
+    border-bottom: 1px solid #bcad8a;
+}
+  
+.target-list-header span {
+    flex: 1;
+    text-align: center;
+}
+  
+.target-list-items {
+    max-height: 500px;
+    overflow-y: auto;
+}
+  
+.target-item {
+    display: flex;
+    padding: 10px 5px;
+    font-size: 12px;
+    border-bottom: 1px solid #bcad8a;
+    cursor: pointer;
+}
+  
+.target-item:hover {
+    background: hsla(0,0%,100%,.5);
+}
+  
+.target-item.active {
+    background: rgba(86,64,155,.2);
+  }
+  
+  .target-item span {
+    flex: 1;
+    text-align: center;
+    word-break: break-all;
+  }
+  
+  .target-score {
+    font-weight: bold;
+  }
+  
+  .target-list-empty {
+    padding: 20px;
+    text-align: center;
+    font-style: italic;
+    color: #666;
+  }
+  
+  .target-list .single-target {
+    font-size: 14px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    border-bottom: 1px solid #bcad8a;
+    word-break: break-all;
+    line-height: 20px;
+    font-family: "Poppins";
+    font-weight: 300;
+    cursor: pointer
+  }
+  
+  .target-list .single-target>div {
+    display: flex;
+    grid-gap: 10px;
+    gap: 10px
+  }
+  
+  .target-list .single-target.disabled:hover {
+    color: #ff668e;
+    cursor: not-allowed
+  }
+  
+  .target-list .single-target.disabled:hover div {
+    color: #ff668e
+  }
+  
+  .target-list .single-target:hover {
+    background: hsla(0,0%,100%,.5)
+  }
+  
+  .target-list .single-target span {
+    font-weight: 400
+  }
+  

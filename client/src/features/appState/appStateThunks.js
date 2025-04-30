@@ -1,6 +1,6 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { urlBase } from './appConfig';
-import { setPopup, setOperation, setIsoform, setMenu, setScreen, setHighlights, clearPopup, setTerminal } from './appStateSlicer';
+import { setPopup, setOperation, setIsoform, setMenu, setScreen, setHighlights, clearPopup, setTerminal, setTargetsReady } from './appStateSlicer';
 import { computeIsoformHighlights, computeTargetAreaLocations} from '../../utilities/highlightUtils';
 
 export const searchForGeneAsync = createAsyncThunk(
@@ -183,7 +183,6 @@ export const searchForTargetsAsync = createAsyncThunk(
         }));
 
         console.log("targets after efficiency score: ", organizedTargets);
-  
         return organizedTargets;
       } catch (error) {
         console.error('Error searching for targets:', error);

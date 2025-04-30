@@ -9,7 +9,7 @@ const initialState = {
     themeColor: false,
     fontSize: 23,
     menu: null,
-    highlights: [],
+    highlights: {},
     currentHighlight: null,
     popup: {
         visible: false,    // Is a popup currently open?
@@ -26,8 +26,9 @@ const initialState = {
     isoform: null,
     terminal: null,
     //Target
-    targetList: [],
-    targets: [],
+    targetList: { n: [], c: [] },
+    selectedTargets: {},
+    targetsReady: false,
     //Primer
     //File
     //Async State
@@ -62,6 +63,9 @@ export const appStateSlice = createSlice({
         setCurrentHighlights: (state, action) => {
             state.currentHighlight = action.payload;
         },
+        clearCurrentHighlights: (state) => {
+            state.currentHighlight = null;
+        },
         setPopup: (state, action) => {
             const { type, question, choices, onSelect, stayOpen, image } = action.payload;
             state.popup.visible = true;
@@ -95,11 +99,17 @@ export const appStateSlice = createSlice({
         setTerminal: (state, action) => {
             state.terminal = action.payload;
         },
+        //Target
         setTargetList: (state, action) => {
             state.targetList = action.payload;
         },
-        setTargets: (state, action) => {
-            state.targets = action.payload;
+        setSelectedTarget: (state, action) => {
+            const { terminal, target } = action.payload;
+            if (!state.selectedTargets) state.selectedTargets = {};
+            state.selectedTargets[terminal] = target;
+        },
+        setTargetsReady: (state, action) => {
+            state.targetsReady = action.payload;
         }
     },
     extraReducers: (builder) => {
@@ -138,6 +148,7 @@ export const appStateSlice = createSlice({
             .addCase(searchForTargetsAsync.fulfilled, (state, action) => {
                 state.loading = false;
                 state.targetList = action.payload;
+                state.targetsReady = true;
             })
             .addCase(searchForTargetsAsync.rejected, (state, action) => {
                 state.loading = false;
@@ -167,6 +178,7 @@ export const {
     setMenu,
     setHighlights,
     setCurrentHighlights,
+    clearCurrentHighlights,
     setGene,
     setSequenceData,
     setOperation,
@@ -175,7 +187,8 @@ export const {
     clearPopup,
     setTerminal,
     setTargetList,
-    setTargets
+    setSelectedTarget,
+    setTargetsReady
 } = appStateSlice.actions;
 
 export default appStateSlice.reducer;
