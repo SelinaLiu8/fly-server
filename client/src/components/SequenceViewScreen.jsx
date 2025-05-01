@@ -14,7 +14,7 @@ const SequenceViewScreen = () => {
     return <div>Loading sequence...</div>;
   }
 
-  const { isoform, downstream, upstream , fullSequence, strand } = sequenceData;
+  const { isoform, fullSequence, strand } = sequenceData;
 
   console.log("Current Screen:", screen);
 

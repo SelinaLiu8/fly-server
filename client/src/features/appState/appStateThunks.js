@@ -36,7 +36,6 @@ export const searchForGeneAsync = createAsyncThunk(
                 dispatch(setScreen(2));
                 dispatch(fetchSequenceAsync(isoformObj.value)).then(() => {
                     const highlights = computeIsoformHighlights(getState().appState.sequenceData.fullSequence, getState().appState.sequenceData.isoformSequence);
-                    console.log("highlights:", highlights);
                     dispatch(setHighlights(highlights));
                 });
                 const operation = getState().appState.operation;
@@ -161,7 +160,7 @@ export const searchForTargetsAsync = createAsyncThunk(
             throw new Error(`Invalid terminal value: ${terminal}`);
         }
 
-        console.log("targets: ", organizedTargets);
+        // console.log("targets: ", organizedTargets);
 
         const allTargetSequences = [
             ...organizedTargets.n.map(t => t.targetSequence),
@@ -196,7 +195,6 @@ export const searchForTargetsAsync = createAsyncThunk(
     async (targetSequences, { rejectWithValue }) => {
       try {
         const response = await fetch(`${urlBase}/api?type=targetEfficiency&targets=${encodeURIComponent(targetSequences.join('\n'))}`);
-        console.log(response)
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }

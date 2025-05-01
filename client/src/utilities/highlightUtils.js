@@ -37,6 +37,7 @@ export function getHighlightClass(key) {
     if (key === 'current') return 'highlight-current';
     if (key.includes('potentialStart')) return 'highlight-potential-start';
     if (key.includes('potentialStop')) return 'highlight-potential-stop';
+    if (key.includes('cutsite')) return 'highlight-cutsite';
     return 'highlight-generic';
 }
 

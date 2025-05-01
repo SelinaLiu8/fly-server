@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React from 'react';
 import '../styles/Sequence.css';
 import { getHighlightClass } from '../utilities/highlightUtils';
 
@@ -8,50 +8,35 @@ const GeneSequence = ({
   currentHighlight = null,
   fontSize = 16,
   onSelectStartCodon,
-  onSelectStopCodon
+  onSelectStopCodon,
 }) => {
-  const sequenceRef = useRef(null);
-
-  useEffect(() => {
-    if (currentHighlight && sequenceRef.current) {
-      const { location } = currentHighlight;
-      const element = sequenceRef.current;
-      const charWidth = fontSize * 0.6;
-      const charsPerLine = Math.floor(element.clientWidth / charWidth);
-      const lineHeight = fontSize * 1.5;
-      const scrollTop = Math.floor(location / charsPerLine) * lineHeight;
-      element.scrollTop = scrollTop - element.clientHeight / 2;
-    }
-  }, [currentHighlight, fontSize]);
-
   if (!sequence) return <div className="gene-sequence-empty">No sequence available</div>;
 
-  const highlightDict = {};
+  // Merge currentHighlight into the static highlights
+  const combinedHighlights = { ...highlights };
+  if (currentHighlight) combinedHighlights.hover = currentHighlight;
 
-  const all = { ...highlights };
-  if (currentHighlight) all._current = currentHighlight;
-
-  for (const [key, { location, length }] of Object.entries(all)) {
+  // Build a map of character positions to highlight keys
+  const highlightMap = {};
+  for (const [key, { location, length }] of Object.entries(combinedHighlights)) {
     for (let i = location; i < location + length; i++) {
-      if (!highlightDict[i]) highlightDict[i] = [];
-      highlightDict[i].push({ key });
+      if (!highlightMap[i]) highlightMap[i] = [];
+      highlightMap[i].push({ key });
     }
   }
 
   const result = [];
-
   for (let i = 0; i < sequence.length; i++) {
     const char = sequence[i];
-    const highlightsAtI = highlightDict[i];
+    const highlightsAtI = highlightMap[i];
 
     if (highlightsAtI?.length) {
-      const { key } = highlightsAtI[0];
+      const { key } = highlightsAtI[0]; // Only using the first highlight at that position
       const className = `sequence-highlight ${getHighlightClass(key)}`;
-      const onClick = key.includes('potentialStart')
-        ? onSelectStartCodon
-        : key.includes('potentialStop')
-        ? onSelectStopCodon
-        : undefined;
+      const onClick =
+        key.includes('potentialStart') ? onSelectStartCodon :
+        key.includes('potentialStop') ? onSelectStopCodon :
+        undefined;
 
       result.push(
         <span
@@ -75,7 +60,6 @@ const GeneSequence = ({
   return (
     <div
       className="gene-sequence"
-      ref={sequenceRef}
       style={{ fontSize: `${fontSize}px` }}
     >
       {result}

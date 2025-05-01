@@ -342,7 +342,7 @@ form.search-form label {
   justify-content: flex-start;
   align-items: flex-start;
   padding-top: 40px;
-  margin-left: 280px; /* Just the sidebar width */
+  margin-left: 100px;
   width: calc(100% - 280px);
   box-sizing: border-box;
 }

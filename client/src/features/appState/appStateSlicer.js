@@ -10,7 +10,7 @@ const initialState = {
     fontSize: 23,
     menu: null,
     highlights: {},
-    currentHighlight: null,
+    currentHighlight: {},
     popup: {
         visible: false,    // Is a popup currently open?
         type: null,        // Optional - What kind of popup? ('question', 'error', etc.)
@@ -58,7 +58,11 @@ export const appStateSlice = createSlice({
             state.menu = action.payload;
         },
         setHighlights: (state, action) => {
-            state.highlights = action.payload;
+            state.highlights = {
+                ...state.highlights,
+                ...action.payload,
+            };
+            console.log("Highlights:", state.highlights);
         },
         setCurrentHighlights: (state, action) => {
             state.currentHighlight = action.payload;
@@ -107,6 +111,7 @@ export const appStateSlice = createSlice({
             const { terminal, target } = action.payload;
             if (!state.selectedTargets) state.selectedTargets = {};
             state.selectedTargets[terminal] = target;
+            console.log("selected targets:", state.selectedTargets);
         },
         setTargetsReady: (state, action) => {
             state.targetsReady = action.payload;
