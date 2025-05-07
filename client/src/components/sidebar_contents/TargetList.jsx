@@ -1,28 +1,35 @@
 import React, { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { setSelectedTarget, setMenu, setCurrentHighlights, clearCurrentHighlights, setHighlights} from '../../features/appState/appStateSlicer'
+import { setSelectedTargets, setMenu, setCurrentHighlights, clearCurrentHighlights, setHighlights} from '../../features/appState/appStateSlicer'
 import { getReverseComplement } from '../../utilities/Utilities'
 import '../../styles/SidebarContents.css'
 import '../../styles/Sequence.css'
 
 const TargetList = () => {    
     const dispatch = useDispatch();
+    const menu = useSelector((state) => state.appState.menu)
     const targetList = useSelector((state) => state.appState.targetList);
     const operation = useSelector((state) => state.appState.operation);
     const sequence = useSelector((state) => state.appState.sequenceData.fullSequence)
-
-    let totalTargetNum;
-    let selectedTargets;
+    const selectedTargets = useSelector((state) => state.appState.selectedTargets);
 
     console.log("target list in jsx", targetList);
+
+    useEffect(() => {
+        if (operation === "tag") {
+          if (selectedTargets.n || selectedTargets.c) {
+            console.log("went in to tag selected targets");
+            dispatch(setMenu(3));
+          }
+        }
+      
+        if (operation === "delete") {
+          if (selectedTargets.n && selectedTargets.c) {
+            dispatch(setMenu(3));
+          }
+        }
+    }, [selectedTargets]);
     
-
-    if (operation === 'tag') {
-        totalTargetNum = 1;
-    } else if (operation === 'delete') {
-        totalTargetNum = 2;
-    }
-
     const handleHover = (target) => {
         dispatch(setCurrentHighlights({
             current: {
@@ -45,7 +52,7 @@ const TargetList = () => {
         if (target.strand === '-') {
             targetSequence = getReverseComplement(targetSequence);
         }
-        dispatch(setSelectedTarget({ terminal: { target } }));
+        dispatch(setSelectedTargets({ [terminal]: target }));
         const location = sequence.indexOf(targetSequence);
         const key = `${terminal}-cutsite`;
         const highlightData = {
@@ -54,10 +61,10 @@ const TargetList = () => {
             color: '#FFB6C1',
         };
         dispatch(setHighlights({ [key]: highlightData }));
+        console.log("selected targets:", selectedTargets);
     };
 
     const renderTargetItem = (target, terminal) => {
-        console.log('single target', target);
         return (
           <div 
             className='target-list-item'

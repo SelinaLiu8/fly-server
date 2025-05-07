@@ -1,7 +1,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { urlBase } from './appConfig';
 import { setPopup, setOperation, setIsoform, setMenu, setScreen, setHighlights, clearPopup, setTerminal, setTargetsReady } from './appStateSlicer';
-import { computeIsoformHighlights, computeTargetAreaLocations} from '../../utilities/Utilities';
+import { computeIsoformHighlights, computeTargetAreaLocations, calculatePrimerSections} from '../../utilities/Utilities';
 
 export const searchForGeneAsync = createAsyncThunk(
     'appState/searchForGene',
@@ -204,6 +204,37 @@ export const searchForTargetsAsync = createAsyncThunk(
         console.error('Error getting target efficiency:', error);
         return rejectWithValue(error.message);
       }
+    }
+  );
+
+  export const searchForHomologyArms = createAsyncThunk(
+    'appState/searchForHomologyArms',
+    async (_, { dispatch, getState }) => {
+        try {
+            const state = getState().appState;
+            const terminal = state.terminal;
+            const highlights = state.highlights;
+            const sequence = state.sequenceData.fullSequence;
+
+            const organizedTargets = {};
+
+            if (terminal === 'n' || terminal === 'c') {
+                primerSectionAreas = calculatePrimerSections(sequence, terminal, highlights);
+                primerSectionsString = Buffer.from(JSON.stringify(primerSectionAreas)).toString('base64');
+                const response = await fetch(`$s{urlBase}/api/?type=primers&primerSections=${primerSectionsString}`)
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+            } else if (terminal === 'both') {
+
+            } else {
+                throw new Error(`Invalid terminal value: ${terminal}`);
+            }
+        } catch (error) {
+            console.error('Error searching for targets:', error);
+            return rejectWithValue(error.message);
+        }
     }
   );
   

@@ -30,6 +30,8 @@ const initialState = {
     selectedTargets: {},
     targetsReady: false,
     //Primer
+    primerList: {},
+    selectedPrimers: {},
     //File
     //Async State
     loading: false,
@@ -107,15 +109,25 @@ export const appStateSlice = createSlice({
         setTargetList: (state, action) => {
             state.targetList = action.payload;
         },
-        setSelectedTarget: (state, action) => {
-            const { terminal, target } = action.payload;
-            if (!state.selectedTargets) state.selectedTargets = {};
-            state.selectedTargets[terminal] = target;
-            console.log("selected targets:", state.selectedTargets);
+        setSelectedTargets: (state, action) => {
+            state.selectedTargets = {
+                ...state.selectedTargets,
+                ...action.payload,
+            };
         },
         setTargetsReady: (state, action) => {
             state.targetsReady = action.payload;
-        }
+        },
+        //Primers
+        setPrimerList: (state, action) => {
+            state.targetList = action.payload;
+        },
+        setSelectedPrimers: (state, action) => {
+            state.selectedTargets = {
+                ...state.selectedTargets,
+                ...action.payload,
+            };
+        },
     },
     extraReducers: (builder) => {
         builder
@@ -192,8 +204,10 @@ export const {
     clearPopup,
     setTerminal,
     setTargetList,
-    setSelectedTarget,
-    setTargetsReady
+    setSelectedTargets,
+    setTargetsReady,
+    setPrimerList,
+    setSelectedPrimers
 } = appStateSlice.actions;
 
 export default appStateSlice.reducer;

@@ -1,6 +1,7 @@
 import React from 'react'
 import { useSelector } from 'react-redux';
 import TargetList from './sidebar_contents/TargetList';
+import HomologyList from './sidebar_contents/HomologyList';
 import '../styles/SidebarContents.css'
 
 const SidebarContents = () => {
@@ -14,6 +15,7 @@ const SidebarContents = () => {
     return (
         <div className='sidebar-container'>
             {activeMenu === 2 && targetsReady && <TargetList />}
+            {activeMenu === 3 && targetsReady && <HomologyList />}
         </div>
     )
 };

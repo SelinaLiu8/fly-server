@@ -60,4 +60,18 @@ export function getReverseComplement(targetSequence) {
     .join('');
 }
 
+export function calculatePrimerSections(sequence, terminal, highlights) {
+  const targetLocation =
+  terminal === 'n'
+    ? highlights.start?.location
+    : highlights?.location;
+  return {
+    "5' Homology": sequence.slice(targetLocation - 1200, targetLocation - 1000),
+    "5' Sequence": sequence.slice(targetLocation - 600, targetLocation - 400),
+    "3' Sequence": sequence.slice(targetLocation + 400, targetLocation + 600),
+    "3' Homology": sequence.slice(targetLocation + 1000, targetLocation + 1200),
+  };
+}
+
+
   
