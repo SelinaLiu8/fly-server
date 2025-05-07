@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import '../styles/Sequence.css';
-import { getHighlightClass } from '../utilities/highlightUtils';
+import { getHighlightClass } from '../utilities/Utilities';
 
 const GeneSequence = ({
   sequence,

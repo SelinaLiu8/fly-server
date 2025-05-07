@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { setSelectedTarget, setMenu, setCurrentHighlights, clearCurrentHighlights, setHighlights} from '../../features/appState/appStateSlicer'
+import { getReverseComplement } from '../../utilities/Utilities'
 import '../../styles/SidebarContents.css'
 import '../../styles/Sequence.css'
 
@@ -40,8 +41,12 @@ const TargetList = () => {
 
     const handleSelect = (target, terminal) => {
         console.log("target in handleSelect:", target)
+        let targetSequence = target.targetSequence; 
+        if (target.strand === '-') {
+            targetSequence = getReverseComplement(targetSequence);
+        }
         dispatch(setSelectedTarget({ terminal: { target } }));
-        const location = sequence.indexOf(target.targetSequence);
+        const location = sequence.indexOf(targetSequence);
         const key = `${terminal}-cutsite`;
         const highlightData = {
             location: location,

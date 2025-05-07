@@ -50,4 +50,14 @@ export function computeTargetAreaLocations(sequence, terminal, highlights) {
     }
     return sequence.substring(location - 50, location + 50);
 }
+
+export function getReverseComplement(targetSequence) {
+  const complementMap = { A: 'T', T: 'A', C: 'G', G: 'C' };
+  return targetSequence
+    .split('')
+    .reverse()
+    .map(base => complementMap[base.toUpperCase()] || base)
+    .join('');
+}
+
   

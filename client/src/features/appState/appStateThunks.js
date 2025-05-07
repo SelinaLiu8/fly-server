@@ -1,7 +1,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { urlBase } from './appConfig';
 import { setPopup, setOperation, setIsoform, setMenu, setScreen, setHighlights, clearPopup, setTerminal, setTargetsReady } from './appStateSlicer';
-import { computeIsoformHighlights, computeTargetAreaLocations} from '../../utilities/highlightUtils';
+import { computeIsoformHighlights, computeTargetAreaLocations} from '../../utilities/Utilities';
 
 export const searchForGeneAsync = createAsyncThunk(
     'appState/searchForGene',
