@@ -209,32 +209,51 @@ export const searchForTargetsAsync = createAsyncThunk(
 
   export const searchForHomologyArms = createAsyncThunk(
     'appState/searchForHomologyArms',
-    async (_, { dispatch, getState }) => {
-        try {
-            const state = getState().appState;
-            const terminal = state.terminal;
-            const highlights = state.highlights;
-            const sequence = state.sequenceData.fullSequence;
-
-            const organizedTargets = {};
-
-            if (terminal === 'n' || terminal === 'c') {
-                primerSectionAreas = calculatePrimerSections(sequence, terminal, highlights);
-                primerSectionsString = Buffer.from(JSON.stringify(primerSectionAreas)).toString('base64');
-                const response = await fetch(`$s{urlBase}/api/?type=primers&primerSections=${primerSectionsString}`)
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const data = await response.json();
-            } else if (terminal === 'both') {
-
-            } else {
-                throw new Error(`Invalid terminal value: ${terminal}`);
-            }
-        } catch (error) {
-            console.error('Error searching for targets:', error);
-            return rejectWithValue(error.message);
+    async (_, { dispatch, getState, rejectWithValue }) => {
+      try {
+        const state = getState().appState;
+        const terminal = state.terminal;
+        const highlights = state.highlights;
+        const sequence = state.sequenceData.fullSequence;
+  
+        const organizedPrimers = { n: {}, c: {} };
+  
+        const fetchHomologyData = async (term) => {
+          const primerSectionAreas = calculatePrimerSections(sequence, term, highlights);
+          const primerSectionsString = btoa(JSON.stringify(primerSectionAreas));
+          const response = await fetch(`${urlBase}/api/?type=primers&primerSections=${primerSectionsString}`);
+  
+          console.log("homology url:", `${urlBase}/api/?type=primers&primerSections=${primerSectionsString}`);
+  
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+  
+          const data = await response.json();
+          console.log("homology data:", data);
+          return data;
+        };
+  
+        if (terminal === 'n' || terminal === 'c') {
+          const data = await fetchHomologyData(terminal);
+          organizedPrimers[terminal] = data;
+        } else if (terminal === 'both') {
+          const [dataN, dataC] = await Promise.all([
+            fetchHomologyData('n'),
+            fetchHomologyData('c')
+          ]);
+          organizedPrimers.n = dataN;
+          organizedPrimers.c = dataC;
+        } else {
+          throw new Error(`Invalid terminal value: ${terminal}`);
         }
+        
+        console.log("organized primerlist:",organizedPrimers);
+        return organizedPrimers;
+      } catch (error) {
+        console.error('Error searching for homology arms:', error);
+        return rejectWithValue(error.message);
+      }
     }
-  );
+  );  
   

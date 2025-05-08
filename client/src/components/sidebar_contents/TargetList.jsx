@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { setSelectedTargets, setMenu, setCurrentHighlights, clearCurrentHighlights, setHighlights} from '../../features/appState/appStateSlicer'
+import { searchForHomologyArms } from '../../features/appState/appStateThunks'
 import { getReverseComplement } from '../../utilities/Utilities'
 import '../../styles/SidebarContents.css'
 import '../../styles/Sequence.css'
@@ -13,19 +14,19 @@ const TargetList = () => {
     const sequence = useSelector((state) => state.appState.sequenceData.fullSequence)
     const selectedTargets = useSelector((state) => state.appState.selectedTargets);
 
-    console.log("target list in jsx", targetList);
-
     useEffect(() => {
         if (operation === "tag") {
           if (selectedTargets.n || selectedTargets.c) {
             console.log("went in to tag selected targets");
             dispatch(setMenu(3));
+            dispatch(searchForHomologyArms());
           }
         }
       
         if (operation === "delete") {
           if (selectedTargets.n && selectedTargets.c) {
             dispatch(setMenu(3));
+            dispatch(searchForHomologyArms());
           }
         }
     }, [selectedTargets]);

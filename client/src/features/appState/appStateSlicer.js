@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { searchForGeneAsync, fetchSequenceAsync, searchForTargetsAsync, getTargetEfficiencyAsync } from './appStateThunks';
+import { searchForGeneAsync, fetchSequenceAsync, searchForTargetsAsync, getTargetEfficiencyAsync, searchForHomologyArms } from './appStateThunks';
 import { act } from 'react';
 
 const initialState = {
@@ -181,6 +181,19 @@ export const appStateSlice = createSlice({
                 state.gene = action.payload;
             })
             .addCase(getTargetEfficiencyAsync.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(searchForHomologyArms.pending, (state) => {
+                state.loading = true;
+                state.loadingMessage = "Getting homology arms.";
+                state.error = null;
+            })
+            .addCase(searchForHomologyArms.fulfilled, (state, action) => {
+                state.loading = false;
+                state.primerList = action.payload;
+            })
+            .addCase(searchForHomologyArms.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             });
