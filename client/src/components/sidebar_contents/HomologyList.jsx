@@ -42,6 +42,7 @@ const HomologyList = () => {
     return (
         <div className="sidebar-content">
             <h3 className="sidebar-title">Pick Homology Arms</h3>
+            <div className='target-container'>
             {primerList.n && Object.keys(primerList.n).length > 0 && (
                 <div className="target-container">
                     { operation === 'delete' && <h4>N Terminal Primers</h4>}
@@ -64,6 +65,7 @@ const HomologyList = () => {
                     </div>
                 </div>
             )}
+            </div>
         </div>
     )
 }

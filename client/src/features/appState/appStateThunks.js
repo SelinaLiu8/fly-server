@@ -50,13 +50,11 @@ export const searchForGeneAsync = createAsyncThunk(
                         ],
                         onSelect: (terminalObj) => {
                             dispatch(setTerminal(terminalObj.value));
-                            dispatch(searchForTargetsAsync());
                             dispatch(clearPopup());
                         }
                     }))
                 } else if (operation === "delete") {
                     dispatch(setTerminal('both'))
-                    dispatch(searchForTargetsAsync());
                     dispatch(clearPopup());
                 }
             }
@@ -98,7 +96,9 @@ export const searchForTargetsAsync = createAsyncThunk(
         const highlights = state.highlights;
         const terminal = state.terminal;
         const sequence = state.sequenceData.fullSequence;
-  
+
+        console.log("sequence in target:", sequence);
+
         const organizedTargets = { n: [], c: [] };
   
         if (terminal === 'n' || terminal === 'c') {
@@ -122,10 +122,11 @@ export const searchForTargetsAsync = createAsyncThunk(
         } else if (terminal === 'both') {
             const NtargetArea = computeTargetAreaLocations(sequence, 'n', highlights);
             const CtargetArea = computeTargetAreaLocations(sequence, 'c', highlights);
-            const fetchN = fetch(`${urlBase}/api?type=targetSearch&targetArea=${NtargetArea}`);
-            const fetchC = fetch(`${urlBase}/api?type=targetSearch&targetArea=${CtargetArea}`);
     
-            const [responseN, responseC] = await Promise.all([fetchN, fetchC]);
+            const [responseN, responseC] = await Promise.all([
+                fetch(`${urlBase}/api?type=targetSearch&targetArea=${NtargetArea}`),
+                fetch(`${urlBase}/api?type=targetSearch&targetArea=${CtargetArea}`)
+            ]);
     
             if (!responseN.ok || !responseC.ok) {
                 throw new Error(`HTTP error fetching both terminals`);

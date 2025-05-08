@@ -18,6 +18,11 @@
     text-align: center;
 }
 
+.scrollable-content {
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
 /* Targets */
 .target-list {
     display: flex;

@@ -88,25 +88,29 @@ const TargetList = () => {
 
     return (
         <div className="sidebar-content">
-          <h3 className='sidebar-title'>Pick Cut Site</h3>
-            {targetList.n.length > 0 && (
+            <h3 className="sidebar-title">Pick Cut Site</h3>
+            <div className="scrollable-content">
                 <div className="target-container">
-                    { operation === 'delete' && <h4>N Terminal Targets</h4>}
-                    <div className="target-list">
-                    {targetList.n.map((target, i) => renderTargetItem(target, 'n'))}
+                {targetList.n.length > 0 && (
+                    <div>
+                        {operation === 'delete' && <h4>N Terminal Targets</h4>}
+                        <div className="target-list">
+                            {targetList.n.map((target, i) => renderTargetItem(target, 'n'))}
+                        </div>
                     </div>
-                </div>
-            )}
-            {targetList.c.length > 0 && (
-                <div className="target-list">
-                    { operation === 'delete' && <h4>C Terminal Targets</h4>}
-                    <div className="target-list-items">
-                    {targetList.c.map((target, i) => renderTargetItem(target, 'c'))}
+                )}
+                {targetList.c.length > 0 && (
+                    <div>
+                        {operation === 'delete' && <h4>C Terminal Targets</h4>}
+                        <div className="target-list-items">
+                            {targetList.c.map((target, i) => renderTargetItem(target, 'c'))}
+                        </div>
                     </div>
+                )}
                 </div>
-            )}
+            </div>
         </div>
-    );
+      );
 }
 
 export default TargetList
