@@ -38,6 +38,7 @@ export function getHighlightClass(key) {
     if (key.includes('potentialStart')) return 'highlight-potential-start';
     if (key.includes('potentialStop')) return 'highlight-potential-stop';
     if (key.includes('cutsite')) return 'highlight-cutsite';
+    if (key.includes('homology')) return 'highlight-homology';
     return 'highlight-generic';
 }
 

@@ -31,6 +31,7 @@
 .highlight-potential-start { background-color: #aa90f9; }
 .highlight-potential-stop { background-color: #8cf6db; }
 .highlight-cutsite { background-color: #f48fb1; }
+.highlight-homology { background-color: #4356ff; }
 .sequence-highlight.hover {background-color: #dff1ad;}
 
 .sequence-highlight-overlap {

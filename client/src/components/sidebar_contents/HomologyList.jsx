@@ -14,9 +14,10 @@ const HomologyList = () => {
 
     console.log("primerList:", primerList)
     
-    const renderPrimerItem = (primer) => {
+    const renderPrimerItem = (primer, terminal, typeKey) => {
         return (
-          <div className="target-list-item">
+          <div className="target-list-item"
+          onClick={() => handleSelect(primer, terminal, typeKey)}>
             <div className="target-sequence">
               <span className="target-proximal">{primer[7]}</span>
             </div>
@@ -30,11 +31,24 @@ const HomologyList = () => {
         );
     };
 
+    const handleSelect = (primer, terminal, typeKey) => {
+        const primerSequence = primer[7];
+        dispatch(setSelectedPrimers({ [terminal]: primer }));
+        const location = sequence.indexOf(primerSequence);
+        const key = `${terminal}-${typeKey}-homology`;
+        const highlightData = {
+          location: location,
+          length: primerSequence.length,
+          color: '#FFB6C1',
+        };
+        dispatch(setHighlights({ [key]: highlightData }));
+      };
+
     const renderPrimerGroup = (primers, terminal, label, typeKey) => (
         <div>
           <h5>{label}</h5>
           {(primers || []).map((primer, i) =>
-            renderPrimerItem(primer)
+            renderPrimerItem(primer, terminal, typeKey)
           )}
         </div>
     );
