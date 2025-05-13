@@ -35,6 +35,7 @@ export function getHighlightClass(key) {
     if (key === 'start') return 'highlight-start';
     if (key === 'stop') return 'highlight-stop';
     if (key === 'current') return 'highlight-current';
+    if (key.includes('hover')) return 'highlight-hover';
     if (key.includes('potentialStart')) return 'highlight-potential-start';
     if (key.includes('potentialStop')) return 'highlight-potential-stop';
     if (key.includes('cutsite')) return 'highlight-cutsite';

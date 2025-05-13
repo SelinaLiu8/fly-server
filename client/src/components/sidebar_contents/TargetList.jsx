@@ -13,6 +13,7 @@ const TargetList = () => {
     const operation = useSelector((state) => state.appState.operation);
     const sequence = useSelector((state) => state.appState.sequenceData.fullSequence)
     const selectedTargets = useSelector((state) => state.appState.selectedTargets);
+    const highlights = useSelector((state) => state.appState.highlights);
 
     useEffect(() => {
         if (operation === "tag") {
@@ -30,22 +31,46 @@ const TargetList = () => {
           }
         }
     }, [selectedTargets]);
-    
-    const handleHover = (target) => {
-        dispatch(setCurrentHighlights({
-            current: {
-                location: target.location,
-                length: target.targetSequence.length,
-                color: '#f5d76e',
-            }
-        }));
-        // console.log("current Highlights", useSelector((state) => state.appState.currentHighlights));
+
+    const nullHighlightData = {
+        location: -1,
+        length: 0,
+        color: '#f5d76e',
     };
 
-    const handleLeave = () => {
-        dispatch(clearCurrentHighlights());
-        // console.log("current Highlights", useSelector((state) => state.appState.currentHighlights));s
+    const buildHighlightData = (sequence, target, color) => {
+        let targetSequence = target.targetSequence;
+        if (target.strand === '-') {
+            targetSequence = getReverseComplement(targetSequence);
+        }
+        const location = sequence.indexOf(targetSequence);
+        return {
+            location,
+            length: targetSequence.length,
+            color
+        };
     };
+    
+    
+    const handleHover = (target) => {
+        console.log("target in hover", target)
+        let targetSequence = target.targetSequence;
+        if (target.strand === '-') {
+            targetSequence = getReverseComplement(targetSequence);
+        }
+        const location = sequence.indexOf(targetSequence);
+        const highlightData = {
+            location: location,
+            length: target.targetSequence.length,
+            color: '#f5d76e',
+        };
+        dispatch(setHighlights({ _hover: highlightData }));
+    };
+    
+    const handleLeave = () => {
+        dispatch(setHighlights({ _hover: nullHighlightData }));
+    };
+    
 
     const handleSelect = (target, terminal) => {
         console.log("target in handleSelect:", target)
@@ -61,6 +86,8 @@ const TargetList = () => {
             length: target.targetSequence.length,
             color: '#FFB6C1',
         };
+        cons
+        dispatch(setHighlights({ _hover: nullHighlightData }));
         dispatch(setHighlights({ [key]: highlightData }));
         console.log("selected targets:", selectedTargets);
     };
@@ -70,7 +97,7 @@ const TargetList = () => {
           <div 
             className='target-list-item'
             onMouseEnter={() => handleHover(target)}
-            onMouseLeave={handleLeave()}
+            onMouseLeave={handleLeave}
             onClick={() => handleSelect(target, terminal)}>
             <div className="target-sequence">
               <span className="target-distal">{target.distal}</span>

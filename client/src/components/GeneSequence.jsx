@@ -53,11 +53,14 @@ const GeneSequence = ({
   // Build a map of character indices to highlight info
   const highlightMap = {};
   for (const [key, { location, length }] of Object.entries(combinedHighlights)) {
+    if (typeof location !== 'number' || location < 0) continue; // Skip invalid highlights
+  
     for (let i = location; i < location + length; i++) {
       if (!highlightMap[i]) highlightMap[i] = [];
       highlightMap[i].push({ key });
     }
   }
+  
 
   // Render each character with its appropriate highlight (if any)
   const result = [];
