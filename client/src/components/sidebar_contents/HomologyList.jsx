@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { setSelectedPrimers, setMenu, setCurrentHighlights, clearCurrentHighlights, setHighlights} from '../../features/appState/appStateSlicer'
+import { setSelectedPrimers, setMenu, setHighlights} from '../../features/appState/appStateSlicer'
+import { getReverseComplement } from '../../utilities/Utilities'
 import '../../styles/SidebarContents.css'
 import '../../styles/Sequence.css'
 
@@ -13,10 +14,18 @@ const HomologyList = () => {
     const selectedPrimers = useSelector((state) => state.appState.selectedPrimers);
 
     console.log("primerList:", primerList)
+
+    const nullHighlightData = {
+        location: -1,
+        length: 0,
+        color: '#f5d76e',
+    };
     
     const renderPrimerItem = (primer, terminal, typeKey) => {
         return (
           <div className="target-list-item"
+          onMouseEnter={() => handleHover(primer, terminal, typeKey)}
+          onMouseLeave={handleLeave}
           onClick={() => handleSelect(primer, terminal, typeKey)}>
             <div className="target-sequence">
               <span className="target-proximal">{primer[7]}</span>
@@ -31,10 +40,35 @@ const HomologyList = () => {
         );
     };
 
+    const handleHover = (primer, terminal, typeKey) => {
+        console.log("Hover data:", primer)
+        let primerSequence = primer[7];
+        let location = sequence.indexOf(primerSequence);
+        if (typeKey === 'hom3' || typeKey === 'seq3') {
+            primerSequence = getReverseComplement(primerSequence);
+            location = sequence.indexOf(primerSequence);
+        }
+        const highlightData = {
+          location: location,
+          length: primerSequence.length,
+          color: '#FFB6C1',
+        };
+        console.log("Hover data:", highlightData)
+        dispatch(setHighlights({ _hover: highlightData }));
+    };
+    
+    const handleLeave = () => {
+        dispatch(setHighlights({ _hover: nullHighlightData }));
+    };
+
     const handleSelect = (primer, terminal, typeKey) => {
-        const primerSequence = primer[7];
+        let primerSequence = primer[7];
         dispatch(setSelectedPrimers({ [terminal]: primer }));
-        const location = sequence.indexOf(primerSequence);
+        let location = sequence.indexOf(primerSequence);
+        if (typeKey === 'hom3' || typeKey === 'seq3') {
+            primerSequence = getReverseComplement(primerSequence);
+            location = sequence.indexOf(primerSequence);
+        }
         const key = `${terminal}-${typeKey}-homology`;
         const highlightData = {
           location: location,

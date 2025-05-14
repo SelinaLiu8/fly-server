@@ -73,24 +73,31 @@ const TargetList = () => {
     
 
     const handleSelect = (target, terminal) => {
-        console.log("target in handleSelect:", target)
-        let targetSequence = target.targetSequence; 
-        if (target.strand === '-') {
-            targetSequence = getReverseComplement(targetSequence);
-        }
-        dispatch(setSelectedTargets({ [terminal]: target }));
-        const location = sequence.indexOf(targetSequence);
-        const key = `${terminal}-cutsite`;
-        const highlightData = {
-            location: location,
-            length: target.targetSequence.length,
-            color: '#FFB6C1',
-        };
-        cons
+        console.log("target in handleSelect:", target);
+    
+        // Clear hover highlight before click logic
         dispatch(setHighlights({ _hover: nullHighlightData }));
-        dispatch(setHighlights({ [key]: highlightData }));
-        console.log("selected targets:", selectedTargets);
-    };
+    
+        // Use nextTick to ensure hover isn't interrupting click
+        setTimeout(() => {
+            let targetSequence = target.targetSequence; 
+            if (target.strand === '-') {
+                targetSequence = getReverseComplement(targetSequence);
+            }
+    
+            dispatch(setSelectedTargets({ [terminal]: target }));
+            const location = sequence.indexOf(targetSequence);
+            const key = `${terminal}-cutsite`;
+            const highlightData = {
+                location: location,
+                length: targetSequence.length,
+                color: '#FFB6C1',
+            };
+            dispatch(setHighlights({ _hover: nullHighlightData }));
+            dispatch(setHighlights({ [key]: highlightData }));
+            console.log("selected targets:", selectedTargets);
+        }, 0); // Let click finish before applying changes
+    };    
 
     const renderTargetItem = (target, terminal) => {
         return (
