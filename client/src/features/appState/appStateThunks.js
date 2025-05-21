@@ -1,6 +1,6 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { urlBase } from './appConfig';
-import { setPopup, setOperation, setIsoform, setMenu, setScreen, setHighlights, clearPopup, setTerminal, setTargetsReady } from './appStateSlicer';
+import { setPopup, setOperation, setIsoform, setMenu, setScreen, setHighlights, clearPopup, setTerminal, setTargetsReady, setOligos } from './appStateSlicer';
 import { computeIsoformHighlights, computeTargetAreaLocations, calculatePrimerSections} from '../../utilities/Utilities';
 
 export const searchForGeneAsync = createAsyncThunk(
@@ -189,9 +189,9 @@ export const searchForTargetsAsync = createAsyncThunk(
         return rejectWithValue(error.message);
       }
     }
-  );
+);
 
-  export const getTargetEfficiencyAsync = createAsyncThunk(
+export const getTargetEfficiencyAsync = createAsyncThunk(
     'appState/getTargetEfficiency',
     async (targetSequences, { rejectWithValue }) => {
       try {
@@ -206,9 +206,9 @@ export const searchForTargetsAsync = createAsyncThunk(
         return rejectWithValue(error.message);
       }
     }
-  );
+);
 
-  export const searchForHomologyArms = createAsyncThunk(
+export const searchForHomologyArms = createAsyncThunk(
     'appState/searchForHomologyArms',
     async (_, { dispatch, getState, rejectWithValue }) => {
       try {
@@ -256,5 +256,50 @@ export const searchForTargetsAsync = createAsyncThunk(
         return rejectWithValue(error.message);
       }
     }
-  );  
-  
+);  
+
+export const retrieveOligoInfo = createAsyncThunk(
+    'appState/retrieveOligoInfo',
+    async (_, { dispatch, getState, rejectWithValue }) => {
+        try {
+            const state = getState().appState;
+            const selectedTargets = state.selectedTargets;
+            const terminal = state.terminal;
+    
+            const oligoResults = {};
+    
+            if (terminal === 'n' || terminal === 'c') {
+            const target = selectedTargets[terminal];
+            const urlTargetString = target.targetSequence + target.pam;
+            const response = await fetch(`${urlBase}/api/?type=oligos&target=${urlTargetString}`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            oligoResults[terminal] = {
+                sense: data.sense,
+                antisense: data.antisense
+            };
+            } else if (terminal === 'both') {
+            for (const t of ['n', 'c']) {
+                const target = selectedTargets[t];
+                const urlTargetString = target.targetSequence + target.pam;
+                const response = await fetch(`${urlBase}/api/?type=oligos&target=${urlTargetString}`);
+                if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                oligoResults[t] = {
+                sense: data.sense,
+                antisense: data.antisense
+                };
+            }
+            }
+    
+            return oligoResults; // structure: { n: {sense, antisense}, c: {sense, antisense} }
+        } catch (error) {
+            console.error('Error retrieving oligo infos:', error);
+            return rejectWithValue(error.message);
+        }
+    }
+);

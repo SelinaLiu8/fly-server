@@ -93,7 +93,6 @@ const TargetList = () => {
                 length: targetSequence.length,
                 color: '#FFB6C1',
             };
-            dispatch(setHighlights({ _hover: nullHighlightData }));
             dispatch(setHighlights({ [key]: highlightData }));
             console.log("selected targets:", selectedTargets);
         }, 0); // Let click finish before applying changes

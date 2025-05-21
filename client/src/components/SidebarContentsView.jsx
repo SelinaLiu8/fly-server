@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { searchForTargetsAsync } from '../features/appState/appStateThunks';
 import TargetList from './sidebar_contents/TargetList';
 import HomologyList from './sidebar_contents/HomologyList';
+import DownloadList from './sidebar_contents/DownloadList';
 import '../styles/SidebarContents.css'
 
 const SidebarContents = () => {
@@ -27,6 +28,7 @@ const SidebarContents = () => {
         <div className='sidebar-container'>
             {activeMenu === 2 && targetsReady && <TargetList />}
             {activeMenu === 3 && <HomologyList />}
+            {activeMenu === 4 && <DownloadList />}
         </div>
     )
 };

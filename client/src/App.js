@@ -25,7 +25,7 @@ export default function App() {
       <Header/>
       <div className='content-container'>
         <Sidebar/>
-        {screen !== 1 && !loading && (
+        {screen !== 1 && (
           <SidebarContents />
         )}
         {screen === 1 ? (

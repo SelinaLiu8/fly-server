@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { setSelectedPrimers, setMenu, setHighlights} from '../../features/appState/appStateSlicer'
+import { retrieveOligoInfo } from '../../features/appState/appStateThunks'
 import { getReverseComplement } from '../../utilities/Utilities'
 import '../../styles/SidebarContents.css'
 import '../../styles/Sequence.css'
@@ -20,6 +21,34 @@ const HomologyList = () => {
         length: 0,
         color: '#f5d76e',
     };
+
+    const hasAllPrimers = (terminalPrimers) => {
+        console.log("has all primers:", terminalPrimers)
+        return (
+          terminalPrimers?.hom5 &&
+          terminalPrimers?.hom3 &&
+          terminalPrimers?.seq5 &&
+          terminalPrimers?.seq3
+        );
+    };
+
+    useEffect(() => {
+        if (operation === 'tag') {
+          if (hasAllPrimers(selectedPrimers.n) || hasAllPrimers(selectedPrimers.c)) {
+            console.log("Proceeding after all primers selected for tag");
+            dispatch(setMenu(4));
+            dispatch(retrieveOligoInfo())
+          }
+        }
+    
+        if (operation === 'delete') {
+          if (hasAllPrimers(selectedPrimers.n) && hasAllPrimers(selectedPrimers.c)) {
+            console.log("Proceeding after all primers selected for delete");
+            dispatch(setMenu(4));
+            dispatch(retrieveOligoInfo())
+          }
+        }
+    }, [selectedPrimers]);
     
     const renderPrimerItem = (primer, terminal, typeKey) => {
         return (
@@ -62,21 +91,34 @@ const HomologyList = () => {
     };
 
     const handleSelect = (primer, terminal, typeKey) => {
-        let primerSequence = primer[7];
-        dispatch(setSelectedPrimers({ [terminal]: primer }));
-        let location = sequence.indexOf(primerSequence);
-        if (typeKey === 'hom3' || typeKey === 'seq3') {
+        // Clear hover highlight first
+        dispatch(setHighlights({ _hover: nullHighlightData }));
+      
+        setTimeout(() => {
+          let primerSequence = primer[7];
+          dispatch(setSelectedPrimers({
+            [terminal]: {
+              [typeKey]: primer
+            }
+          }));
+      
+          // Get correct orientation
+          if (typeKey === 'hom3' || typeKey === 'seq3') {
             primerSequence = getReverseComplement(primerSequence);
-            location = sequence.indexOf(primerSequence);
-        }
-        const key = `${terminal}-${typeKey}-homology`;
-        const highlightData = {
-          location: location,
-          length: primerSequence.length,
-          color: '#FFB6C1',
-        };
-        dispatch(setHighlights({ [key]: highlightData }));
-      };
+          }
+      
+          const location = sequence.indexOf(primerSequence);
+          const key = `${terminal}-${typeKey}-homology`;
+          const highlightData = {
+            location,
+            length: primerSequence.length,
+            color: '#FFB6C1',
+          };
+      
+          dispatch(setHighlights({ [key]: highlightData }));
+        }, 0);
+        console.log("handle select primers:", selectedPrimers)
+      };      
 
     const renderPrimerGroup = (primers, terminal, label, typeKey) => (
         <div>

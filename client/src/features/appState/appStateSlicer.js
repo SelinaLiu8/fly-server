@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { searchForGeneAsync, fetchSequenceAsync, searchForTargetsAsync, getTargetEfficiencyAsync, searchForHomologyArms } from './appStateThunks';
+import { searchForGeneAsync, fetchSequenceAsync, searchForTargetsAsync, getTargetEfficiencyAsync, searchForHomologyArms, retrieveOligoInfo } from './appStateThunks';
 import { act } from 'react';
 
 const initialState = {
@@ -32,6 +32,7 @@ const initialState = {
     //Primer
     primerList: {},
     selectedPrimers: {},
+    oligos: {},
     //File
     //Async State
     loading: false,
@@ -123,10 +124,15 @@ export const appStateSlice = createSlice({
             state.targetList = action.payload;
         },
         setSelectedPrimers: (state, action) => {
-            state.selectedTargets = {
-                ...state.selectedTargets,
-                ...action.payload,
-            };
+            for (const terminal of Object.keys(action.payload)) {
+                state.selectedPrimers[terminal] = {
+                  ...state.selectedPrimers[terminal],
+                  ...action.payload[terminal]
+                };
+            }
+        },
+        setOligos: (state, action) => {
+            state.oligos = action.payload
         },
     },
     extraReducers: (builder) => {
@@ -196,6 +202,19 @@ export const appStateSlice = createSlice({
             .addCase(searchForHomologyArms.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
+            })
+            .addCase(retrieveOligoInfo.pending, (state) => {
+                state.loading = true;
+                state.loadingMessage = "Retrieving oligo information";
+                state.error = null;
+            })
+            .addCase(retrieveOligoInfo.fulfilled, (state, action) => {
+                state.loading = false;
+                state.oligos = action.payload;
+            })
+            .addCase(retrieveOligoInfo.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
             });
     },
 });
@@ -220,7 +239,8 @@ export const {
     setSelectedTargets,
     setTargetsReady,
     setPrimerList,
-    setSelectedPrimers
+    setSelectedPrimers,
+    setOligos
 } = appStateSlice.actions;
 
 export default appStateSlice.reducer;
