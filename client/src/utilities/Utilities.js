@@ -75,5 +75,34 @@ export function calculatePrimerSections(sequence, terminal, highlights) {
   };
 }
 
+export function handlePrint() {
+  const printContents = document.getElementById("printableArea")?.innerHTML;
+  if (!printContents) {
+    console.error("No printable content found.");
+    return;
+  }
+
+  const printWindow = window.open('', '_blank');
+  printWindow.document.write(`
+    <html>
+      <head>
+        <title>Print</title>
+        <style>
+          body {
+            font-family: sans-serif;
+            margin: 20px;
+          }
+        </style>
+      </head>
+      <body>${printContents}</body>
+    </html>
+  `);
+  printWindow.document.close();
+
+  printWindow.onload = () => {
+    printWindow.print();
+    printWindow.onafterprint = () => printWindow.close();
+  };
+}
 
   
