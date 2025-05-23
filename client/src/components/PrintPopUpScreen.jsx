@@ -10,6 +10,7 @@ const PrintPopUpScreen = () => {
     const selectedPrimers = useSelector((state) => state.appState.selectedPrimers);
     const selectedTargets = useSelector((state) => state.appState.selectedTargets);
     const oligos = useSelector((state) => state.appState.oligos);
+    const dispatch = useDispatch();
 
     const primerNameMap = {
         hom5: `forward homology arm primer`,

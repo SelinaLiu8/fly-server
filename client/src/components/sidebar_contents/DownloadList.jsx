@@ -19,7 +19,7 @@ const DownloadList = () => {
         <div className="sidebar-content">
             <h3 className='sidebar-title'>Download Options</h3>
             <div className="download-header">
-                <button className="btn" onClick={handleViewData()}>View All Data</button>
+                <button className="btn" onClick={handleViewData}>View All Data</button>
             </div>
             <div className="download-section">
                 <label className="download-label">Genomic Template</label>
