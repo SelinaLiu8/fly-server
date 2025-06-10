@@ -105,4 +105,31 @@ export function handlePrint() {
   };
 }
 
+// File Utilities
+export const formatGene = (gene) => {
+  return gene.match(/.{1,10}/g)
+    .map((chunk, i) => (i % 5 === 0 ? `\n${String(i * 10 + 1).padStart(9)} ` : '') + chunk + ' ')
+    .join('');
+};
+
+export const generateFeatureBlock = async (highlights) => {
+  const featureTemplate = await fetch(`${window.location.origin}/fly_templates/feature.txt`).then(res => res.text());
+
+  const makeFeature = (loc, name, color) => {
+    return featureTemplate
+      .replace('*featureLoc*', loc)
+      .replace('*featureName*', name)
+      .replace('*featureColor*', color);
+  };
+
+  const start = parseInt(highlights?.start?.location || 0) + 1;
+  const stop = parseInt(highlights?.stop?.location || 0) + 1;
+
+  return [
+    makeFeature(`${start}..${start + 2}`, 'Start Codon', '#35df29'),
+    makeFeature(`${stop}..${stop + 2}`, 'Stop Codon', '#df2935')
+  ].join('');
+};
+
+
   

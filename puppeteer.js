@@ -453,7 +453,8 @@ module.exports.getOligos = getOligos;
 
 async function getPrimers(primerSections) {
   let primers = {};
-  const url = 'https://bioinfo.ut.ee/primer3-0.4.0/';
+  const url = 'https://primer3.ut.ee/'
+  // const url = 'https://bioinfo.ut.ee/primer3-0.4.0/';
   console.log('Primer sections received:', primerSections);
   
   // Check if we have the required data
@@ -564,11 +565,12 @@ async function getPrimers(primerSections) {
         await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36');
         await page.goto(url);
         
-        await page.waitForSelector('textarea[name="SEQUENCE"]')
-        await page.type('textarea[name="SEQUENCE"]', primerSection);
+        await page.waitForSelector('textarea[name="SEQUENCE_TEMPLATE"]')
+        await page.type('textarea[name="SEQUENCE_TEMPLATE"]', primerSection);
         await page.click(primerSide);
         await page.click('input[name="Pick Primers"]')
-        await page.waitForSelector('a[href="/primer3-0.4.0/primer3_www_results_help.html#PRIMER_OLIGO_SEQ"]');
+        await page.waitForNavigation({ waitUntil: 'domcontentloaded' });
+        // await page.waitForSelector('a[href="/primer3-0.4.0/primer3_www_results_help.html#PRIMER_OLIGO_SEQ"]');
         let primersText = await page.$eval('pre:first-of-type',res=>res.innerText);
         
         let primerStart = [];
