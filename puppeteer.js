@@ -553,7 +553,7 @@ async function getPrimers(primerSections) {
       for(let i=0;i<4;i++){
         let currentPrimer = !primers['hom5']?"5' Homology":!primers['seq5']?"5' Sequence":!primers['seq3']?"3' Sequence":"3' Homology";
         let primerSection = primerSections[currentPrimer];
-        let primerSide = currentPrimer==="3' Homology"?'input[name="MUST_XLATE_PICK_LEFT"]':currentPrimer==="3' Sequence"?'input[name="MUST_XLATE_PICK_LEFT"]':'input[name="MUST_XLATE_PICK_RIGHT"]';
+        let primerSide = currentPrimer==="3' Homology"?'input[name="MUST_XLATE_PRIMER_PICK_LEFT_PRIMER"]':currentPrimer==="3' Sequence"?'input[name="MUST_XLATE_PRIMER_PICK_LEFT_PRIMER"]':'input[name="MUST_XLATE_PRIMER_PICK_RIGHT_PRIMER"]';
         console.log('Processing primer section:', currentPrimer, 'length:', primerSection ? primerSection.length : 0);
         
         if (!primerSection || primerSection.length < 20) {
@@ -563,16 +563,30 @@ async function getPrimers(primerSections) {
         
         let page = await browser.newPage();
         await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36');
+        
+        console.log("Going to Primer3...");
         await page.goto(url);
         
+        console.log("Waiting for textarea...");
         await page.waitForSelector('textarea[name="SEQUENCE_TEMPLATE"]')
+
+        console.log("Typing sequence...");
         await page.type('textarea[name="SEQUENCE_TEMPLATE"]', primerSection);
+        
+        console.log("Clicking primer side...");
         await page.click(primerSide);
+        
+        console.log("Clicking submit...");
         await page.click('input[name="Pick Primers"]')
+        
+        console.log("Waiting for navigation...");
         await page.waitForNavigation({ waitUntil: 'domcontentloaded' });
         // await page.waitForSelector('a[href="/primer3-0.4.0/primer3_www_results_help.html#PRIMER_OLIGO_SEQ"]');
+
+        console.log("Waiting for results <pre> tag...");
         let primersText = await page.$eval('pre:first-of-type',res=>res.innerText);
         
+        console.log("primers Text:", primersText)
         let primerStart = [];
         let stop = 0;
         let finalStop = 0;
