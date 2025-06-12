@@ -339,8 +339,6 @@ async function getPrimers(primerSections) {
           ? 'input[name="MUST_XLATE_PRIMER_PICK_LEFT_PRIMER"]'
           : 'input[name="MUST_XLATE_PRIMER_PICK_RIGHT_PRIMER"]';
 
-        console.log('Processing:', currentPrimer, 'length:', primerSection?.length || 0);
-
         if (!primerSection || primerSection.length < 20) {
           console.error(`Invalid primer section for ${currentPrimer}`);
           continue;
