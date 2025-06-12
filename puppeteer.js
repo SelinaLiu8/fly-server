@@ -297,65 +297,18 @@ async function getOligos(target) {
 module.exports.getOligos = getOligos;
 
 async function getPrimers(primerSections) {
+  let primers = {};
   const url = 'https://primer3.ut.ee/';
+
   console.log('Primer sections received:', primerSections);
 
-  const isPrimerSplitInput = primerSections["5' Homology"];
-
-  if (isPrimerSplitInput) {
-    return processPrimers(primerSections);
-  }
-
-  if (!primerSections || !primerSections.sequence) {
+  if (!primerSections || !primerSections["5' Homology"]) {
     console.error('Missing required primer sections data');
     return null;
   }
 
-  const sequence = primerSections.sequence;
-
-  if (primerSections.startLocation !== undefined && primerSections.stopLocation !== undefined) {
-    const startLoc = primerSections.startLocation;
-    const stopLoc = primerSections.stopLocation;
-
-    const nPrimers = await processPrimers({
-      "5' Homology": sequence.substring(Math.max(0, startLoc - 1000), startLoc),
-      "5' Sequence": sequence.substring(Math.max(0, startLoc - 1500), startLoc - 500),
-      "3' Sequence": sequence.substring(Math.max(0, startLoc - 2000), startLoc - 1000),
-      "3' Homology": sequence.substring(Math.max(0, startLoc - 500), startLoc)
-    });
-
-    const cPrimers = await processPrimers({
-      "5' Homology": sequence.substring(stopLoc, Math.min(sequence.length, stopLoc + 500)),
-      "5' Sequence": sequence.substring(Math.min(sequence.length, stopLoc + 500), Math.min(sequence.length, stopLoc + 1500)),
-      "3' Sequence": sequence.substring(Math.min(sequence.length, stopLoc + 1000), Math.min(sequence.length, stopLoc + 2000)),
-      "3' Homology": sequence.substring(stopLoc, Math.min(sequence.length, stopLoc + 1000))
-    });
-
-    return {
-      hom5_N: nPrimers.hom5 || [],
-      seq5_N: nPrimers.seq5 || [],
-      seq3_N: nPrimers.seq3 || [],
-      hom3_N: nPrimers.hom3 || [],
-      hom5_C: cPrimers.hom5 || [],
-      seq5_C: cPrimers.seq5 || [],
-      seq3_C: cPrimers.seq3 || [],
-      hom3_C: cPrimers.hom3 || []
-    };
-  }
-
-  if (primerSections.targetLocation !== undefined) {
-    const targetLoc = primerSections.targetLocation;
-
-    return processPrimers({
-      "5' Homology": sequence.substring(Math.max(0, targetLoc - 1000), targetLoc),
-      "5' Sequence": sequence.substring(Math.max(0, targetLoc - 2000), targetLoc - 1000),
-      "3' Sequence": sequence.substring(Math.min(sequence.length, targetLoc + 1000), Math.min(sequence.length, targetLoc + 2000)),
-      "3' Homology": sequence.substring(targetLoc, Math.min(sequence.length, targetLoc + 1000))
-    });
-  }
-
-  console.error("Invalid input format for getPrimers()");
-  return null;
+  const processed = await processPrimers(primerSections);
+  return trimPrimerResults(processed);
 
   async function processPrimers(primerSections) {
     let primers = {};
@@ -375,29 +328,26 @@ async function getPrimers(primerSections) {
 
     try {
       for (let i = 0; i < 4; i++) {
-        const currentPrimer = !primers['hom5']
-          ? "5' Homology"
-          : !primers['seq5']
-          ? "5' Sequence"
-          : !primers['seq3']
-          ? "3' Sequence"
-          : "3' Homology";
+        const currentPrimer =
+          !primers['hom5'] ? "5' Homology" :
+          !primers['seq5'] ? "5' Sequence" :
+          !primers['seq3'] ? "3' Sequence" :
+          "3' Homology";
 
         const primerSection = primerSections[currentPrimer];
-        const primerSide = currentPrimer.includes("3'")
+        const primerSide = (currentPrimer === "3' Homology" || currentPrimer === "3' Sequence")
           ? 'input[name="MUST_XLATE_PRIMER_PICK_LEFT_PRIMER"]'
           : 'input[name="MUST_XLATE_PRIMER_PICK_RIGHT_PRIMER"]';
 
+        console.log('Processing:', currentPrimer, 'length:', primerSection?.length || 0);
+
         if (!primerSection || primerSection.length < 20) {
-          console.error(`Invalid primer section for ${currentPrimer}: ${primerSection}`);
+          console.error(`Invalid primer section for ${currentPrimer}`);
           continue;
         }
 
         const page = await browser.newPage();
-        await page.setUserAgent(
-          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36'
-        );
-
+        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36');
         await page.goto(url);
         await page.waitForSelector('textarea[name="SEQUENCE_TEMPLATE"]');
         await page.type('textarea[name="SEQUENCE_TEMPLATE"]', primerSection);
@@ -405,11 +355,8 @@ async function getPrimers(primerSections) {
         await page.click('input[name="Pick Primers"]');
         await page.waitForNavigation({ waitUntil: 'domcontentloaded' });
 
-        const primersText = await page.$eval('pre:first-of-type', (res) => res.innerText);
-
-        const primerStart = [];
-        let stop = 0;
-        let finalStop = 0;
+        const primersText = await page.$eval('pre:first-of-type', res => res.innerText);
+        let primerStart = [], stop = 0, finalStop = 0;
 
         for (let i = 0; i < primersText.length; i++) {
           if (primersText.slice(i, i + 6) === 'PRIMER') {
@@ -427,31 +374,21 @@ async function getPrimers(primerSections) {
           continue;
         }
 
-        const extract = (start, end) =>
-          primersText
-            .slice(start, end)
-            .replace(/[\n\r]/g, '')
-            .split(' ')
-            .filter((el) => el !== '');
+        const firstPrimer = primersText.slice(primerStart[0], stop).replace(/[\n\r]/g, '').split(' ').filter(Boolean);
+        const allPrimers = [firstPrimer];
 
-        const allPrimers = [];
-        for (let i = 0; i < primerStart.length; i++) {
-          const primer = extract(
+        for (let i = 1; i < primerStart.length; i++) {
+          const next = primersText.slice(
             primerStart[i],
-            i + 1 < primerStart.length ? primerStart[i + 1] : finalStop
-          );
-          allPrimers.push(primer);
+            primerStart[i + 1] ? primerStart[i + 1] : finalStop
+          ).replace(/[\n\r]/g, '').split(' ').filter(Boolean);
+          allPrimers.push(next);
         }
 
-        if (currentPrimer === "5' Homology") {
-          primers.hom5 = allPrimers;
-        } else if (currentPrimer === "5' Sequence") {
-          primers.seq5 = allPrimers;
-        } else if (currentPrimer === "3' Sequence") {
-          primers.seq3 = allPrimers;
-        } else {
-          primers.hom3 = allPrimers;
-        }
+        if (currentPrimer === "5' Homology") primers['hom5'] = allPrimers;
+        else if (currentPrimer === "5' Sequence") primers['seq5'] = allPrimers;
+        else if (currentPrimer === "3' Sequence") primers['seq3'] = allPrimers;
+        else primers['hom3'] = allPrimers;
 
         await page.close();
       }
@@ -463,6 +400,14 @@ async function getPrimers(primerSections) {
 
     await browser.close();
     return primers;
+  }
+
+  function trimPrimerResults(primerData) {
+    const result = {};
+    for (const [key, value] of Object.entries(primerData)) {
+      result[key] = Array.isArray(value) ? value.slice(2) : [];
+    }
+    return result;
   }
 }
 
