@@ -47,6 +47,7 @@ router.get('/api', async (req, res) => {
   } else if (req.query.type === 'primers') {
     response = await puppet.getPrimers(JSON.parse(Buffer.from(req.query.primerSections, 'base64').toString('ascii')));
     console.log("primer api parameter", JSON.parse(Buffer.from(req.query.primerSections, 'base64').toString('ascii')));
+    const base64Payload = req.query.primerSections;
     const byteSize = Buffer.byteLength(base64Payload, 'utf8');
     console.log('Payload size in bytes:', byteSize);
   }
