@@ -296,10 +296,8 @@ async function getOligos(target) {
 }
 module.exports.getOligos = getOligos;
 
-async function getPrimers(primerSections) {
+async function processPrimers(primerSections) {
   let primers = {};
-  const url = 'https://bioinfo.ut.ee/primer3-0.4.0/';
-  console.log(primerSections);
   let browser = await puppeteer.launch({headless:true,args: [
     '--no-sandbox',
     '--disable-setuid-sandbox',
@@ -310,34 +308,45 @@ async function getPrimers(primerSections) {
     '--single-process', // <- this one doesn't works in Windows
     '--disable-gpu'
   ]});
-  for(let i=0;i<4;i++){
-    let currentPrimer = !primers['hom5']?"5' Homology":!primers['seq5']?"5' Sequence":!primers['seq3']?"3' Sequence":"3' Homology";
-    let primerSection = primerSections[currentPrimer];
-    let primerSide = currentPrimer==="3' Homology"?'input[name="MUST_XLATE_PICK_LEFT"]':currentPrimer==="3' Sequence"?'input[name="MUST_XLATE_PICK_LEFT"]':'input[name="MUST_XLATE_PICK_RIGHT"]';
-    console.log(primerSection);
-    try {
-     
+  
+  try {
+    for(let i=0;i<4;i++){
+      let currentPrimer = !primers['hom5']?"5' Homology":!primers['seq5']?"5' Sequence":!primers['seq3']?"3' Sequence":"3' Homology";
+      let primerSection = primerSections[currentPrimer];
+      let primerSide = currentPrimer==="3' Homology"?'input[name="MUST_XLATE_PRIMER_PICK_LEFT_PRIMER"]':currentPrimer==="3' Sequence"?'input[name="MUST_XLATE_PRIMER_PICK_LEFT_PRIMER"]':'input[name="MUST_XLATE_PRIMER_PICK_RIGHT_PRIMER"]';
+      console.log('Processing primer section:', currentPrimer, 'length:', primerSection ? primerSection.length : 0);
+      
+      if (!primerSection || primerSection.length < 20) {
+        console.error(`Invalid primer section for ${currentPrimer}: ${primerSection}`);
+        continue; // Skip this section if data is invalid
+      }
       
       let page = await browser.newPage();
       await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36');
+      
+      console.log("Going to Primer3...");
       await page.goto(url);
       
-      /*await page.select('select[name="genomeSelect"]', 'Dmelvc9');
-      await page.type('#gDNA-form',target);
-      await page.click('button[name="routingVar"]');
-      await page.waitForSelector('button[name="routingVar"]');
-      await page.click('button[name="routingVar"]');
-      await page.waitForSelector('.target-checkbox');
-      await page.click('.target-checkbox');
-      await page.click('button[name="routingVar"]');
-      await page.waitForSelector('.oligo-order');*/
-      await page.waitForSelector('textarea[name="SEQUENCE"]')
-      await page.type('textarea[name="SEQUENCE"]', primerSection);
+      console.log("Waiting for textarea...");
+      await page.waitForSelector('textarea[name="SEQUENCE_TEMPLATE"]')
+
+      console.log("Typing sequence...");
+      await page.type('textarea[name="SEQUENCE_TEMPLATE"]', primerSection);
+      
+      console.log("Clicking primer side...");
       await page.click(primerSide);
+      
+      console.log("Clicking submit...");
       await page.click('input[name="Pick Primers"]')
-      await page.waitForSelector('a[href="/primer3-0.4.0/primer3_www_results_help.html#PRIMER_OLIGO_SEQ"]');
+      
+      console.log("Waiting for navigation...");
+      await page.waitForNavigation({ waitUntil: 'domcontentloaded' });
+      // await page.waitForSelector('a[href="/primer3-0.4.0/primer3_www_results_help.html#PRIMER_OLIGO_SEQ"]');
+
+      console.log("Waiting for results <pre> tag...");
       let primersText = await page.$eval('pre:first-of-type',res=>res.innerText);
-      console.log(primersText);
+      
+      console.log("primers Text:", primersText)
       let primerStart = [];
       let stop = 0;
       let finalStop = 0;
@@ -351,12 +360,18 @@ async function getPrimers(primerSections) {
         }
       }
 
+      if (primerStart.length === 0) {
+        console.error(`No primers found for ${currentPrimer}`);
+        continue; // Skip if no primers found
+      }
+
       const firstPrimer = primersText.slice(primerStart[0],stop).replace(/[\n\r]/g,'').split(' ').filter((el)=>{return el != ''});
       let allPrimers = [firstPrimer];
       for(let i=1;i<primerStart.length;i++){
         const primer = primersText.slice(primerStart[i],!primerStart[i+1]?finalStop:primerStart[i+1]).replace(/[\n\r]/g,'').split(' ').filter((el)=>{return el != ''});
         allPrimers.push(primer);
       }
+      
       if(currentPrimer==="5' Homology"){
         primers['hom5'] = allPrimers;
       } else if(currentPrimer==="5' Sequence") {
@@ -366,11 +381,15 @@ async function getPrimers(primerSections) {
       } else {
         primers['hom3'] = allPrimers; 
       }
-    } catch(error) {
-      // console.log(error);
-      return error;
+      
+      await page.close();
     }
+  } catch(error) {
+    console.error('Error processing primers:', error);
+    browser.close();
+    return null;
   }
+  
   browser.close();
   return primers;
 }
