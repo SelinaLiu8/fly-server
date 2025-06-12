@@ -46,6 +46,9 @@ router.get('/api', async (req, res) => {
     response = await puppet.getOligos(req.query.target);
   } else if (req.query.type === 'primers') {
     response = await puppet.getPrimers(JSON.parse(Buffer.from(req.query.primerSections, 'base64').toString('ascii')));
+    console.log("primer api parameter", JSON.parse(Buffer.from(req.query.primerSections, 'base64').toString('ascii')));
+    const byteSize = Buffer.byteLength(base64Payload, 'utf8');
+    console.log('Payload size in bytes:', byteSize);
   }
 
   console.log('response: ', response);
