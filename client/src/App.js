@@ -161,7 +161,7 @@ export default class App extends React.Component  {
                 <div key={key}>
                     <div className=""><b>{primerNameMap[baseKey] || key}</b></div>
                     <div className="">
-                        <div>{primerSingle[7]}</div>
+                        <div>{primerSingle[8]}</div>
                         <div><div>Tm: {primerSingle[3]}</div></div>
                         <div><div>GC%: {primerSingle[4]}</div></div>
                         <div><div>Any (Self Complementarity): {primerSingle[5]}</div></div>
@@ -176,7 +176,7 @@ export default class App extends React.Component  {
                     <div className=""><b>{primerNameMap[baseKey] || key}</b></div>
                     {primerOptions.map((primerSingle, index) => (
                         <div className="" key={index}>
-                            <div>{primerSingle[7]}</div>
+                            <div>{primerSingle[8]}</div>
                             <div><div>Tm: {primerSingle[3]}</div></div>
                             <div><div>GC%: {primerSingle[4]}</div></div>
                             <div><div>Any (Self Complementarity): {primerSingle[5]}</div></div>
@@ -275,7 +275,7 @@ export default class App extends React.Component  {
               <div key={`${terminalType}-${key}`}>
                   <div><b>{primerNameMap[baseKey] || key}</b></div>
                   <div>
-                      <div>{primerSingle[7]}</div>
+                      <div>{primerSingle[8]}</div>
                       <div><div>Tm: {primerSingle[3]}</div></div>
                       <div><div>GC%: {primerSingle[4]}</div></div>
                       <div><div>Any (Self Complementarity): {primerSingle[5]}</div></div>
@@ -2215,20 +2215,20 @@ changeCurrentHighlight(i){
                       {primers.map((primerSingle, index) => (
                         <div
                           key={`${terminal}-${key}-${index}`}
-                          className={`single-target ${this.state.selectedPrimer[`${terminal}-${key}`] === primerSingle[7] ? "selected" : ""}`}
+                          className={`single-target ${this.state.selectedPrimer[`${terminal}-${key}`] === primerSingle[8] ? "selected" : ""}`}
                           onMouseEnter={this.highlightString.bind(
                             this,
-                            primerSingle[7],
+                            primerSingle[8],
                             "rgba(86, 64, 155,0.3)",
                             "homology"
                           )}
                           onMouseDown={() => {
-                            this.selectPrimer(primerSingle[7], `${terminal}-${key}`);
+                            this.selectPrimer(primerSingle[8], `${terminal}-${key}`);
                             this.selectDeleteHomologyArm(primerSingle, key, terminal);
                           }}
                           onMouseLeave={this.clearHighlight.bind(this)}
                         >
-                          <div>{primerSingle[7]}</div>
+                          <div>{primerSingle[8]}</div>
                           <div>
                             <div>Tm: </div>
                             <div>{primerSingle[3]}</div>
@@ -2280,20 +2280,20 @@ changeCurrentHighlight(i){
                 {primerOptions.map((primerSingle, index) => (
                   <div
                     key={index}
-                    className={`single-target ${this.state.selectedPrimer[key] === primerSingle[7] ? "selected" : ""}`}
+                    className={`single-target ${this.state.selectedPrimer[key] === primerSingle[8] ? "selected" : ""}`}
                     onMouseEnter={this.highlightString.bind(
                       this,
-                      primerSingle[7],
+                      primerSingle[8],
                       "rgba(86, 64, 155,0.3)",
                       "homology"
                     )}
                     onMouseDown={() => {
-                      this.selectPrimer(primerSingle[7], key);
+                      this.selectPrimer(primerSingle[8], key);
                       this.selectHomologyArm(primerSingle, key);
                     }}
                     onMouseLeave={this.clearHighlight.bind(this)}
                   >
-                    <div>{primerSingle[7]}</div>
+                    <div>{primerSingle[8]}</div>
                     <div>
                       <div>Tm: </div>
                       <div>{primerSingle[3]}</div>
