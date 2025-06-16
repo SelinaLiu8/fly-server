@@ -57,7 +57,7 @@ const HomologyList = () => {
           onMouseLeave={handleLeave}
           onClick={() => handleSelect(primer, terminal, typeKey)}>
             <div className="target-sequence">
-              <span className="target-proximal">{primer[7]}</span>
+              <span className="target-proximal">{primer[8]}</span>
             </div>
             <div className="target-details">
               <div>Tm: {primer[3]}</div>
@@ -71,7 +71,7 @@ const HomologyList = () => {
 
     const handleHover = (primer, terminal, typeKey) => {
         console.log("Hover data:", primer)
-        let primerSequence = primer[7];
+        let primerSequence = primer[8];
         let location = sequence.indexOf(primerSequence);
         if (typeKey === 'hom3' || typeKey === 'seq3') {
             primerSequence = getReverseComplement(primerSequence);
@@ -95,7 +95,7 @@ const HomologyList = () => {
         dispatch(setHighlights({ _hover: nullHighlightData }));
       
         setTimeout(() => {
-          let primerSequence = primer[7];
+          let primerSequence = primer[8];
           dispatch(setSelectedPrimers({
             [terminal]: {
               [typeKey]: primer

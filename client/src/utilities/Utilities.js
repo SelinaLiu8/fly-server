@@ -115,21 +115,60 @@ export const formatGene = (gene) => {
 export const generateFeatureBlock = async (highlights) => {
   const featureTemplate = await fetch(`${window.location.origin}/fly_templates/feature.txt`).then(res => res.text());
 
-  const makeFeature = (loc, name, color) => {
-    return featureTemplate
+  const makeFeature = (loc, name, color) =>
+    featureTemplate
       .replace('*featureLoc*', loc)
       .replace('*featureName*', name)
       .replace('*featureColor*', color);
+
+  const features = [];
+
+  // Start & Stop codons
+  if (highlights.start?.location !== undefined)
+    features.push(makeFeature(`${highlights.start.location + 1}..${highlights.start.location + 3}`, 'Start Codon', '#35df29'));
+
+  if (highlights.stop?.location !== undefined)
+    features.push(makeFeature(`${highlights.stop.location + 1}..${highlights.stop.location + 3}`, 'Stop Codon', '#df2935'));
+
+  // Homology arms & primers (5' and 3') — use primerColor
+  const primerColor = '#fdca40';
+  const primerTypes = ['hom5', 'seq5', 'seq3', 'hom3'];
+  const labelMap = {
+    hom5: "Homology Arm Primer",
+    seq5: "Sequence Primer",
+    seq3: "Sequence Primer",
+    hom3: "Homology Arm Primer"
   };
 
-  const start = parseInt(highlights?.start?.location || 0) + 1;
-  const stop = parseInt(highlights?.stop?.location || 0) + 1;
+  primerTypes.forEach((key) => {
+    const nKey = `n-${key}-homology`;
+    const cKey = `c-${key}-homology`;
 
-  return [
-    makeFeature(`${start}..${start + 2}`, 'Start Codon', '#35df29'),
-    makeFeature(`${stop}..${stop + 2}`, 'Stop Codon', '#df2935')
-  ].join('');
+    [nKey, cKey].forEach((k) => {
+      if (highlights[k]) {
+        const { location, length } = highlights[k];
+        const isN = k.startsWith('n');
+        const label = `${isN ? "5'" : "3'"} ${labelMap[key]}`;
+        features.push(makeFeature(`${location + 1}..${location + length}`, label, primerColor));
+      }
+    });
+  });
+
+  // Target + PAM — use targetColor + pamColor
+  const targetColor = '#77d1e1';
+  const pamColor = '#0000FF';
+
+  ['n', 'c'].forEach((terminal) => {
+    const key = `${terminal}-cutsite`;
+    if (highlights[key]) {
+      const { location, length } = highlights[key];
+      const labelPrefix = terminal === 'n' ? "5'" : "3'";
+
+      features.push(makeFeature(`${location + 1}..${location + length}`, `${labelPrefix} Target`, targetColor));
+      features.push(makeFeature(`${location + length - 2}..${location + length}`, `${labelPrefix} PAM`, pamColor));
+    }
+  });
+
+  return features.join('');
 };
-
-
   

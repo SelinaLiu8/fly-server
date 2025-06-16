@@ -10,6 +10,11 @@ const DownloadList = () => {
 
     const gene = useSelector((state) => state.appState.gene);
     const sequence = useSelector((state) => state.appState.sequenceData);
+    const highlights = useSelector((state) => state.appState.highlights);
+    const selectedTargets = useSelector((state) => state.appState.selectedTargets);
+    const selectedPrimers = useSelector((state) => state.appState.selectedPrimers);
+
+    console.log(sequence)
 
     const plasmidOptions = [["N terminal SSPB and mCherry tag","N terminal EGFP and SSPB","C terminal mCherry and SSPB tag","C terminal EGFP and SSPB"]]
 
@@ -24,18 +29,22 @@ const DownloadList = () => {
         try {
           const [emptyApe, features] = await Promise.all([
             fetch(`${window.location.origin}/fly_templates/empty_ape.txt`).then(res => res.text()),
-            generateFeatureBlock(highlights)
+            generateFeatureBlock(highlights, selectedTargets, selectedPrimers)
           ]);
       
           const date = new Date();
           const formattedDate = `${date.getDate()}-${["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"][date.getMonth()]}-${date.getFullYear()}`;
+
+          console.log("features", features)
       
           const apeContent = emptyApe
             .replace('*FEATURES*', features)
             .replace('*name*', gene || 'Gene')
-            .replace('*length*', sequence.length)
+            .replace('*length*', sequence.fullSequence.length)
             .replace('*date*', formattedDate)
-            .replace('*GENE*', formatGene(sequence.sequence));
+            .replace('*GENE*', formatGene(sequence.fullSequence));
+
+          console.log("ape content", apeContent);
       
           const blob = new Blob([apeContent], { type: 'text/plain;charset=utf-8' });
           saveAs(blob, `${gene || 'gene'}.ape`);
