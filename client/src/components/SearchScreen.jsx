@@ -11,15 +11,17 @@ import {
 import '../App.css'
 
 const SearchScreen = () => {
+
+  const gene = useSelector((state) => state.appState.gene);
   const dispatch = useDispatch();
-  const [geneName, setGeneName] = useState('');
 
   const loading = useSelector((state) => state.appState.loading);
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (geneName.trim() !== '') {
-      dispatch(searchForGeneAsync(geneName));
+    if (gene.trim() !== '') {
+      dispatch(searchForGeneAsync(gene));
     }
+    console.log("gene", gene)
   };
 
   return (
@@ -33,8 +35,8 @@ const SearchScreen = () => {
                 type="text"
                 name="geneName"
                 placeholder="Gene name or Flybase ID"
-                value={geneName}
-                onChange={(e) => setGeneName(e.target.value)}
+                value={gene}
+                onChange={(e) => dispatch(setGene(e.target.value))}
                 required
               />
               <button

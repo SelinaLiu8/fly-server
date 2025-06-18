@@ -2,7 +2,7 @@ import React from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { saveAs } from 'file-saver';
 import { setPopup } from '../../features/appState/appStateSlicer'
-import { generateFeatureBlock, formatGene } from '../../utilities/Utilities'
+import { generateFeatureBlock, formatGene, generateGuideFile } from '../../utilities/Utilities'
 import '../../styles/SidebarContents.css'
 
 const DownloadList = () => {
@@ -11,6 +11,9 @@ const DownloadList = () => {
     const gene = useSelector((state) => state.appState.gene);
     const sequence = useSelector((state) => state.appState.sequenceData);
     const highlights = useSelector((state) => state.appState.highlights);
+    const operation = useSelector((state) => state.appState.operation);
+    const oligos = useSelector((state) => state.appState.oligos);
+    const terminal = useSelector((state) => state.appState.terminal);
     const selectedTargets = useSelector((state) => state.appState.selectedTargets);
     const selectedPrimers = useSelector((state) => state.appState.selectedPrimers);
 
@@ -36,10 +39,11 @@ const DownloadList = () => {
           const formattedDate = `${date.getDate()}-${["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"][date.getMonth()]}-${date.getFullYear()}`;
 
           console.log("features", features)
+          console.log("gene", gene)
       
           const apeContent = emptyApe
             .replace('*FEATURES*', features)
-            .replace('*name*', gene || 'Gene')
+            .replace('*name*', sequence.isoform || 'Gene')
             .replace('*length*', sequence.fullSequence.length)
             .replace('*date*', formattedDate)
             .replace('*GENE*', formatGene(sequence.fullSequence));
@@ -47,9 +51,24 @@ const DownloadList = () => {
           console.log("ape content", apeContent);
       
           const blob = new Blob([apeContent], { type: 'text/plain;charset=utf-8' });
-          saveAs(blob, `${gene || 'gene'}.ape`);
+          saveAs(blob, `${sequence.isoform || 'gene'}.ape`);
         } catch (error) {
           console.error('Download failed:', error);
+        }
+    };
+
+    const handleGuideDownload = async () => {
+        try {
+            if (operation === 'tag') {
+                const sense = oligos[terminal].sense;
+                console.log("oligos in handle guide download", oligos[terminal].sense);
+                await generateGuideFile(sense, sequence.isoform, `rna-tag-${operation.toUpperCase()}`);
+            } else if (operation === 'delete') {
+                await generateGuideFile(oligos.n.sense, sequence.isoform, 'rna-delete-N');
+                await generateGuideFile(oligos.c.sense, sequence.isoform, 'rna-delete-C');
+            }
+        } catch (error) {
+            console.error('Guide RNA download failed:', error);
         }
     };
 
@@ -66,7 +85,7 @@ const DownloadList = () => {
         
             <div className="download-section">
                 <label className="download-label">Guide RNA Vector</label>
-                <button className="btn">Download</button>
+                <button className="btn" onClick={handleGuideDownload}>Download</button>
             </div>
         
             <div className="download-section">

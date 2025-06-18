@@ -93,6 +93,7 @@ export const appStateSlice = createSlice({
         //Gene
         setGene: (state, action) => {
             state.gene = action.payload;
+            console.log("everytime setGene is called", state.gene);
         },
         setSequenceData: (state, action) => {
             state.sequence = action.payload;
