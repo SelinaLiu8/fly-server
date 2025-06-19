@@ -1,8 +1,8 @@
-import React from 'react'
+import React, { useMemo, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { saveAs } from 'file-saver';
 import { setPopup } from '../../features/appState/appStateSlicer'
-import { generateFeatureBlock, formatGene, generateGuideFile } from '../../utilities/Utilities'
+import { generateFeatureBlock, formatGene, generateGuideFile, generatePlasmidFile } from '../../utilities/Utilities'
 import '../../styles/SidebarContents.css'
 
 const DownloadList = () => {
@@ -19,7 +19,30 @@ const DownloadList = () => {
 
     console.log(sequence)
 
-    const plasmidOptions = [["N terminal SSPB and mCherry tag","N terminal EGFP and SSPB","C terminal mCherry and SSPB tag","C terminal EGFP and SSPB"]]
+    const [plasmidTemplate, setPlasmidTemplate] = useState('');
+    
+    const tagOptions = [
+        { label: 'N terminal SSPB and mCherry tag', value: 'N terminal SSPB and mCherry tag' },
+        { label: 'N terminal EGFP and SSPB', value: 'N terminal EGFP and SSPB' },
+        { label: 'C terminal mCherry and SSPB tag', value: 'C terminal mCherry and SSPB tag' },
+        { label: 'C terminal EGFP and SSPB', value: 'C terminal EGFP and SSPB' },
+    ];
+    
+    const deleteOptions = [
+        { label: 'pHD-dsRed-attP-X', value: 'pHD-dsRed-attP-X' },
+        { label: 'pHD-DsRed-X', value: 'pHD-DsRed-X' },
+    ];
+    
+    // Compute dropdown options based on operation + terminal
+    const dropdownOptions = useMemo(() => {
+        if (operation === 'delete') return deleteOptions;
+    
+        return tagOptions.filter(({ label }) =>
+          terminal === 'n'
+            ? label.toLowerCase().startsWith('n')
+            : label.toLowerCase().startsWith('c')
+        );
+    }, [operation, terminal]);
 
     const handleViewData = () => {
         dispatch(setPopup({
@@ -72,6 +95,48 @@ const DownloadList = () => {
         }
     };
 
+    const handlePlasmidDownload = async () => {
+        try {
+          if (!plasmidTemplate || !sequence?.isoform || !selectedTargets) return;
+      
+          let target, pam;
+      
+          if (operation === 'tag') {
+            const tagData = selectedTargets[terminal];
+            target = tagData?.targetSequence;
+            pam = tagData?.pam;
+          } else if (operation === 'delete') {
+            const nData = selectedTargets.n;
+            const cData = selectedTargets.c;
+      
+            // For delete, you could concatenate both sequences or just pass one — depends on how generatePlasmidFile is set up
+            target = (nData.targetSequence) + (cData.targetSequence);
+            pam = (nData.pam) + (cData.pam);
+          }
+      
+          if (!target || !pam) {
+            console.warn('Missing target or PAM information.');
+            return;
+          }
+      
+          const { blob, filename } = await generatePlasmidFile({
+            templateName: plasmidTemplate,
+            geneName: sequence.isoform,
+            sequence: sequence.fullSequence,
+            highlights,
+            terminal,
+            target,
+            pam,
+            isDelete: operation === 'delete',
+            strand: sequence.strand
+          });
+      
+          saveAs(blob, filename);
+        } catch (err) {
+          console.error('Plasmid download failed:', err);
+        }
+    };     
+
     return (
         <div className="sidebar-content">
             <h3 className='sidebar-title'>Download Options</h3>
@@ -90,14 +155,15 @@ const DownloadList = () => {
         
             <div className="download-section">
                 <label className="download-label">Plasmid Template</label>
-                <select>
-                {plasmidOptions.map((option, i) => (
-                    <option key={i} value={option.value}>
-                    {option.label}
-                    </option>
-                ))}
+                <select
+                    value={plasmidTemplate}
+                    onChange={(e) => setPlasmidTemplate(e.target.value)}>
+                    <option value="">Select a template…</option>
+                    {dropdownOptions.map(({ label, value }) => (
+                        <option key={value} value={value}>{label}</option>
+                    ))}
                 </select>
-                <button className="btn">Download</button>
+                <button className="btn" onClick={handlePlasmidDownload}>Download</button>
             </div>
         </div>
     )

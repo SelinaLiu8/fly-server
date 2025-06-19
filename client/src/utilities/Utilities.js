@@ -225,4 +225,69 @@ export const generateGuideFile = async(sense, label, fileName) => {
   const blob = new Blob([design], { type: "text/plain;charset=utf-8" });
   saveAs(blob, `${fileName}.ape`);
 };
+
+export const generatePlasmidFile = async ({
+  templateName,
+  geneName,
+  sequence,
+  highlights,
+  terminal,
+  pam,
+  target,
+  isDelete = false,
+  strand
+}) => {
+  const url = `${window.location.origin}/plasmid_folder/${encodeURIComponent(templateName)}.txt`;
+  const templateText = await fetch(url).then(res => {
+    if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+    return res.text();
+  });
+
+  const [preArm1, rest1] = templateText.split('**arm_1_start**');
+  const [arm1Template, rest2] = rest1.split('**arm_1_end**');
+  const [betweenArms, rest3] = rest2.split('**arm_2_start**');
+  const [arm2Template, postArm2] = rest3.split('**arm_2_end**');
+
+  const Ncut = highlights.start.location + 3;
+  const Ccut = highlights.stop.location;
+  const cutSite = terminal === 'n' ? Ncut : Ccut;
+
+  let arm1, arm2;
+
+  if (isDelete) {
+    arm1 = sequence.slice(Ncut - 1000, Ncut);
+    arm2 = sequence.slice(Ccut, Ccut + 1000);
+  } else {
+    arm1 = sequence.slice(cutSite - 1000, cutSite);
+    arm2 = sequence.slice(cutSite, cutSite + 1000);
+
+    const canonicalTarget = strand === '-' ? getReverseComplement(target) : target;
+    const combined = arm1 + arm2;
+    const idx = combined.toLowerCase().indexOf(canonicalTarget.toLowerCase());
+
+    if (idx !== -1) {
+      const mutated = strand === '-'
+        ? combined.slice(0, idx) + pam + combined.slice(idx + 3)
+        : combined.slice(0, idx + canonicalTarget.length - 3) + pam + combined.slice(idx + canonicalTarget.length);
+
+      arm1 = mutated.slice(0, Math.ceil(mutated.length / 2));
+      arm2 = mutated.slice(Math.ceil(mutated.length / 2));
+    }
+  }
+
+  const fill = (tmpl, armSeq) => {
+    let i = 0;
+    return tmpl.replace(/[ATCG]/gi, () => armSeq[i++] ?? '');
+  };
+
+  const filledArm1 = fill(arm1Template, arm1);
+  const filledArm2 = fill(arm2Template, arm2);
+
+  const design = preArm1 + filledArm1 + betweenArms + filledArm2 + postArm2;
+  const blob = new Blob([design], { type: 'text/plain;charset=utf-8' });
+  const filename = `${templateName} for ${geneName}.ape`;
+
+  return { blob, filename };
+};
+
   
