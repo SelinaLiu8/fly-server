@@ -25,7 +25,7 @@ const SidebarContents = () => {
     console.log("targetReady", targetsReady);
 
     return (
-        <div className='sidebar-container'>
+        <div className='sidebar-content-container'>
             {activeMenu === 2 && targetsReady && <TargetList />}
             {activeMenu === 3 && <HomologyList />}
             {activeMenu === 4 && <DownloadList />}

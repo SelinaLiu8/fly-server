@@ -58,22 +58,22 @@ const Header = ({ onOpenDesign, onSaveDesign, onFontMenuToggle }) => {
       </div>
 
       {hamburger && (
-        <div className="main-menu">
-          <div className="menu-item" onClick={() => dispatch(setScreen(1))}>
+        <div className="hamburger-menu">
+          <div className="hamburger-item" onClick={() => dispatch(setScreen(1))}>
             <div>Home</div>
           </div>
-          <div className="menu-item" onClick={onFontMenuToggle}>
+          <div className="hamburger-item" onClick={onFontMenuToggle}>
             <div className="font-size">
               <div className="small">A</div>
               <div className="large">A</div>
             </div>
             <div>Font Size</div>
           </div>
-          <div className="menu-item" onClick={() => dispatch(toggleThemeColor())}>
+          <div className="hamburger-item" onClick={() => dispatch(toggleThemeColor())}>
             <div className={`theme-color ${themeColor ? 'dark' : ''}`}></div>
             <div>{themeColor ? 'Light Mode' : 'Dark Mode'}</div>
           </div>
-          <div className="menu-item">
+          <div className="hamburger-item">
             <label className="file-input">
               <div>Open Design</div>
               <input
@@ -84,10 +84,10 @@ const Header = ({ onOpenDesign, onSaveDesign, onFontMenuToggle }) => {
               />
             </label>
           </div>
-          <div className="menu-item" onClick={onSaveDesign}>
+          <div className="hamburger-item" onClick={onSaveDesign}>
             <div>Save Design</div>
           </div>
-          <div className="menu-item">
+          <div className="hamburger-item">
             <a
               href={manualPDF}
               target="_blank"
@@ -97,7 +97,7 @@ const Header = ({ onOpenDesign, onSaveDesign, onFontMenuToggle }) => {
               <div>User Manual</div>
             </a>
           </div>
-          <div className="menu-item" onClick={toggleBugReport}>
+          <div className="hamburger-item" onClick={toggleBugReport}>
             <div>Bug Report</div>
           </div>
           {showBugReport && (

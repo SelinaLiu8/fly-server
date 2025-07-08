@@ -1,12 +1,53 @@
+:root {
+  /* Colors */
+  --color-primary: #56409b;
+  --color-primary-light: #7b6cbc;
+  --color-accent: #bcad8a;
+  --color-success: #93e593;
+  --color-error: #ff668e;
+  --color-text-dark: #000;
+  --color-text-gray: #5e5e5e;
+  --color-text-light: #fff;
+  --color-bg-grey: #ebe9e3;
+  --color-highlight: rgba(255, 97, 129, 0.5);
+  --color-homology: rgba(86, 64, 155, 0.3);
+
+  /* Fonts */
+  --font-main: 'Poppins', -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+  --font-code: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+  --font-mono: "Roboto Mono", monospace;
+
+  /* Font Sizes */
+  --font-large: 36px;
+  --font-medium: 24px;
+  --font-small: 14px;
+
+  /* Font Weights */
+  --weight-bold: 700;
+  --weight-semibold: 600;
+  --weight-medium: 500;
+  --weight-regular: 400;
+  --weight-light: 300;
+
+  /* Border radius */
+  --radius-sm: 4px;
+  --radius-lg: 20px;
+
+  /* Shadows */
+  --shadow-header: 0 5px 7px rgba(0,0,0,.3);
+  --shadow-inset: inset 1px -7px 3px rgba(0,0,0,.2);
+}
+
+
 body {
   margin: 0;
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
-  /* -webkit-font-smoothing: antialiased; */
+  font-family: var(--font-main);
   -moz-osx-font-smoothing: grayscale;
+  overflow: hidden;
 }
 
 code {
-  font-family: source-code-pro,Menlo,Monaco,Consolas,"Courier New",monospace
+  font-family: var(--font-code);
 }
 
 * {
@@ -29,20 +70,56 @@ code {
   background: #555
 }
 
-body {
-  overflow: hidden
+/* Text */
+h1, h2, h3, h4, h5, p {
+  font-family: var(--font-main);
 }
 
-button:hover, .btn:hover {
+h1 {
+  font-size: calc(var(--font-large) + 12px); /* 48px */
+  font-weight: var(--weight-bold);
+}
+
+h2 {
+  font-size: var(--font-large); /* 36px */
+  font-weight: var(--weight-semibold);
+}
+
+h3 {
+  font-size: calc(var(--font-medium) + 4px); /* 28px */
+  font-weight: var(--weight-medium);
+}
+
+h4 {
+  font-size: var(--font-medium); /* 24px */
+  font-weight: var(--weight-regular);
+}
+
+h5 {
+  font-size: 18px;
+  font-weight: var(--weight-regular);
+}
+
+p {
+  font-size: var(--font-small); /* 14px */
+  font-weight: var(--weight-light);
+}
+
+/* Button */
+
+button:hover {
   transition: 0.3s;
   transform: scale(1.05);
 }
 
-button:focus, .btn:focus {
+button:focus {
   transform: scale(0.95);
 }
 
-button, .btn {
+button {
+  background-color: var(--color-primary);
+  color: var(--color-text-light);
+  font-weight: var(--weight-medium);
   transition: 0.3s;
   transform: scale(1);
 }
@@ -50,26 +127,23 @@ button, .btn {
 .App {
   display: flex;
   flex-direction: column;
-  font-family: "Poppins";
   height: 100vh;
-}
-
-#root,.App,body,html {
-  height: 100%
 }
 
 input[type=submit] {
   cursor: pointer
 }
 
+/* Header */
+
 header {
-  background: #56409b;
+  background: var(--color-primary);
   text-align: center;
-  padding: 20px 10px;
+  padding: 1rem 0;
   display: flex;
   justify-content: center;
   align-items: center;
-  box-shadow: 0 5px 7px rgba(0,0,0,.3);
+  box-shadow: var(--shadow-header);
   z-index: 9999
 }
 
@@ -89,13 +163,13 @@ header .menu>img {
   width: 32px
 }
 
-.main-menu {
+.hamburger-menu {
   position: absolute;
-  top: 80px; /* Adjusted to match sidebar and sidebar-content */
-  background: #56409b;
-  color: #fff;
-  font-size: 16px;
-  width: 240px;
+  top: 6rem; /* Adjusted to match sidebar and sidebar-content */
+  background: var(--color-primary);
+  color: var(--color-text-light);
+  font-size: var(--font-small);
+  width: 15rem;
   right: 0;
   display: flex;
   flex-direction: column;
@@ -104,14 +178,14 @@ header .menu>img {
   z-index: 9999;
 }
 
-.main-menu .menu-item {
+.hamburger-item {
   padding: 10px 16px;
   border-bottom: 1px solid #fff;
   display: flex;
   position: relative
 }
 
-.main-menu .menu-item:hover {
+.hamburger-item:hover {
   background: #93e593
 }
 
@@ -146,7 +220,9 @@ header .menu>img {
   font-size: 16.5px
 }
 
-.body,.sidebar {
+/* Sidebar */
+
+.sidebar {
   display: flex;
   height: 100%
 }
@@ -157,42 +233,31 @@ header .menu>img {
   overflow: hidden;
 }
 
-.sidebar {
-  width: 80px; /* or whatever width you want */
-  background: #ebe9e3;
+.sidebar-container {
+  width: 5rem;
+  background: var(--color-bg-grey);
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: 10px;
-  padding-bottom: 10px;
-  overflow-y: auto; /* if sidebar needs to scroll */
 }
 
-.menu-icon .menu-image-wrapper {
+.menu-icon {
+  border-bottom: 1px solid var(--color-text-light);
+  padding: 1rem 0;
   width: 100%;
+  text-align: center;
+  position: relative;
   cursor: pointer;
-  padding: 20px
+  transition: 0.15s;
 }
 
 .menu-icon img {
   width: 59px;
-  margin: 0 auto;
-  pointer-events: none;
-  -webkit-user-select: none;
-  -ms-user-select: none;
-  user-select: none
-}
-
-.menu-icon {
-  border-bottom: 1px solid #fff;
-  width: 100%;
-  text-align: center;
-  position: relative;
-  cursor: pointer
 }
 
 .menu-icon:hover {
-  background: #7b6cbc
+  background: var(--color-primary-light);
+  transition: 0.15s;
 }
 
 .menu-icon label {
@@ -299,40 +364,120 @@ header .menu>img {
   object-fit: contain
 }
 
+/* Footer */
+
 .footer {
   position: fixed;
   left: 0;
   bottom: 0;
   width: 100%;             
-  color: #fff;
+  color: var(--color-text-light);
   display: flex;
-  background: #56409b;
+  background: var(--color-primary);
   justify-content: space-around;
-  font-size: 23px;
-  padding: 5px 0;
+  font-size: var(--font-small);
+  padding: 0.5rem 0;
   z-index: 9999;
 }
 
+/* Loading */
+.loading-container {
+  height: 100vh;
+  width: 100vw;
+  position: fixed;
+  left: 0;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.75);
+}
+
+.loading-box {
+  height: 300px;
+  width: 450px;
+  padding: 3rem;
+  border: 5px solid var(--color-primary);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-text-light);
+  text-align: center;
+  color: var(--color-text-gray);
+}
+
+.loading-img {
+  height: 70%;
+  max-height: 100%;
+  animation: pulseOpacity 1.5s ease-in-out infinite;
+}
+
+@keyframes pulseOpacity {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+
+/* Search */
 .screen.screen-1 {
   align-items: baseline;
-  padding-top: 100px
+  padding-top: 100px;
+  position: absolute;
+  left: 0;
 }
 
-form.search-form {
-  color: #bcad8a;
-  font-size: 34px;
-  display: flex;
-  flex-wrap: wrap;
+.search-content {
   text-align: center;
-  max-width: 714px;
-  margin: 0 auto;
-  justify-content: center
 }
 
-form.search-form label {
-  width: 100%;
-  margin-bottom: 40px
+.search-title {
+  color: var(--color-accent);
+  font-size: var(--font-large);
+  font-weight: var(--weight-regular);
 }
+
+.search-form {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.search-input {
+  height: 2.5rem;
+  width: 30rem;
+  padding: 0 16px;
+  font-size: var(--font-medium);
+  border: 2px solid var(--color-accent);
+  border-radius: 16px 0 0 16px;
+}
+
+.search-button {
+  height: 2.5rem;
+  padding: 0 16px;
+  background-color: var(--color-accent);
+  border: 0;
+  font-size: var(--font-medium);
+  border-radius: 0 16px 16px 0;
+}
+
+.search-button:hover {
+  background-color: var(--color-primary);
+  transform: scale(1);
+}
+
+.search-button:focus {
+  background-color: var(--color-primary-light);
+  transform: scale(1);
+}
+
+.search-examples {
+  color: var(--color-text-gray);
+}
+
+/* screens */
 
 .screen.screen-2,.screen.screen-3,.screen.screen-4,.screen.screen-custom-2 {
   flex-direction: column;
@@ -423,15 +568,6 @@ form.search-form label {
 
 .main.dark form.search-form label {
   color: #fff
-}
-
-.search-form input[type=text],input[type=number],select {
-  width: 350px;
-  height: 60px;
-  border: 2px solid #bcad8a;
-  font-size: 34px;
-  padding: 0 20px;
-  border-radius: 4px 0 0 4px
 }
 
 .isoform-form input[type=submit],.search-form input[type=submit] {
@@ -878,7 +1014,7 @@ form.search-form label {
   font-size: 18px
 }
 
-.download-list button,button {
+.download-list button{
   background: #56409b;
   color: #fff;
   font-size: 14px;

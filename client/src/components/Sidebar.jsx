@@ -21,7 +21,7 @@ const Sidebar = () => {
 
   return (
     <div className="sidebar">
-      <div className="menu-icon-container">
+      <div className="sidebar-container">
         <div 
           className={`menu-icon ${activeMenu === 1 ? 'active' : ''}`}
           onClick={() => handleMenuClick(1)}
