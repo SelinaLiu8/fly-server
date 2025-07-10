@@ -34,28 +34,32 @@ const QuestionPopup = () => {
     return (
       <div className="popup-wrapper">
         <div className="popup">
-          <h2>{question}</h2>
-  
+          <h4 className='popup-title'>{question}</h4>
           <div className="popup-choices">
-          <select
-            value={selectedChoice ? selectedChoice.label : ''}
-            onChange={(e) => {
+            <select
+              className="popup-select"
+              value={selectedChoice ? selectedChoice.label : ''}
+              onChange={(e) => {
                 const selected = choices.find(choice => choice.label === e.target.value);
                 setSelectedChoice(selected || null);
-            }}
+              }}
             >
-            <option value="">Select an option...</option>
-            {choices.map((choice, index) => (
+              <option value="">Select an option...</option>
+              {choices.map((choice, index) => (
                 <option key={index} value={choice.label}>
-                {choice.label}
+                  {choice.label}
                 </option>
-            ))}
+              ))}
             </select>
+
+            <button
+              className="popup-btn"
+              onClick={handleSubmit}
+              disabled={!selectedChoice}
+            >
+              Confirm
+            </button>
           </div>
-  
-          <button onClick={handleSubmit} disabled={!selectedChoice}>
-            Confirm
-          </button>
         </div>
       </div>
     );

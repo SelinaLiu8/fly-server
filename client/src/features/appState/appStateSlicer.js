@@ -145,7 +145,6 @@ export const appStateSlice = createSlice({
             })
             .addCase(searchForGeneAsync.fulfilled, (state, action) => {
                 state.loading = false;
-                state.gene = action.payload;
             })
             .addCase(searchForGeneAsync.rejected, (state, action) => {
                 state.loading = false;
