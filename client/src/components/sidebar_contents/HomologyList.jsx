@@ -122,7 +122,7 @@ const HomologyList = () => {
 
     const renderPrimerGroup = (primers, terminal, label, typeKey) => (
         <div>
-          <h5>{label}</h5>
+          <p>{label}</p>
           {(primers || []).map((primer, i) =>
             renderPrimerItem(primer, terminal, typeKey)
           )}
@@ -132,11 +132,11 @@ const HomologyList = () => {
     return (
         <div className="sidebar-content">
             <h3 className="sidebar-title">Pick Homology Arms</h3>
-            <div className='target-container'>
+            <div className='target-list'>
             {primerList.n && Object.keys(primerList.n).length > 0 && (
-                <div className="target-container">
-                    { operation === 'delete' && <h4>N Terminal Primers</h4>}
-                    <div className="target-list">
+                <div>
+                    { operation === 'delete' && <h5 className='terminal-title'>N Terminal Primers</h5>}
+                    <div className="target-section">
                         {renderPrimerGroup(primerList.n.hom5, 'n', "N Forward Homology Arm Primer", 'hom5')}
                         {renderPrimerGroup(primerList.n.hom3, 'n', "N Reverse Homology Arm Primer", 'hom3')}
                         {renderPrimerGroup(primerList.n.seq5, 'n', "N Forward Sequencing Primer", 'seq5')}
@@ -145,9 +145,9 @@ const HomologyList = () => {
                 </div>
             )}
             {primerList.c && Object.keys(primerList.c).length > 0 && (
-                <div className="target-container">
-                    { operation === 'delete' && <h4>C Terminal Primers</h4>}
-                    <div className="target-list">
+                <div>
+                    { operation === 'delete' && <h5 className='terminal-title'>C Terminal Primers</h5>}
+                    <div className="target-section">
                         {renderPrimerGroup(primerList.c.hom5, 'c', "C Forward Homology Arm Primer", 'hom5')}
                         {renderPrimerGroup(primerList.c.hom3, 'c', "C Reverse Homology Arm Primer", 'hom3')}
                         {renderPrimerGroup(primerList.c.seq5, 'c', "C Forward Sequencing Primer", 'seq5')}

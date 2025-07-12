@@ -65,8 +65,8 @@ export function getReverseComplement(targetSequence) {
 export function calculatePrimerSections(sequence, terminal, highlights) {
   const targetLocation =
   terminal === 'n'
-    ? highlights.start?.location
-    : highlights?.location;
+    ? highlights.start.location
+    : highlights.stop.location;
   return {
     "5' Homology": sequence.slice(targetLocation - 1200, targetLocation - 1000),
     "5' Sequence": sequence.slice(targetLocation - 600, targetLocation - 400),

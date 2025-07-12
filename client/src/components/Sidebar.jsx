@@ -1,6 +1,7 @@
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { setMenu, setScreen } from '../features/appState/appStateSlicer';
+import SidebarContents from './SidebarContentsView';
 
 import searchIcon from '../assets/search.png';
 import cutSiteIcon from '../assets/cutcite.png';
@@ -41,8 +42,13 @@ const Sidebar = () => {
               <div className="menu-image-wrapper">
                 <img src={cutSiteIcon} alt="Cut Site" />
               </div>
-              <label>Cut Site</label>
+              {/* <label>Cut Site</label> */}
             </div>
+            {
+              screen === 2 && (
+                <SidebarContents />
+              )
+            }
 
             <div 
               className={`menu-icon ${activeMenu === 3 ? 'active' : ''}`}
@@ -51,8 +57,13 @@ const Sidebar = () => {
               <div className="menu-image-wrapper">
                 <img src={homologyIcon} alt="Homology" />
               </div>
-              <label>Homology</label>
+              {/* <label>Homology</label> */}
             </div>
+            {
+              screen === 3 && (
+                <SidebarContents />
+              )
+            }
 
             <div 
               className={`menu-icon ${activeMenu === 4 ? 'active' : ''}`}
@@ -61,8 +72,13 @@ const Sidebar = () => {
               <div className="menu-image-wrapper">
                 <img src={downloadIcon} alt="Download" />
               </div>
-              <label>Download</label>
+              {/* <label>Download</label> */}
             </div>
+            {
+              screen === 4 && (
+                <SidebarContents />
+              )
+            }
           </>
         )}
       </div>
