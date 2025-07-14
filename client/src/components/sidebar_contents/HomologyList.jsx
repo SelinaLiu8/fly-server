@@ -51,22 +51,25 @@ const HomologyList = () => {
     }, [selectedPrimers]);
     
     const renderPrimerItem = (primer, terminal, typeKey) => {
-        return (
-          <div className="target-list-item"
-          onMouseEnter={() => handleHover(primer, terminal, typeKey)}
-          onMouseLeave={handleLeave}
-          onClick={() => handleSelect(primer, terminal, typeKey)}>
-            <div className="target-sequence">
-              <span className="target-proximal">{primer[8]}</span>
-            </div>
-            <div className="target-details">
-              <div>Tm: {primer[3]}</div>
-              <div>GC%: {primer[4]}</div>
-              <div>Any: {primer[5]}</div>
-              <div>3′: {primer[6]}</div>
-            </div>
+      const isSelected = selectedPrimers?.[terminal]?.[typeKey]?.[8] === primer[8];
+      
+      return (
+        <div 
+        className={`target-list-item ${isSelected ? 'selected-target' : ''}`}
+        onMouseEnter={() => handleHover(primer, terminal, typeKey)}
+        onMouseLeave={handleLeave}
+        onClick={() => handleSelect(primer, terminal, typeKey)}>
+          <div className="target-sequence">
+            <span className="target-proximal">{primer[8]}</span>
           </div>
-        );
+          <div className="target-details">
+            <div>Tm: {primer[3]}</div>
+            <div>GC%: {primer[4]}</div>
+            <div>Any: {primer[5]}</div>
+            <div>3′: {primer[6]}</div>
+          </div>
+        </div>
+      );
     };
 
     const handleHover = (primer, terminal, typeKey) => {
@@ -122,7 +125,7 @@ const HomologyList = () => {
 
     const renderPrimerGroup = (primers, terminal, label, typeKey) => (
         <div>
-          <p>{label}</p>
+          <h5 className='homology-title'>{label}</h5>
           {(primers || []).map((primer, i) =>
             renderPrimerItem(primer, terminal, typeKey)
           )}

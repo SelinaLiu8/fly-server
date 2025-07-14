@@ -45,11 +45,18 @@ const DownloadList = () => {
     }, [operation, terminal]);
 
     const handleViewData = () => {
-        dispatch(setPopup({
-            type: 'print',
-            stayOpen: true
-        }))
+      dispatch(setPopup({
+        type: 'print',
+        stayOpen: true
+      }))
     };
+
+    const handleUploadTemplate = () => {
+      dispatch(setPopup({
+        type: 'upload',
+        stayOpen: true
+      }))
+    }
 
     const handleApeDownload = async () => {
         try {
@@ -140,30 +147,38 @@ const DownloadList = () => {
     return (
         <div className="sidebar-content">
             <h3 className='sidebar-title'>Download Options</h3>
-            <div className="download-header">
-                <button className="btn" onClick={handleViewData}>View All Data</button>
-            </div>
-            <div className="download-section">
-                <label className="download-label">Genomic Template</label>
-                <button className="btn" onClick={handleApeDownload}>Download</button>
-            </div>
-        
-            <div className="download-section">
-                <label className="download-label">Guide RNA Vector</label>
-                <button className="btn" onClick={handleGuideDownload}>Download</button>
-            </div>
-        
-            <div className="download-section">
-                <label className="download-label">Plasmid Template</label>
-                <select
-                    value={plasmidTemplate}
-                    onChange={(e) => setPlasmidTemplate(e.target.value)}>
-                    <option value="">Select a template…</option>
-                    {dropdownOptions.map(({ label, value }) => (
-                        <option key={value} value={value}>{label}</option>
-                    ))}
-                </select>
-                <button className="btn" onClick={handlePlasmidDownload}>Download</button>
+            <div className="target-list">
+              <div className="download-section">
+                  <label className="download-label">View All Data</label>
+                  <button className="download-btn" onClick={handleViewData}>Open</button>
+              </div>
+              <div className="download-section">
+                  <label className="download-label">Genomic Template</label>
+                  <button className="download-btn" onClick={handleApeDownload}>Download</button>
+              </div>
+          
+              <div className="download-section">
+                  <label className="download-label">Guide RNA Vector</label>
+                  <button className="download-btn" onClick={handleGuideDownload}>Download</button>
+              </div>
+          
+              <div className="download-section">
+                  <label className="download-label">Plasmid Template</label>
+                  <select
+                      className='download-dropdown'
+                      value={plasmidTemplate}
+                      onChange={(e) => setPlasmidTemplate(e.target.value)}>
+                      <option value="">Select a template…</option>
+                      {dropdownOptions.map(({ label, value }) => (
+                          <option key={value} value={value}>{label}</option>
+                      ))}
+                  </select>
+                  <button className="download-btn" onClick={handlePlasmidDownload}>Download</button>
+              </div>
+              <div className="download-section">
+                  <label className="download-label">Upload Your Template</label>
+                  <button className="download-btn" onClick={handleUploadTemplate}>Upload</button>
+              </div>
             </div>
         </div>
     )

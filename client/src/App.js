@@ -6,6 +6,7 @@ import SearchScreen from './components/SearchScreen';
 import LoadingScreen from './components/LoadingScreen';
 import QuestionPopup from './components/QuestionPopUpScreen';
 import PrintPopUpScreen from './components/PrintPopUpScreen';
+import UploadPopUpScreen from './components/UploadPopUpScreen';
 import Sidebar from './components/SideBar';
 import SidebarContents from './components/SidebarContentsView';
 import SequenceViewScreen from './components/SequenceViewScreen';
@@ -42,7 +43,7 @@ export default function App() {
             {loading && <LoadingScreen message={loadingMessage} />}
             {popupVisible && popupType === 'question' && <QuestionPopup />}
             {popupVisible && popupType === 'print' && <PrintPopUpScreen />}
-
+            {popupVisible && popupType === 'upload' && <UploadPopUpScreen />}
           </>
         )}
         {/* other screens */}

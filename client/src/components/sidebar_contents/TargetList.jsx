@@ -16,6 +16,7 @@ const TargetList = () => {
     const highlights = useSelector((state) => state.appState.highlights);
 
     useEffect(() => {
+
         if (operation === "tag") {
           if (selectedTargets.n || selectedTargets.c) {
             console.log("went in to tag selected targets");
@@ -99,9 +100,12 @@ const TargetList = () => {
     };    
 
     const renderTargetItem = (target, terminal) => {
+        const isSelected = selectedTargets?.[terminal]?.distal === target.distal &&
+        selectedTargets?.[terminal]?.proximal === target.proximal;
+
         return (
           <div 
-            className='target-list-item'
+            className={`target-list-item ${isSelected ? 'selected-target' : ''}`}
             onMouseEnter={() => handleHover(target)}
             onMouseLeave={handleLeave}
             onClick={() => handleSelect(target, terminal)}>

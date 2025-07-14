@@ -2,7 +2,7 @@ import React from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { handlePrint } from '../utilities/Utilities'
 import { clearPopup } from '../features/appState/appStateSlicer'
-import '../styles/PopUp.css'
+import '../App.css'
 
 const PrintPopUpScreen = () => {
     const operation = useSelector((state) => state.appState.operation);
@@ -75,44 +75,46 @@ const PrintPopUpScreen = () => {
     const showC = operation === 'delete' || terminal === 'c';
 
     return (
-        <div className="print-container popup-wrapper" id="printableArea">
-          <h2 className="print-title">Design Info</h2>
-    
-          {/* Target Info */}
-          <div className="print-item">
-            <h4 className="print-subtitle">Target Info</h4>
-            {showN && renderTargetInfo('n')}
-            {showC && renderTargetInfo('c')}
-          </div>
-    
-          {/* Homology Info */}
-          <div className="print-item">
-            <h4 className="print-subtitle">Homology Info</h4>
-            {showN && (
-              <>
-                <h5 className="print-subsubtitle">N Terminal</h5>
-                {generatePrimerHTML('n', selectedPrimers.n)}
-              </>
-            )}
-            {showC && (
-              <>
-                <h5 className="print-subsubtitle">C Terminal</h5>
-                {generatePrimerHTML('c', selectedPrimers.c)}
-              </>
-            )}
-          </div>
-    
-          {/* Oligo Info */}
-          <div className="print-item">
-            <h4 className="print-subtitle">Oligo Info</h4>
-            {showN && renderOligoInfo('n')}
-            {showC && renderOligoInfo('c')}
-          </div>
-    
-          {/* Buttons */}
-          <div className="popup-actions">
-            <button className="btn" onClick={handlePrint}>Print</button>
-            <button className="btn" onClick={() => dispatch(clearPopup())}>Close</button>
+        <div className="popup-wrapper" id="printableArea">
+          <div className='popup print-popup'>
+            <button className='close-btn' onClick={() => dispatch(clearPopup())}>X</button>
+            <h2 className="print-title">Design Info</h2>
+      
+            {/* Target Info */}
+            <div className="print-item">
+              <h4 className="print-subtitle">Target Info</h4>
+              {showN && renderTargetInfo('n')}
+              {showC && renderTargetInfo('c')}
+            </div>
+      
+            {/* Homology Info */}
+            <div className="print-item">
+              <h4 className="print-subtitle">Homology Info</h4>
+              {showN && (
+                <>
+                  <h5 className="print-subsubtitle">N Terminal</h5>
+                  {generatePrimerHTML('n', selectedPrimers.n)}
+                </>
+              )}
+              {showC && (
+                <>
+                  <h5 className="print-subsubtitle">C Terminal</h5>
+                  {generatePrimerHTML('c', selectedPrimers.c)}
+                </>
+              )}
+            </div>
+      
+            {/* Oligo Info */}
+            <div className="print-item">
+              <h4 className="print-subtitle">Oligo Info</h4>
+              {showN && renderOligoInfo('n')}
+              {showC && renderOligoInfo('c')}
+            </div>
+      
+            {/* Buttons */}
+            <div className="popup-actions">
+              <button className="btn" onClick={handlePrint}>Print</button>
+            </div>
           </div>
         </div>
     );
