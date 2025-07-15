@@ -513,6 +513,12 @@ header .menu>img {
 .print-popup {
   overflow-y: auto;
   height: 100%;
+  border-color: var(--color-primary);
+}
+
+.upload-popup {
+  height: auto;
+  border-color: var(--color-primary);
 }
 
 .popup-choices {
@@ -538,6 +544,20 @@ header .menu>img {
 
 .file-input-hidden {
   display: none;
+}
+
+.drop-zone {
+  border: 2px dotted var(--color-accent);
+  padding: 2rem 1rem;
+}
+
+.drop-zone.active {
+  background-color: rgba(94, 94, 94, 0.1);
+}
+
+.upload-btn {
+  border: 0;
+  margin: 1rem 0;
 }
 
 /* screens */

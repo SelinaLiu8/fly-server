@@ -128,6 +128,7 @@ const DownloadList = () => {
       
           const { blob, filename } = await generatePlasmidFile({
             templateName: plasmidTemplate,
+            fileName: null,
             geneName: sequence.isoform,
             sequence: sequence.fullSequence,
             highlights,

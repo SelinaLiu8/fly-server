@@ -228,6 +228,7 @@ export const generateGuideFile = async(sense, label, fileName) => {
 
 export const generatePlasmidFile = async ({
   templateName,
+  fileName,
   geneName,
   sequence,
   highlights,
@@ -237,11 +238,26 @@ export const generatePlasmidFile = async ({
   isDelete = false,
   strand
 }) => {
-  const url = `${window.location.origin}/plasmid_folder/${encodeURIComponent(templateName)}.txt`;
-  const templateText = await fetch(url).then(res => {
-    if (!res.ok) throw new Error(`HTTP error ${res.status}`);
-    return res.text();
-  });
+  let templateText;
+  // 1. Use FileReader if fileName is a File object
+  if (fileName instanceof File) {
+    templateText = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsText(fileName);
+    });
+  }
+  // 2. Use fetch if templateName was provided
+  else if (templateName) {
+    const url = `${window.location.origin}/plasmid_folder/${encodeURIComponent(templateName)}.txt`;
+    templateText = await fetch(url).then(res => {
+      if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+      return res.text();
+    });
+  } else {
+    throw new Error("No valid template source provided.");
+  }
 
   const [preArm1, rest1] = templateText.split('**arm_1_start**');
   const [arm1Template, rest2] = rest1.split('**arm_1_end**');
@@ -285,7 +301,8 @@ export const generatePlasmidFile = async ({
 
   const design = preArm1 + filledArm1 + betweenArms + filledArm2 + postArm2;
   const blob = new Blob([design], { type: 'text/plain;charset=utf-8' });
-  const filename = `${templateName} for ${geneName}.ape`;
+  const baseName = fileName ? fileName.name.replace(/\.txt$/i, '') : templateName;
+  const filename = `${baseName} for ${geneName}.ape`;
 
   return { blob, filename };
 };
