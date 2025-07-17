@@ -1,7 +1,9 @@
 import React, { useState, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux'
 import { saveAs } from 'file-saver';
-import { generatePlasmidFile } from '../utilities/Utilities';
+import { generatePlasmidFile } from '../../utilities/Utilities';
+import { clearPopup } from '../../features/appState/appStateSlicer';
+import '../../App.css'
 
 const UploadPopUpScreen = () => {
   const [file, setFile] = useState(null);
@@ -13,6 +15,7 @@ const UploadPopUpScreen = () => {
   const highlights = useSelector((state) => state.appState.highlights);
   const terminal = useSelector((state) => state.appState.terminal);
   const selectedTargets = useSelector((state) => state.appState.selectedTargets);
+  const dispatch = useDispatch();
 
   const handleFileSelect = (e) => {
     const uploaded = e.target.files[0];
@@ -94,6 +97,7 @@ const UploadPopUpScreen = () => {
   return (
     <div className="popup-wrapper">
       <div className="popup upload-popup">
+        <button className='close-btn' onClick={() => dispatch(clearPopup())}>X</button>
         <h4 className="popup-title">Please Upload Your Template Here</h4>
 
         <div

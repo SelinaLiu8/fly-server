@@ -37,6 +37,8 @@
 }
 
 .homology-title {
+    /* position: sticky;
+    top: 0; */
     font-size: var(--font-small);
     background-color: var(--color-accent);
     color: var(--color-text-light);

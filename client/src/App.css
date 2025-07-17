@@ -555,9 +555,28 @@ header .menu>img {
   background-color: rgba(94, 94, 94, 0.1);
 }
 
-.upload-btn {
+.print-btn, .upload-btn {
   border: 0;
   margin: 1rem 0;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-sm);
+}
+
+.close-btn {
+  background-color: transparent;
+  color: var(--color-accent);
+  align-self: flex-end;
+  border: none;
+}
+
+.close-btn:hover {
+  background-color: transparent;
+  color: var(--color-primary);
+}
+
+.close-btn:focus {
+  background-color: transparent;
+  color: var(--color-primary-light)
 }
 
 /* screens */

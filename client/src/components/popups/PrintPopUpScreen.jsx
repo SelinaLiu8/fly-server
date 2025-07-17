@@ -1,8 +1,8 @@
 import React from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { handlePrint } from '../utilities/Utilities'
-import { clearPopup } from '../features/appState/appStateSlicer'
-import '../App.css'
+import { handlePrint } from '../../utilities/Utilities'
+import { clearPopup } from '../../features/appState/appStateSlicer'
+import '../../App.css'
 
 const PrintPopUpScreen = () => {
     const operation = useSelector((state) => state.appState.operation);
@@ -113,7 +113,7 @@ const PrintPopUpScreen = () => {
       
             {/* Buttons */}
             <div className="popup-actions">
-              <button className="btn" onClick={handlePrint}>Print</button>
+              <button className="print-btn" onClick={handlePrint}>Print</button>
             </div>
           </div>
         </div>
