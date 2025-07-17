@@ -436,7 +436,7 @@ const pool = mysql.createPool({
 
 5. **Start Server**:
    ```bash
-   npm start
+   npm run start
    ```
 
 ### Database Setup
@@ -465,12 +465,22 @@ CREATE TABLE gene_info (
 ```
 
 ### Process Management
-Consider using PM2 for production deployment:
+1. **Log into your DigitalOcean Droplet**  
+   Connect to your server using SSH.
+
+2. **Navigate to the project directory**
 ```bash
-npm install -g pm2
-pm2 start bin/www --name "crisprbuildr"
-pm2 save
-pm2 startup
+cd ../fly_cypher/fly-server
+```
+3. **Pull the latest changes from GitHub and build the frontend**
+```bash
+git pull
+cd client
+npm run build
+```
+4. **Restart the server using PM2 (recommended for production)**
+```bash
+pm2 restart all
 ```
 
 ---
@@ -490,8 +500,8 @@ pm2 startup
    ```
 
 3. **Access Application**:
-   - Frontend: `http://localhost:3000`
-   - Backend API: `http://localhost:3000/api`
+   - Frontend: `http://localhost:8080`
+   - Backend API: `http://localhost:8080/api`
 
 ### Testing
 ```bash
