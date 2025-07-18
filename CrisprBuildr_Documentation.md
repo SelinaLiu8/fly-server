@@ -571,7 +571,7 @@ fly-server/
 
 ### Credentials
 - **CrisprBuildr Gmail**: crisprbuildr@gmail.com
-- **Password**: Flyserver123!!
+- **Password**: Please email selinal@umich.edu for this info.
 
 ### Bug Reporting
 - **Platform**: JotForm
