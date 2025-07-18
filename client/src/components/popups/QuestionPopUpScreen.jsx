@@ -25,10 +25,10 @@ const QuestionPopup = () => {
         setFadeClass('fade-in'); // When popup first opens
     }, [question]);
 
-    const handleSelect = (choice) => {
-        setSelectedChoice(choice);
-        popup.onSelect && popup.onSelect(choice);
-    };
+    // const handleSelect = (choice) => {
+    //     setSelectedChoice(choice);
+    //     popup.onSelect && popup.onSelect(choice);
+    // };
   
     return (
       <div className="popup-wrapper">
