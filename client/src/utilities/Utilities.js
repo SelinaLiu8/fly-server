@@ -1,4 +1,4 @@
-
+import { saveAs } from 'file-saver';
 
 export function computeIsoformHighlights(fullSequence, isoformSequence) {
     if (!fullSequence || !isoformSequence) {
