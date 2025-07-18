@@ -8,7 +8,6 @@ import QuestionPopup from './components/popups/QuestionPopUpScreen';
 import PrintPopUpScreen from './components/popups/PrintPopUpScreen';
 import UploadPopUpScreen from './components/popups/UploadPopUpScreen';
 import Sidebar from './components/SideBar';
-import SidebarContents from './components/SidebarContentsView';
 import SequenceViewScreen from './components/SequenceViewScreen';
 import Footer from './components/Footer';
 
