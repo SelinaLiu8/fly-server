@@ -1,0 +1,72 @@
+.gene-sequence {
+    font-family: 'Roboto Mono', monospace;
+    overflow-y: auto;
+    overflow-x: hidden;
+    max-height: 600px;
+    padding: 10px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    width: 100%;
+}
+  
+.gene-sequence-empty {
+    font-style: italic;
+    color: #999;
+    padding: 20px;
+}
+
+.sequence-text, .sequence-highlight {
+    display: inline;
+    white-space: normal;
+    word-wrap: break-word;
+}
+.sequence-text {
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+  
+.highlight-start { background-color: #93E593; }
+.highlight-stop { background-color: #FF668E; }
+.highlight-hover { background-color: #ffd54f; }
+.highlight-potential-start { background-color: #aa90f9; }
+.highlight-potential-stop { background-color: #8cf6db; }
+.highlight-cutsite { background-color: #f48fb1; }
+.highlight-homology { background-color: #4356ff; }
+.sequence-highlight.hover {background-color: #dff1ad; opacity: 50%;}
+
+.sequence-highlight-overlap {
+    position: relative;
+    box-sizing: border-box;
+}
+
+.sequence-highlight.start,
+.sequence-highlight.stop,
+.sequence-highlight[class*="potentialStart-"],
+.sequence-highlight[class*="potentialStop-"] {
+    z-index: 3 !important;
+}
+
+/* Current highlight should be second priority */
+.sequence-highlight.current {
+    z-index: 2 !important;
+}
+
+/* Other highlights have lowest priority */
+.sequence-highlight {
+    z-index: 1;
+}
+
+.sequence-container {
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+    margin-top: 20px;
+}
+  
+.sequence-header {
+    margin-bottom: 20px;
+}
+  
+.sequence-header h2 {
+    margin-bottom: 5px;
+}
