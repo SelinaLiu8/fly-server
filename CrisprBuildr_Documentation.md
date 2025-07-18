@@ -33,18 +33,18 @@ CrisprBuildr is a web-based application for CRISPR gene editing design and analy
 ```bash
 ssh root@142.93.118.6
 ```
-**Password**: `flyserver123456`
+**Password**: Please email selinal@umich.edu for this info.
 
 ### Database Access
 - **Host**: 142.93.118.6
 - **Port**: 3306
 - **User**: `local` (accessible from any IP address)
-- **Password**: `StrongPassw0rd!`
+- **Password**: Please email selinal@umich.edu for this info.
 - **Database**: `fly_cache`
 
 ### Alternative Database Connection (Root)
 - **User**: `root`
-- **Password**: `flyserver123456`
+- **Password**: Please email selinal@umich.edu for this info.
 - **Database**: `fly_cache`
 
 ---
