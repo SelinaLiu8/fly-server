@@ -34,5 +34,6 @@ global.processPrimers = async (sections) => {
 
   const tagResult = await getPrimers(tagInput);
   console.log('Tag Operation Result:', tagResult);
+  }
 })();
 

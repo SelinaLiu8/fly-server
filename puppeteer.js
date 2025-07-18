@@ -560,6 +560,7 @@ async function getPrimers(primerSections) {
     for (const [key, value] of Object.entries(primerData)) {
       result[key] = Array.isArray(value) ? value.slice(2) : [];
     }
+
     return result;
   }
 }
