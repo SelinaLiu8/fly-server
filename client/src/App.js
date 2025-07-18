@@ -7,7 +7,7 @@ import LoadingScreen from './components/LoadingScreen';
 import QuestionPopup from './components/popups/QuestionPopUpScreen';
 import PrintPopUpScreen from './components/popups/PrintPopUpScreen';
 import UploadPopUpScreen from './components/popups/UploadPopUpScreen';
-import Sidebar from './components/SideBar.jsx';
+import Sidebar from './components/Sidebar';
 import SequenceViewScreen from './components/SequenceViewScreen';
 import Footer from './components/Footer';
 
