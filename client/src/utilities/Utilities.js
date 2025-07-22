@@ -302,9 +302,14 @@ export const generatePlasmidFile = async ({
   const design = preArm1 + filledArm1 + betweenArms + filledArm2 + postArm2;
   const blob = new Blob([design], { type: 'text/plain;charset=utf-8' });
   const baseName = fileName ? fileName.name.replace(/\.txt$/i, '') : templateName;
-  const filename = `${baseName} for ${geneName}.ape`;
+  let fileOutputName 
+  if (fileName.endsWith(".txt")) {
+    fileOutputName = `${baseName} for ${geneName}.ape`;
+  } else if (fileName.endsWith(".gb")) {
+    fileOutputName = `${baseName} for ${geneName}.gb`;
+  }
 
-  return { blob, filename };
+  return { blob, fileOutputName };
 };
 
   
