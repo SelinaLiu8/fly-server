@@ -23,7 +23,7 @@ const PrintPopUpScreen = () => {
         <div key={label}>
           <div><b>{label}</b></div>
           <div>
-            <div>{primer[7]}</div>
+            <div>{primer[8]}</div>
             <div>Tm: {primer[3]}</div>
             <div>GC%: {primer[4]}</div>
             <div>Any (Self Complementarity): {primer[5]}</div>

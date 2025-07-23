@@ -1,6 +1,9 @@
 const local = require('./.env.js');
 const puppeteer = require('puppeteer');
 const mysql = require('mysql2/promise');
+const fs = require('fs');
+const XLSX = require('xlsx');
+const path = require('path');
 
 async function searchForGene(gene,isoFormSearch) {
   console.log(gene);
@@ -222,193 +225,55 @@ async function searchForTargets(targetArea) {
 module.exports.searchForTargets = searchForTargets;
 
 async function checkTargetEfficiency(targets) {
-  console.log('targets', targets);
   let browser;
-  
   try {
-    // Parse the targets to get an array
-    const targetsArray = JSON.parse(targets);
-    console.log('Fetching efficiency scores for', targetsArray.length, 'targets');
-    
-    // Launch browser
+    const targetsArray = typeof targets === 'string' ? JSON.parse(targets) : targets;
+
     browser = await puppeteer.launch({
       headless: true,
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-accelerated-2d-canvas',
-        '--no-first-run',
-        '--no-zygote',
-        '--single-process',
-        '--disable-gpu'
-      ]
+      args: ['--no-sandbox']
     });
-    
-    // Create a new page
+
     const page = await browser.newPage();
-    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36');
-    
-    // Add page error logging
-    page.on('error', err => {
-      console.error('Page error:', err);
-    });
-    
-    page.on('console', msg => {
-      console.log('Page console:', msg.text());
-    });
-    
-    // Navigate to the efficiency predictor page
-    console.log('Navigating to evaluateCrispr site...');
-    await page.goto('https://www.flyrnai.org/evaluateCrispr/', { timeout: 60000 });
-    
-    // Check if the page loaded correctly
-    const pageContent = await page.content();
-    if (!pageContent.includes('textAreaInput')) {
-      console.error('Target efficiency page did not load correctly');
-      if (browser) await browser.close();
-      
-      // Return an error
-      return { error: 'Failed to load efficiency prediction page' };
-    }
-    
-    // Enter the targets in the text area
-    console.log('Page loaded, entering targets...');
+    await page.goto('https://www.flyrnai.org/evaluateCrispr/', { waitUntil: 'domcontentloaded' });
+
+    // Fill in sequences and options
     await page.type('#textAreaInput', targetsArray.join('\n'));
-    
-    // Make sure the "PAM is excluded from input sequence" radio button is selected
     await page.click('#noPamSeq');
-    
-    // Take a screenshot for debugging
-    await page.screenshot({ path: 'before_submit.png' });
-    console.log('Screenshot saved to before_submit.png');
-    
-    // Submit the form
-    console.log('Submitting form...');
+
+    // Submit and wait for navigation
     await Promise.all([
-      page.click('input[value="Display Results"]'),
-      page.waitForNavigation({ timeout: 60000 })
+      page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
+      page.click('input[value="Display Results"]')
     ]);
-    
-    // Take a screenshot after submission
-    await page.screenshot({ path: 'after_submit.png' });
-    console.log('Screenshot saved to after_submit.png');
-    
-    // Get the page content to analyze
-    const resultPageContent = await page.content();
-    console.log('Result page loaded, extracting data...');
-    
-    // Save the HTML content for debugging
-    const htmlContent = await page.content();
-    require('fs').writeFileSync('results_page.html', htmlContent);
-    console.log('Saved HTML content to results_page.html');
-    
-    // Extract the table data
-    const tableData = await page.evaluate(() => {
-      // Log the HTML structure to help debug
-      console.log('Page HTML:', document.body.innerHTML);
-      
-      // Find all tables on the page
-      const tables = document.querySelectorAll('table');
-      console.log('Found', tables.length, 'tables on the page');
-      
-      if (tables.length === 0) return null;
-      
-      // Find the results table - it should have a header row with "Sequence" and "Score"
-      let resultsTable = null;
-      
-      for (const table of tables) {
-        console.log('Table rows:', table.rows.length);
-        if (table.rows.length > 1) {
-          // Check if this table has the expected headers
-          const headerRow = table.rows[0];
-          const headerText = headerRow.textContent.toLowerCase();
-          console.log('Table header text:', headerText);
-          
-          if (headerText.includes('sequence') || headerText.includes('score')) {
-            resultsTable = table;
-            break;
-          }
+
+    // Wait for results table to load
+    await page.waitForSelector('#dataTable');
+
+    // Scrape the table rows
+    const data = await page.evaluate(() => {
+      const rows = Array.from(document.querySelectorAll('#dataTable tbody tr'));
+      const results = {};
+      rows.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        if (cells.length >= 9) {
+          const sequence = cells[1].innerText.trim();
+          const score = cells[8].innerText.trim();
+          results[sequence] = score;
         }
-      }
-      
-      if (!resultsTable) {
-        console.log('No results table found with expected headers');
-        
-        // If we couldn't find a table with the expected headers, just use the first table with multiple rows
-        for (const table of tables) {
-          if (table.rows.length > 1) {
-            resultsTable = table;
-            break;
-          }
-        }
-      }
-      
-      if (!resultsTable) {
-        console.log('No results table found at all');
-        return null;
-      }
-      
-      console.log('Using table with', resultsTable.rows.length, 'rows');
-      
-      // Extract data from the table
-      const data = [];
-      
-      // The table structure is known:
-      // Column 1 (index 1): Input Sequence
-      // Column 8 (index 8): Score
-      const sequenceCol = 1; // Input Sequence column
-      const scoreCol = 8;    // Score column
-      
-      console.log('Using fixed columns:', sequenceCol, 'for sequence and', scoreCol, 'for score');
-      
-      // Extract the data from each row
-      for (let i = 1; i < resultsTable.rows.length; i++) { // Skip header row
-        const row = resultsTable.rows[i];
-        
-        if (row.cells.length > Math.max(sequenceCol, scoreCol)) {
-          const sequence = row.cells[sequenceCol].textContent.trim();
-          const score = row.cells[scoreCol].textContent.trim();
-          
-          console.log('Row', i, 'sequence:', sequence, 'score:', score);
-          
-          data.push({
-            sequence: sequence,
-            score: score
-          });
-        }
-      }
-      
-      return data;
+      });
+      return results;
     });
-    
-    // Process the extracted data
-    let results = {};
-    
-    if (tableData && tableData.length > 0) {
-      console.log('Found', tableData.length, 'results in the table');
-      
-      // Create a mapping of sequence to score
-      for (const item of tableData) {
-        results[item.sequence] = item.score;
-      }
-    } else {
-      console.error('No results found in the table');
-      
-      // Return an error
-      if (browser) await browser.close();
-      return { error: 'No results found in the efficiency prediction table' };
-    }
-    
-    console.log('Efficiency results:', results);
-    if (browser) await browser.close();
-    return results;
+
+    await browser.close();
+    return data;
+
   } catch (error) {
-    console.error('Error in checkTargetEfficiency:', error);
     if (browser) await browser.close();
     return { error: 'Failed to process target efficiency: ' + error.message };
   }
 }
+
 module.exports.checkTargetEfficiency = checkTargetEfficiency;
 
 async function getOligos(target) {

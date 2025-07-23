@@ -196,6 +196,7 @@ export const getTargetEfficiencyAsync = createAsyncThunk(
     async (targetSequences, { rejectWithValue }) => {
       try {
         const response = await fetch(`${urlBase}/api?type=targetEfficiency&targets=${encodeURIComponent(targetSequences.join('\n'))}`);
+        console.log("score URL:", `${urlBase}/api?type=targetEfficiency&targets=${encodeURIComponent(targetSequences.join('\n'))}`);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
