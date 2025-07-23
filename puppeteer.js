@@ -227,8 +227,26 @@ module.exports.searchForTargets = searchForTargets;
 async function checkTargetEfficiency(targets) {
   let browser;
   try {
-    const targetsArray = typeof targets === 'string' ? JSON.parse(targets) : targets;
+    // 🧼 Step 1: Clean input in case it's a newline-separated string
+    let targetsArray;
 
+    if (typeof targets === 'string') {
+      try {
+        targetsArray = JSON.parse(targets);
+      } catch (e) {
+        // Not valid JSON? Assume it's raw newline-separated text (e.g. from query param)
+        targetsArray = decodeURIComponent(targets)
+          .split('\n')
+          .map(t => t.trim())
+          .filter(Boolean);
+      }
+    } else if (Array.isArray(targets)) {
+      targetsArray = targets;
+    } else {
+      throw new Error('Invalid input format for targets.');
+    }
+
+    // 🧪 Launch browser
     browser = await puppeteer.launch({
       headless: true,
       args: ['--no-sandbox']
@@ -237,20 +255,20 @@ async function checkTargetEfficiency(targets) {
     const page = await browser.newPage();
     await page.goto('https://www.flyrnai.org/evaluateCrispr/', { waitUntil: 'domcontentloaded' });
 
-    // Fill in sequences and options
+    // 📝 Fill in the sequences
     await page.type('#textAreaInput', targetsArray.join('\n'));
     await page.click('#noPamSeq');
 
-    // Submit and wait for navigation
+    // 📤 Submit and wait for result page
     await Promise.all([
       page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
       page.click('input[value="Display Results"]')
     ]);
 
-    // Wait for results table to load
+    // ⏳ Wait for results table
     await page.waitForSelector('#dataTable');
 
-    // Scrape the table rows
+    // 📊 Extract results
     const data = await page.evaluate(() => {
       const rows = Array.from(document.querySelectorAll('#dataTable tbody tr'));
       const results = {};
