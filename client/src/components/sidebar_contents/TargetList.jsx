@@ -12,6 +12,7 @@ const TargetList = () => {
     const targetList = useSelector((state) => state.appState.targetList);
     const operation = useSelector((state) => state.appState.operation);
     const sequence = useSelector((state) => state.appState.sequenceData.fullSequence)
+    const strand = useSelector((state) => state.appState.sequenceData.strand)
     const selectedTargets = useSelector((state) => state.appState.selectedTargets);
     const highlights = useSelector((state) => state.appState.highlights);
 
@@ -56,7 +57,7 @@ const TargetList = () => {
     const handleHover = (target) => {
         console.log("target in hover", target)
         let targetSequence = target.targetSequence;
-        if (target.strand === '-') {
+        if (target.strand != strand) {
             targetSequence = getReverseComplement(targetSequence);
         }
         const location = sequence.indexOf(targetSequence);

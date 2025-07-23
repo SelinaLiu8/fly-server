@@ -567,6 +567,7 @@ header .menu>img {
   color: var(--color-accent);
   align-self: flex-end;
   border: none;
+  font-size: var(--font-medium);
 }
 
 .close-btn:hover {
