@@ -158,7 +158,7 @@ module.exports.getIsoForm = getIsoForm;
 async function searchForTargets(targetArea) {
    console.log('target area: ',targetArea)
     try {
-      let browser = await puppeteer.launch({headless:true,args: [
+      let browser = await puppeteer.launch({headless:false,args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
         '--disable-dev-shm-usage',
@@ -188,11 +188,12 @@ async function searchForTargets(targetArea) {
           return item.innerText;
         }}));
       console.log('offtargets',offTargets);
-      let distals = await page.$$eval('.result tbody tr:nth-of-type(1) .distal',elements=> elements.map(item=>item.innerText));
-      let proximals = await page.$$eval('.result tbody tr:nth-of-type(1) .proximal',elements=> elements.map(item=>item.innerText));
-      let pams = await page.$$eval('.result tbody tr:nth-of-type(1) .pam',elements=> elements.map(item=>item.innerText));
+      let distals = await page.$$eval('.result tbody tr:nth-of-type(1) .distal',elements=> elements.map(item=>item.innerHTML));
+      let proximals = await page.$$eval('.result tbody tr:nth-of-type(1) .proximal',elements=> elements.map(item=>item.innerHTML));
+      let pams = await page.$$eval('.result tbody tr:nth-of-type(1) .pam',elements=> elements.map(item=>item.innerHTML));
       let strands = await page.$$eval('.result tbody tr:nth-of-type(1) td:nth-of-type(2)',elements=> elements.map(item=>item.innerText));
       let labels = await page.$$eval('.result .target-label',elements=> elements.map(item=>item.innerText));
+      console.log("target sequence: ", distals, proximals, pams)
       browser.close();
       let results = [];
       let targets = [];
@@ -283,7 +284,7 @@ async function checkTargetEfficiency(targets) {
       return results;
     });
 
-    await browser.close();
+    // await browser.close();
     return data;
 
   } catch (error) {

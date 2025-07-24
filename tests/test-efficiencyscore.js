@@ -1,4 +1,4 @@
-const { checkTargetEfficiency } = require('./puppeteer'); // adjust if your path is different
+const { checkTargetEfficiency } = require('../puppeteer'); // adjust if your path is different
 
 // Your encoded target string
 const rawEncodedTargets = `CTCTCCTTTCTTCTTTACTA%0ACAAGATGGCCGCGAAGCCCG%0AGCTCTTATCCTCGGGCTTCG%0AGGATAAGAGCACGGATATTC%0ACAGTCCGTAGTAAAGAAGAA%0AAAGAAGAAAGGAGAGCAAGA%0AGAAGCCCGAGGATAAGAGCA%0AATATCCGTGCTCTTATCCTC`;
