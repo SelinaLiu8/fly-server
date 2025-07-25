@@ -106,3 +106,9 @@
     width: 10rem;
     margin: 1rem;
 }
+
+.upload-btn-container {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+}

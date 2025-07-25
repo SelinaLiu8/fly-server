@@ -227,6 +227,7 @@ export const generateGuideFile = async(sense, label, fileName) => {
 };
 
 export const generatePlasmidFile = async ({
+  outputFileName,
   templateName,
   fileName,
   geneName,
@@ -303,13 +304,12 @@ export const generatePlasmidFile = async ({
   const blob = new Blob([design], { type: 'text/plain;charset=utf-8' });
   const baseName = fileName ? fileName.name.replace(/\.txt$/i, '') : templateName;
   let fileOutputName 
-  if (fileName.endsWith(".txt")) {
+  if (outputFileName === "ape") {
     fileOutputName = `${baseName} for ${geneName}.ape`;
-  } else if (fileName.endsWith(".gb")) {
+  } else if (outputFileName === "gb") {
     fileOutputName = `${baseName} for ${geneName}.gb`;
   }
-
-  return { blob, fileOutputName };
+  saveAs(blob, fileOutputName);
 };
 
   

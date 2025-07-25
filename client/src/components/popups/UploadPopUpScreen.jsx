@@ -51,7 +51,7 @@ const UploadPopUpScreen = () => {
     fileInputRef.current.click();
   };
 
-  const handleUploadTemplateDownload = async () => {
+  const handleUploadTemplateDownload = async (outputFileName = null) => {
         try {
             if (!file || !sequence?.isoform || !selectedTargets) return;
         
@@ -76,6 +76,7 @@ const UploadPopUpScreen = () => {
             }
         
             const { blob, filename } = await generatePlasmidFile({
+              outputFileName: outputFileName,
               templateName: null,
               fileName: file,
               geneName: sequence.isoform,
@@ -120,8 +121,10 @@ const UploadPopUpScreen = () => {
             className="file-input-hidden"
           />
         </div>
-
-        <button className="upload-btn" onClick={handleUploadTemplateDownload}>Download</button>
+        <div className='upload-btn-container'>
+          <button className="upload-btn" onClick={() => handleUploadTemplateDownload("ape")}>Download Ape</button>
+          <button className="upload-btn" onClick={() => handleUploadTemplateDownload("gb")}>Download GB</button>
+        </div> 
       </div>
     </div>
   );
