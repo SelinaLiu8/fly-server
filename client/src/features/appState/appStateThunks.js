@@ -108,7 +108,11 @@ export const searchForTargetsAsync = createAsyncThunk(
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
+            const text = await response.text();
+            console.log("text:", text)
+            if (!text) throw new Error('Empty response from target search API');
             const data = await response.json();
+            
             const parsedTargets = (data.results || []).map((target, index) => ({
                 label: target.label || `Target ${index + 1}`, // fallback just in case
                 offtarget: parseInt(target.offtarget, 10),    // convert to integer
