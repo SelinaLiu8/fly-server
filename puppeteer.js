@@ -227,6 +227,7 @@ module.exports.searchForTargets = searchForTargets;
 
 async function checkTargetEfficiency(targets) {
   let browser;
+  console.log("target: ", targets)
   try {
     // 🧼 Step 1: Clean input in case it's a newline-separated string
     let targetsArray;
@@ -247,9 +248,11 @@ async function checkTargetEfficiency(targets) {
       throw new Error('Invalid input format for targets.');
     }
 
+    console.log("target array: ", targetsArray)
+
     // 🧪 Launch browser
     browser = await puppeteer.launch({
-      headless: true,
+      headless: false,
       args: ['--no-sandbox']
     });
 
@@ -352,7 +355,7 @@ async function getPrimers(primerSections) {
   async function processPrimers(primerSections) {
     let primers = {};
     const browser = await puppeteer.launch({
-      headless: true,
+      headless: false,
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',

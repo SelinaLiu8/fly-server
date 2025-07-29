@@ -223,7 +223,7 @@ export const generateGuideFile = async(sense, label, fileName) => {
 
   const design = modifiedPreSplit + sense + postSplit;
   const blob = new Blob([design], { type: "text/plain;charset=utf-8" });
-  saveAs(blob, `${fileName}.ape`);
+  saveAs(blob, `${fileName}.gb`);
 };
 
 export const generatePlasmidFile = async ({
@@ -306,7 +306,7 @@ export const generatePlasmidFile = async ({
   let fileOutputName 
   if (outputFileName === "ape") {
     fileOutputName = `${baseName} for ${geneName}.ape`;
-  } else if (outputFileName === "gb") {
+  } else {
     fileOutputName = `${baseName} for ${geneName}.gb`;
   }
   saveAs(blob, fileOutputName);

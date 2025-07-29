@@ -81,7 +81,7 @@ const DownloadList = () => {
           console.log("ape content", apeContent);
       
           const blob = new Blob([apeContent], { type: 'text/plain;charset=utf-8' });
-          saveAs(blob, `${sequence.isoform || 'gene'}.ape`);
+          saveAs(blob, `${sequence.isoform || 'gene'}.gb`);
         } catch (error) {
           console.error('Download failed:', error);
         }
@@ -92,10 +92,10 @@ const DownloadList = () => {
             if (operation === 'tag') {
                 const sense = oligos[terminal].sense;
                 console.log("oligos in handle guide download", oligos[terminal].sense);
-                await generateGuideFile(sense, sequence.isoform, `rna-tag-${operation.toUpperCase()}`);
+                await generateGuideFile(sense, sequence.isoform, `pU6-BbsI-chiRNA-${sequence.isoform }`);
             } else if (operation === 'delete') {
-                await generateGuideFile(oligos.n.sense, sequence.isoform, 'rna-delete-N');
-                await generateGuideFile(oligos.c.sense, sequence.isoform, 'rna-delete-C');
+                await generateGuideFile(oligos.n.sense, sequence.isoform, `pU6-BbsI-chiRNA-${sequence.isoform }-N`);
+                await generateGuideFile(oligos.c.sense, sequence.isoform, `pU6-BbsI-chiRNA-${sequence.isoform }-C`);
             }
         } catch (error) {
             console.error('Guide RNA download failed:', error);
