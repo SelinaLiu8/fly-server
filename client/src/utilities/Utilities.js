@@ -39,7 +39,8 @@ export function getHighlightClass(key) {
     if (key.includes('potentialStart')) return 'highlight-potential-start';
     if (key.includes('potentialStop')) return 'highlight-potential-stop';
     if (key.includes('cutsite')) return 'highlight-cutsite';
-    if (key.includes('homology')) return 'highlight-homology';
+    if (key.includes('homology') && (key.includes('hom3') || key.includes('hom5'))) return 'highlight-homology-hom';
+    if (key.includes('homology') && (key.includes('seq3') || key.includes('seq5'))) return 'highlight-homology-seq';
     return 'highlight-generic';
 }
 
