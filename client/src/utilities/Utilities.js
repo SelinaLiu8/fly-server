@@ -305,9 +305,9 @@ export const generatePlasmidFile = async ({
   const baseName = fileName ? fileName.name.replace(/\.txt$/i, '') : templateName;
   let fileOutputName 
   if (outputFileName === "ape") {
-    fileOutputName = `${baseName} for ${geneName}.ape`;
+    fileOutputName = `${baseName}-${geneName}.ape`;
   } else {
-    fileOutputName = `${baseName} for ${geneName}.gb`;
+    fileOutputName = `${baseName}-${geneName}.gb`;
   }
   saveAs(blob, fileOutputName);
 };
