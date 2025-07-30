@@ -4,6 +4,7 @@ import {
   toggleHamburger,
   toggleThemeColor,
   setScreen,
+  setPopup
 } from '../features/appState/appStateSlicer.js';
 
 import headLogo from '../assets/head_logo.png';
@@ -16,36 +17,36 @@ const Header = ({ onOpenDesign, onSaveDesign, onFontMenuToggle }) => {
   const themeColor = useSelector((state) => state.appState.themeColor);
   const hamburger = useSelector((state) => state.appState.hamburger);
 
-  const [showBugReport, setShowBugReport] = useState(false);
+  // const [showBugReport, setShowBugReport] = useState(false);
 
-  useEffect(() => {
-    if (showBugReport) {
-      const script = document.createElement('script');
-      script.src = 'https://cdn.jotfor.ms/s/umd/latest/for-form-embed-handler.js';
-      script.async = true;
-      document.body.appendChild(script);
+  // useEffect(() => {
+  //   if (showBugReport) {
+  //     const script = document.createElement('script');
+  //     script.src = 'https://cdn.jotfor.ms/s/umd/latest/for-form-embed-handler.js';
+  //     script.async = true;
+  //     document.body.appendChild(script);
 
-      script.onload = () => {
-        if (window.jotformEmbedHandler) {
-          window.jotformEmbedHandler(
-            "iframe[id='JotFormIFrame-250567387390163']",
-            "https://form.jotform.com/"
-          );
-        }
-      };
+  //     script.onload = () => {
+  //       if (window.jotformEmbedHandler) {
+  //         window.jotformEmbedHandler(
+  //           "iframe[id='JotFormIFrame-250567387390163']",
+  //           "https://form.jotform.com/"
+  //         );
+  //       }
+  //     };
 
-      return () => {
-        if (document.body.contains(script)) {
-          document.body.removeChild(script);
-        }
-      };
-    }
-  }, [showBugReport]);
+  //     return () => {
+  //       if (document.body.contains(script)) {
+  //         document.body.removeChild(script);
+  //       }
+  //     };
+  //   }
+  // }, [showBugReport]);
 
-  const toggleBugReport = (e) => {
-    e.preventDefault();
-    setShowBugReport((prev) => !prev);
-  };
+  // const toggleBugReport = (e) => {
+  //   e.preventDefault();
+  //   setShowBugReport((prev) => !prev);
+  // };
 
   return (
     <header className={`header ${themeColor ? 'dark' : 'light'}`}>
@@ -97,29 +98,14 @@ const Header = ({ onOpenDesign, onSaveDesign, onFontMenuToggle }) => {
               <div>User Manual</div>
             </a>
           </div>
-          <div className="hamburger-item" onClick={toggleBugReport}>
+          <div className="hamburger-item" 
+          onClick={() => dispatch(setPopup({
+          type: 'bug',
+          stayOpen: true
+          }))}
+          >
             <div>Bug Report</div>
           </div>
-          {showBugReport && (
-            <div className="bug-report-container">
-              <iframe
-                id="JotFormIFrame-250567387390163"
-                title="Bug Tracker"
-                onLoad={() => window.parent.scrollTo(0, 0)}
-                allowTransparency="true"
-                allow="geolocation; microphone; camera; fullscreen"
-                src="https://form.jotform.com/250567387390163"
-                frameBorder="0"
-                style={{
-                  width: '100%',
-                  height: '539px',
-                  border: 'none',
-                  background: '#fff',
-                }}
-                scrolling="no"
-              />
-            </div>
-          )}
         </div>
       )}
     </header>

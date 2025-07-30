@@ -7,6 +7,7 @@ import LoadingScreen from './components/LoadingScreen';
 import QuestionPopup from './components/popups/QuestionPopUpScreen';
 import PrintPopUpScreen from './components/popups/PrintPopUpScreen';
 import UploadPopUpScreen from './components/popups/UploadPopUpScreen';
+import BugReportPopUpScreen from './components/popups/BugReportPopUpScreen';
 import Sidebar from './components/Sidebar';
 import SequenceViewScreen from './components/SequenceViewScreen';
 import Footer from './components/Footer';
@@ -26,10 +27,8 @@ export default function App() {
     <div className="App">
       <Header/>
       <div className='content-container'>
+        {popupVisible && popupType === 'bug' && <BugReportPopUpScreen />}
         <Sidebar/>
-        {/* {screen !== 1 && (
-          <SidebarContents />
-        )} */}
         {screen === 1 ? (
           <>
             <SearchScreen />

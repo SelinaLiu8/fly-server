@@ -521,6 +521,12 @@ header .menu>img {
   border-color: var(--color-primary);
 }
 
+.bug-popup {
+  overflow-y: auto;
+  height: 100%;
+  border-color: var(--color-primary);
+}
+
 .popup-choices {
   display: flex;
   justify-content: center;
