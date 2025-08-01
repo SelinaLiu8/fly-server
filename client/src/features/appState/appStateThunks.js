@@ -218,11 +218,12 @@ export const searchForHomologyArms = createAsyncThunk(
         const terminal = state.terminal;
         const highlights = state.highlights;
         const sequence = state.sequenceData.fullSequence;
+        const operation = state.operation;
   
         const organizedPrimers = { n: {}, c: {} };
   
         const fetchHomologyData = async (term) => {
-          const primerSectionAreas = calculatePrimerSections(sequence, term, highlights);
+          const primerSectionAreas = calculatePrimerSections(sequence, term, highlights, operation);
           const primerSectionsString = btoa(JSON.stringify(primerSectionAreas));
           const response = await fetch(`${urlBase}/api/?type=primers&primerSections=${primerSectionsString}`);
   

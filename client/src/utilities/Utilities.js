@@ -63,17 +63,49 @@ export function getReverseComplement(targetSequence) {
     .join('');
 }
 
-export function calculatePrimerSections(sequence, terminal, highlights) {
+export function calculatePrimerSections(sequence, terminal, highlights, operation) {
   const targetLocation =
-  terminal === 'n'
-    ? highlights.start.location
-    : highlights.stop.location;
-  return {
-    "5' Homology": sequence.slice(targetLocation - 1200, targetLocation - 1000),
-    "5' Sequence": sequence.slice(targetLocation - 600, targetLocation - 400),
-    "3' Sequence": sequence.slice(targetLocation + 400, targetLocation + 600),
-    "3' Homology": sequence.slice(targetLocation + 1000, targetLocation + 1200),
-  };
+    terminal === 'n'
+      ? highlights.start.location
+      : highlights.stop.location;
+
+  let data = {};
+  let ranges = {};
+
+  if (operation === "tag") {
+    ranges = {
+      "5' Homology": [targetLocation - 1200, targetLocation - 1000],
+      "5' Sequence": [targetLocation - 600, targetLocation - 400],
+      "3' Sequence": [targetLocation + 400, targetLocation + 600],
+      "3' Homology": [targetLocation + 1000, targetLocation + 1200],
+    };
+  } else if (operation === "delete" && terminal === 'n') {
+    ranges = {
+      "5' Homology": [targetLocation - 2000, targetLocation - 1800],
+      "5' Sequence": [targetLocation - 1900, targetLocation - 1700],
+      "3' Sequence": [targetLocation - 300, targetLocation - 100],
+      "3' Homology": [targetLocation - 200, targetLocation],
+    };
+  } else if (operation === "delete" && terminal === 'c') {
+    ranges = {
+      "5' Homology": [targetLocation, targetLocation + 200],
+      "5' Sequence": [targetLocation + 100, targetLocation + 300],
+      "3' Sequence": [targetLocation + 1700, targetLocation + 1900],
+      "3' Homology": [targetLocation + 1800, targetLocation + 2000],
+    };
+  }
+
+  // Extract sequence and log ranges
+  Object.entries(ranges).forEach(([label, [start, end]]) => {
+    const safeStart = Math.max(0, start);
+    const safeEnd = Math.min(sequence.length, end);
+    const subseq = sequence.slice(safeStart, safeEnd);
+    data[label] = subseq;
+
+    console.log(`${label}: ${safeStart}..${safeEnd} (length ${safeEnd - safeStart})`);
+  });
+
+  return data;
 }
 
 export function handlePrint() {

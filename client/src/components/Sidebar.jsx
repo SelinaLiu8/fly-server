@@ -25,7 +25,7 @@ const Sidebar = () => {
       <div className="sidebar-container">
         <div 
           className={`menu-icon ${activeMenu === 1 ? 'active' : ''}`}
-          onClick={() => handleMenuClick(1)}
+          onClick={() => window.location.reload()}
         >
           <div className="menu-image-wrapper">
             <img src={searchIcon} alt="Search" />
