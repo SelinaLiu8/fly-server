@@ -119,7 +119,7 @@ export const generateFeatureBlock = async (highlights) => {
   const makeFeature = (loc, name, color) =>
     featureTemplate
       .replace('*featureLoc*', loc)
-      .replace('*featureName*', name)
+      .replace(/\*featureName\*/g, name)
       .replace('*featureColor*', color);
 
   const features = [];
@@ -147,9 +147,10 @@ export const generateFeatureBlock = async (highlights) => {
 
     [nKey, cKey].forEach((k) => {
       if (highlights[k]) {
+        console.log("k: ", k)
         const { location, length } = highlights[k];
-        const isN = k.startsWith('n');
-        const label = `${isN ? "5'" : "3'"} ${labelMap[key]}`;
+        const is5 = k.includes("5");
+        const label = `${is5 ? "5'" : "3'"} ${labelMap[key]}`;
         features.push(makeFeature(`${location + 1}..${location + length}`, label, primerColor));
       }
     });
