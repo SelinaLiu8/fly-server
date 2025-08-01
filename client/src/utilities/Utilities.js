@@ -72,28 +72,28 @@ export function calculatePrimerSections(sequence, terminal, highlights, operatio
   let data = {};
   let ranges = {};
 
-  if (operation === "tag") {
+  // if (operation === "tag") {
     ranges = {
       "5' Homology": [targetLocation - 1200, targetLocation - 1000],
       "5' Sequence": [targetLocation - 600, targetLocation - 400],
       "3' Sequence": [targetLocation + 400, targetLocation + 600],
       "3' Homology": [targetLocation + 1000, targetLocation + 1200],
     };
-  } else if (operation === "delete" && terminal === 'n') {
-    ranges = {
-      "5' Homology": [targetLocation - 2000, targetLocation - 1800],
-      "5' Sequence": [targetLocation - 1900, targetLocation - 1700],
-      "3' Sequence": [targetLocation - 300, targetLocation - 100],
-      "3' Homology": [targetLocation - 200, targetLocation],
-    };
-  } else if (operation === "delete" && terminal === 'c') {
-    ranges = {
-      "5' Homology": [targetLocation, targetLocation + 200],
-      "5' Sequence": [targetLocation + 100, targetLocation + 300],
-      "3' Sequence": [targetLocation + 1700, targetLocation + 1900],
-      "3' Homology": [targetLocation + 1800, targetLocation + 2000],
-    };
-  }
+  // } else if (operation === "delete" && terminal === 'n') {
+  //   ranges = {
+  //     "5' Homology": [targetLocation - 2000, targetLocation - 1800],
+  //     "5' Sequence": [targetLocation - 1900, targetLocation - 1700],
+  //     "3' Sequence": [targetLocation - 300, targetLocation - 100],
+  //     "3' Homology": [targetLocation - 200, targetLocation],
+  //   };
+  // } else if (operation === "delete" && terminal === 'c') {
+  //   ranges = {
+  //     "5' Homology": [targetLocation, targetLocation + 200],
+  //     "5' Sequence": [targetLocation + 100, targetLocation + 300],
+  //     "3' Sequence": [targetLocation + 1700, targetLocation + 1900],
+  //     "3' Homology": [targetLocation + 1800, targetLocation + 2000],
+  //   };
+  // }
 
   // Extract sequence and log ranges
   Object.entries(ranges).forEach(([label, [start, end]]) => {
