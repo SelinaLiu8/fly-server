@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux'
 import { saveAs } from 'file-saver';
-import { generatePlasmidFile } from '../../utilities/Utilities';
+import { generatePlasmidFile, generateGuideFile } from '../../utilities/Utilities';
 import { clearPopup } from '../../features/appState/appStateSlicer';
 import '../../App.css'
 
@@ -14,7 +14,9 @@ const UploadPopUpScreen = () => {
   const operation = useSelector((state) => state.appState.operation);
   const highlights = useSelector((state) => state.appState.highlights);
   const terminal = useSelector((state) => state.appState.terminal);
+  const oligos = useSelector((state) => state.appState.oligos);
   const selectedTargets = useSelector((state) => state.appState.selectedTargets);
+  const uploadType = useSelector((state) => state.appState.popup.question);
   const dispatch = useDispatch();
 
   const handleFileSelect = (e) => {
@@ -94,6 +96,17 @@ const UploadPopUpScreen = () => {
             console.error('Plasmid download failed:', err);
           }
     };
+  
+  const handleRnaGuideDownload = async (outputFileType = null) => {
+    if (operation === 'tag') {
+        const sense = oligos[terminal].sense;
+        console.log("oligos in handle guide download", oligos[terminal].sense);
+        await generateGuideFile(sense, sequence.isoform, `pU6-BbsI-chiRNA-${sequence.isoform }`, file, outputFileType);
+    } else if (operation === 'delete') {
+        await generateGuideFile(oligos.n.sense, sequence.isoform, `pU6-BbsI-chiRNA-${sequence.isoform }-N`, file, outputFileType);
+        await generateGuideFile(oligos.c.sense, sequence.isoform, `pU6-BbsI-chiRNA-${sequence.isoform }-C`, file, outputFileType);
+    }
+  }
 
   return (
     <div className="popup-wrapper">
@@ -122,8 +135,19 @@ const UploadPopUpScreen = () => {
           />
         </div>
         <div className='upload-btn-container'>
-          <button className="upload-btn" onClick={() => handleUploadTemplateDownload("ape")}>Download Ape</button>
-          <button className="upload-btn" onClick={() => handleUploadTemplateDownload("gb")}>Download GB</button>
+        {uploadType === "plasmid" && (
+          <>
+            <button className="upload-btn" onClick={() => handleUploadTemplateDownload("ape")}>Download Ape</button>
+            <button className="upload-btn" onClick={() => handleUploadTemplateDownload("gb")}>Download GB</button>
+          </>
+        )}
+
+        {uploadType === "rna" && (
+          <>
+            <button className="upload-btn" onClick={() => handleRnaGuideDownload("ape")}>Download Ape</button>
+            <button className="upload-btn" onClick={() => handleRnaGuideDownload("gb")}>Download GB</button>
+          </>
+        )}
         </div> 
       </div>
     </div>

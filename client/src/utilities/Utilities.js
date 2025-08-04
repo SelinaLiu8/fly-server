@@ -206,13 +206,23 @@ export const generateFeatureBlock = async (highlights) => {
   return features.join('');
 };
 
-export const generateGuideFile = async(sense, label, fileName) => {
-  const url = `${window.location.origin}/templates/pU6.txt`;
+export const generateGuideFile = async(sense, label, fileName, inputFile, outputFileType) => {
+  let templateText
+  if (inputFile) {
+    templateText = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsText(inputFile);
+    });
+  } else {
+    const url = `${window.location.origin}/templates/pU6.txt`;
 
-  const templateText = await fetch(url).then(res => {
-    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-    return res.text();
-  });
+    templateText = await fetch(url).then(res => {
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      return res.text();
+    });
+  }
 
   const newFeature = (start, end, locusTag, label, color) => {
     return `     misc_feature    ${start}..${end}\n` +
@@ -257,7 +267,13 @@ export const generateGuideFile = async(sense, label, fileName) => {
 
   const design = modifiedPreSplit + sense + postSplit;
   const blob = new Blob([design], { type: "text/plain;charset=utf-8" });
-  saveAs(blob, `${fileName}.gb`);
+  let fileOutputName 
+  if (outputFileType === "ape") {
+    fileOutputName = `${fileName}.ape`;
+  } else {
+    fileOutputName = `${fileName}.gb`;
+  }
+  saveAs(blob, fileOutputName);
 };
 
 export const generatePlasmidFile = async ({

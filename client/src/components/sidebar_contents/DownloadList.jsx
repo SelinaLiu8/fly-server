@@ -54,6 +54,15 @@ const DownloadList = () => {
     const handleUploadTemplate = () => {
       dispatch(setPopup({
         type: 'upload',
+        question: 'plasmid',
+        stayOpen: true
+      }))
+    }
+
+    const handleUploadVector = () => {
+      dispatch(setPopup({
+        type: 'upload',
+        question: 'rna',
         stayOpen: true
       }))
     }
@@ -92,10 +101,10 @@ const DownloadList = () => {
             if (operation === 'tag') {
                 const sense = oligos[terminal].sense;
                 console.log("oligos in handle guide download", oligos[terminal].sense);
-                await generateGuideFile(sense, sequence.isoform, `pU6-BbsI-chiRNA-${sequence.isoform }`);
+                await generateGuideFile(sense, sequence.isoform, `pU6-BbsI-chiRNA-${sequence.isoform }`, null, null);
             } else if (operation === 'delete') {
-                await generateGuideFile(oligos.n.sense, sequence.isoform, `pU6-BbsI-chiRNA-${sequence.isoform }-N`);
-                await generateGuideFile(oligos.c.sense, sequence.isoform, `pU6-BbsI-chiRNA-${sequence.isoform }-C`);
+                await generateGuideFile(oligos.n.sense, sequence.isoform, `pU6-BbsI-chiRNA-${sequence.isoform }-N`, null, null);
+                await generateGuideFile(oligos.c.sense, sequence.isoform, `pU6-BbsI-chiRNA-${sequence.isoform }-C`, null, null);
             }
         } catch (error) {
             console.error('Guide RNA download failed:', error);
@@ -162,7 +171,10 @@ const DownloadList = () => {
                   <label className="download-label">Guide RNA Vector</label>
                   <button className="download-btn" onClick={handleGuideDownload}>Download</button>
               </div>
-          
+              <div className="download-section">
+                  <label className="download-label">Upload Your Vector</label>
+                  <button className="download-btn" onClick={handleUploadVector}>Upload</button>
+              </div>
               <div className="download-section">
                   <label className="download-label">Plasmid Template</label>
                   <select
