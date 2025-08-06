@@ -35,7 +35,7 @@ async function searchForGene(gene,isoFormSearch) {
       }
     }
    
-    let browser = await puppeteer.launch({headless:true,args: [
+    let browser = await puppeteer.launch({headless: true, args: [
       '--no-sandbox',
       '--disable-setuid-sandbox',
       '--disable-dev-shm-usage',
@@ -226,7 +226,16 @@ async function searchForTargets(targetArea) {
 module.exports.searchForTargets = searchForTargets;
 
 async function checkTargetEfficiency(targets) {
-  let browser;
+  let browser = await puppeteer.launch({headless: true, args: [
+    '--no-sandbox',
+    '--disable-setuid-sandbox',
+    '--disable-dev-shm-usage',
+    '--disable-accelerated-2d-canvas',
+    '--no-first-run',
+    '--no-zygote',
+    '--single-process',
+    '--disable-gpu'
+  ]});
   console.log("target: ", targets)
   try {
     // 🧼 Step 1: Clean input in case it's a newline-separated string
@@ -249,12 +258,6 @@ async function checkTargetEfficiency(targets) {
     }
 
     console.log("target array: ", targetsArray)
-
-    // 🧪 Launch browser
-    browser = await puppeteer.launch({
-      headless: false,
-      args: ['--no-sandbox']
-    });
 
     const page = await browser.newPage();
     await page.goto('https://www.flyrnai.org/evaluateCrispr/', { waitUntil: 'domcontentloaded' });
@@ -287,7 +290,7 @@ async function checkTargetEfficiency(targets) {
       return results;
     });
 
-    // await browser.close();
+    await browser.close();
     return data;
 
   } catch (error) {

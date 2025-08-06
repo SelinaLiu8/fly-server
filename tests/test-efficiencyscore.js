@@ -13,15 +13,15 @@ const targetArray = decoded
   .filter(Boolean);
 
 // Optional: log targetArray for verification
-console.log("📦 Targets to test:", targetArray);
+console.log("Targets to test:", targetArray);
 
 // Step 3: Call the function with JSON string input
 (async () => {
   try {
-    console.log("🔬 Running checkTargetEfficiency...");
+    console.log("Running checkTargetEfficiency...");
     const result = await checkTargetEfficiency(JSON.stringify(targetArray));
-    console.log("✅ Efficiency Results:\n", result);
+    console.log("Efficiency Results:\n", result);
   } catch (error) {
-    console.error("❌ Test failed:", error);
+    console.error("Test failed:", error);
   }
 })();
