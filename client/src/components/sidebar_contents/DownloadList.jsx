@@ -20,27 +20,37 @@ const DownloadList = () => {
     console.log(sequence)
 
     const [plasmidTemplate, setPlasmidTemplate] = useState('');
+    const [rnaTemplate, setRnaTemplate] = useState('')
     
     const tagOptions = [
-        { label: 'N terminal SSPB and mCherry tag', value: 'N terminal SSPB and mCherry tag' },
-        { label: 'N terminal EGFP and SSPB', value: 'N terminal EGFP and SSPB' },
-        { label: 'C terminal mCherry and SSPB tag', value: 'C terminal mCherry and SSPB tag' },
-        { label: 'C terminal EGFP and SSPB', value: 'C terminal EGFP and SSPB' },
+      { label: 'N terminal SSPB and mCherry tag', value: 'N terminal SSPB and mCherry tag' },
+      { label: 'N terminal EGFP and SSPB', value: 'N terminal EGFP and SSPB' },
+      { label: 'C terminal mCherry and SSPB tag', value: 'C terminal mCherry and SSPB tag' },
+      { label: 'C terminal EGFP and SSPB', value: 'C terminal EGFP and SSPB' },
+      { label: 'Upload Your Own Plasmid Template Vector', value :'upload'}
     ];
     
     const deleteOptions = [
-        { label: 'pHD-dsRed-attP-X', value: 'pHD-dsRed-attP-X' },
-        { label: 'pHD-DsRed-X', value: 'pHD-DsRed-X' },
+      { label: 'pHD-dsRed-attP-X', value: 'pHD-dsRed-attP-X' },
+      { label: 'pHD-DsRed-X', value: 'pHD-DsRed-X' },
+      { label: 'Upload Your Own Plasmid Template Vector', value :'upload'}
     ];
+
+    const rnaOptions = [
+      { label: 'Download Existing Guide RNA Vector', value: 'download' },
+      { label: 'Upload Your Own Guide RNA Vector', value :'upload'}
+    ]
     
     // Compute dropdown options based on operation + terminal
     const dropdownOptions = useMemo(() => {
         if (operation === 'delete') return deleteOptions;
     
-        return tagOptions.filter(({ label }) =>
-          terminal === 'n'
-            ? label.toLowerCase().startsWith('n')
-            : label.toLowerCase().startsWith('c')
+        return tagOptions.filter(({ label, value }) =>
+          value === 'upload'
+            ? true
+            : terminal === 'n'
+              ? label.toLowerCase().startsWith('n')
+              : label.toLowerCase().startsWith('c')
         );
     }, [operation, terminal]);
 
@@ -50,22 +60,6 @@ const DownloadList = () => {
         stayOpen: true
       }))
     };
-
-    const handleUploadTemplate = () => {
-      dispatch(setPopup({
-        type: 'upload',
-        question: 'plasmid',
-        stayOpen: true
-      }))
-    }
-
-    const handleUploadVector = () => {
-      dispatch(setPopup({
-        type: 'upload',
-        question: 'rna',
-        stayOpen: true
-      }))
-    }
 
     const handleApeDownload = async () => {
         try {
@@ -98,6 +92,14 @@ const DownloadList = () => {
 
     const handleGuideDownload = async () => {
         try {
+            if (rnaTemplate === 'upload') {
+              dispatch(setPopup({
+                type: 'upload',
+                question: 'rna',
+                stayOpen: true
+              }))
+              return;
+            }
             if (operation === 'tag') {
                 const sense = oligos[terminal].sense;
                 console.log("oligos in handle guide download", oligos[terminal].sense);
@@ -114,6 +116,15 @@ const DownloadList = () => {
     const handlePlasmidDownload = async () => {
         try {
           if (!plasmidTemplate || !sequence?.isoform || !selectedTargets) return;
+
+          if (plasmidTemplate === 'upload') {
+            dispatch(setPopup({
+              type: 'upload',
+              question: 'plasmid',
+              stayOpen: true
+            }))
+            return;
+          }
       
           let target, pam;
       
@@ -169,11 +180,16 @@ const DownloadList = () => {
           
               <div className="download-section">
                   <label className="download-label">Guide RNA Vector</label>
+                  <select
+                      className='download-dropdown'
+                      value={rnaTemplate}
+                      onChange={(e) => setRnaTemplate(e.target.value)}>
+                      <option value="">Select a Vector…</option>
+                      {rnaOptions.map(({ label, value }) => (
+                          <option key={value} value={value}>{label}</option>
+                      ))}
+                  </select>
                   <button className="download-btn" onClick={handleGuideDownload}>Download</button>
-              </div>
-              <div className="download-section">
-                  <label className="download-label">Upload Your Vector</label>
-                  <button className="download-btn" onClick={handleUploadVector}>Upload</button>
               </div>
               <div className="download-section">
                   <label className="download-label">Plasmid Template</label>
@@ -187,10 +203,6 @@ const DownloadList = () => {
                       ))}
                   </select>
                   <button className="download-btn" onClick={handlePlasmidDownload}>Download</button>
-              </div>
-              <div className="download-section">
-                  <label className="download-label">Upload Your Template</label>
-                  <button className="download-btn" onClick={handleUploadTemplate}>Upload</button>
               </div>
             </div>
         </div>
