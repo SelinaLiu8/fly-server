@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { saveAs } from 'file-saver';
 import { setPopup } from '../../features/appState/appStateSlicer'
@@ -17,10 +17,10 @@ const DownloadList = () => {
     const selectedTargets = useSelector((state) => state.appState.selectedTargets);
     const selectedPrimers = useSelector((state) => state.appState.selectedPrimers);
 
-    console.log(sequence)
-
     const [plasmidTemplate, setPlasmidTemplate] = useState('');
-    const [rnaTemplate, setRnaTemplate] = useState('')
+    const [rnaTemplate, setRnaTemplate] = useState('');
+    const [rnaBtn, setRnaBtn] = useState('Download');
+    const [plasmidBtn, setPlasmidBtn] = useState('Download')
     
     const tagOptions = [
       { label: 'N terminal SSPB and mCherry tag', value: 'N terminal SSPB and mCherry tag' },
@@ -37,9 +37,28 @@ const DownloadList = () => {
     ];
 
     const rnaOptions = [
-      { label: 'Download Existing Guide RNA Vector', value: 'download' },
+      { label: 'pU6-gRNA', value: 'download' },
       { label: 'Upload Your Own Guide RNA Vector', value :'upload'}
     ]
+
+    useEffect(() => {
+      if (plasmidTemplate === 'upload') {
+        console.log("upload popup plasmid")
+        dispatch(setPopup({
+          type: 'upload',
+          question: 'plasmid',
+          stayOpen: true
+        }))
+      }
+      if (rnaTemplate === 'upload') {
+        console.log("upload popup rna")
+        dispatch(setPopup({
+          type: 'upload',
+          question: 'rna',
+          stayOpen: true
+        }))
+      }
+    }, [plasmidTemplate, rnaTemplate]);
     
     // Compute dropdown options based on operation + terminal
     const dropdownOptions = useMemo(() => {
@@ -189,7 +208,7 @@ const DownloadList = () => {
                           <option key={value} value={value}>{label}</option>
                       ))}
                   </select>
-                  <button className="download-btn" onClick={handleGuideDownload}>Download</button>
+                  <button className="download-btn" onClick={handleGuideDownload}>{rnaBtn}</button>
               </div>
               <div className="download-section">
                   <label className="download-label">Plasmid Template</label>
@@ -202,7 +221,7 @@ const DownloadList = () => {
                           <option key={value} value={value}>{label}</option>
                       ))}
                   </select>
-                  <button className="download-btn" onClick={handlePlasmidDownload}>Download</button>
+                  <button className="download-btn" onClick={handlePlasmidDownload}>{plasmidBtn}</button>
               </div>
             </div>
         </div>
