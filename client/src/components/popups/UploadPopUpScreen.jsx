@@ -101,10 +101,10 @@ const UploadPopUpScreen = () => {
     if (operation === 'tag') {
         const sense = oligos[terminal].sense;
         console.log("oligos in handle guide download", oligos[terminal].sense);
-        await generateGuideFile(sense, sequence.isoform, `pU6-BbsI-chiRNA-${sequence.isoform }`, file, outputFileType);
+        await generateGuideFile(sense, sequence.isoform, `pU6-BbsI-chiRNA-${sequence.isoform }`, file, outputFileType, true);
     } else if (operation === 'delete') {
-        await generateGuideFile(oligos.n.sense, sequence.isoform, `pU6-BbsI-chiRNA-${sequence.isoform }-N`, file, outputFileType);
-        await generateGuideFile(oligos.c.sense, sequence.isoform, `pU6-BbsI-chiRNA-${sequence.isoform }-C`, file, outputFileType);
+        await generateGuideFile(oligos.n.sense, sequence.isoform, `pU6-BbsI-chiRNA-${sequence.isoform }-N`, file, outputFileType, true);
+        await generateGuideFile(oligos.c.sense, sequence.isoform, `pU6-BbsI-chiRNA-${sequence.isoform }-C`, file, outputFileType, true);
     }
   }
 

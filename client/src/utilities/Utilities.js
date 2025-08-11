@@ -206,8 +206,12 @@ export const generateFeatureBlock = async (highlights) => {
   return features.join('');
 };
 
-export const generateGuideFile = async(sense, label, fileName, inputFile, outputFileType) => {
+export const generateGuideFile = async(sense, label, fileName, inputFile, outputFileType, isUpload) => {
   let templateText
+  if (!inputFile && isUpload) {
+    alert("Please select a file.");
+    return;
+  }
   if (inputFile) {
     templateText = await new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -307,7 +311,8 @@ export const generatePlasmidFile = async ({
       return res.text();
     });
   } else {
-    throw new Error("No valid template source provided.");
+    alert("Please select a file.");
+    return;
   }
 
   const [preArm1, rest1] = templateText.split('**arm_1_start**');

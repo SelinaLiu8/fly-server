@@ -122,10 +122,10 @@ const DownloadList = () => {
             if (operation === 'tag') {
                 const sense = oligos[terminal].sense;
                 console.log("oligos in handle guide download", oligos[terminal].sense);
-                await generateGuideFile(sense, sequence.isoform, `pU6-BbsI-chiRNA-${sequence.isoform }`, null, null);
+                await generateGuideFile(sense, sequence.isoform, `pU6-BbsI-chiRNA-${sequence.isoform }`, null, null, false);
             } else if (operation === 'delete') {
-                await generateGuideFile(oligos.n.sense, sequence.isoform, `pU6-BbsI-chiRNA-${sequence.isoform }-N`, null, null);
-                await generateGuideFile(oligos.c.sense, sequence.isoform, `pU6-BbsI-chiRNA-${sequence.isoform }-C`, null, null);
+                await generateGuideFile(oligos.n.sense, sequence.isoform, `pU6-BbsI-chiRNA-${sequence.isoform }-N`, null, null, false);
+                await generateGuideFile(oligos.c.sense, sequence.isoform, `pU6-BbsI-chiRNA-${sequence.isoform }-C`, null, null, false);
             }
         } catch (error) {
             console.error('Guide RNA download failed:', error);
