@@ -44,21 +44,30 @@ const DownloadList = () => {
     useEffect(() => {
       if (plasmidTemplate === 'upload') {
         console.log("upload popup plasmid")
-        dispatch(setPopup({
-          type: 'upload',
-          question: 'plasmid',
-          stayOpen: true
-        }))
+        // dispatch(setPopup({
+        //   type: 'upload',
+        //   question: 'plasmid',
+        //   stayOpen: true
+        // }))
+        setPlasmidBtn("Upload")
+      } else {
+        setPlasmidBtn("Download")
       }
+    }, [plasmidTemplate]);
+
+    useEffect(() => {
       if (rnaTemplate === 'upload') {
         console.log("upload popup rna")
-        dispatch(setPopup({
-          type: 'upload',
-          question: 'rna',
-          stayOpen: true
-        }))
+        // dispatch(setPopup({
+        //   type: 'upload',
+        //   question: 'rna',
+        //   stayOpen: true
+        // }))
+        setRnaBtn("Upload")
+      } else {
+        setRnaBtn("Download")
       }
-    }, [plasmidTemplate, rnaTemplate]);
+    }, [rnaTemplate]);
     
     // Compute dropdown options based on operation + terminal
     const dropdownOptions = useMemo(() => {
