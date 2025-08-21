@@ -75,20 +75,6 @@ const Header = ({ onOpenDesign, onSaveDesign, onFontMenuToggle }) => {
             <div>{themeColor ? 'Light Mode' : 'Dark Mode'}</div>
           </div>
           <div className="hamburger-item">
-            <label className="file-input">
-              <div>Open Design</div>
-              <input
-                type="file"
-                onChange={onOpenDesign}
-                accept=".txt"
-                style={{ display: 'none' }}
-              />
-            </label>
-          </div>
-          <div className="hamburger-item" onClick={onSaveDesign}>
-            <div>Save Design</div>
-          </div>
-          <div className="hamburger-item">
             <a
               href={manualPDF}
               target="_blank"
