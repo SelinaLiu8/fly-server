@@ -39,20 +39,6 @@ const TargetList = () => {
         length: 0,
         color: '#f5d76e',
     };
-
-    const buildHighlightData = (sequence, target, color) => {
-        let targetSequence = target.targetSequence;
-        if (target.strand === '-') {
-            targetSequence = getReverseComplement(targetSequence);
-        }
-        const location = sequence.indexOf(targetSequence);
-        return {
-            location,
-            length: targetSequence.length,
-            color
-        };
-    };
-    
     
     const handleHover = (target) => {
         console.log("target in hover", target)
@@ -83,7 +69,7 @@ const TargetList = () => {
         // Use nextTick to ensure hover isn't interrupting click
         setTimeout(() => {
             let targetSequence = target.targetSequence; 
-            if (target.strand === '-') {
+            if (target.strand != strand) {
                 targetSequence = getReverseComplement(targetSequence);
             }
     
