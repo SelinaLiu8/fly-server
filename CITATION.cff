@@ -1,0 +1,13 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+  - family-names: "Liu"
+    given-names: "Selina"
+    orcid: "https://orcid.org/0009-0009-9942-4180"
+title: "crisprbuildr"
+version: "1.0.0"
+date-released: "2025-08-21"
+url: "https://github.com/SelinaLiu8/fly-server"
+abstract: "crisprbuildr is a web application for designing and managing CRISPR gene-editing constructs, providing an accessible interface for visualization and target selection."
+license: "MIT"
+type: "software"
