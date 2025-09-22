@@ -3,7 +3,7 @@ var express = require('express');
 var router = express.Router();
 var path = require('path');
 var app = express();
-var nightmare = require('../nightmareTools.js');
+// var nightmare = require('../nightmareTools.js');
 var puppet = require('../puppeteer.js');
 var flyApi = require('../api.js');
 
