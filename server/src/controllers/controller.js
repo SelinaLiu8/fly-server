@@ -6,6 +6,46 @@ async function getGene(req, res, next) {
       const geneData = await flybaseService.searchForGene(geneName);
       res.json(geneData);
     } catch (err) {
-      next(err); // passes error to errorHandler
+      next(err);
+    }
+}
+
+async function getIsoform(req, res, next) {
+    try {
+
+    } catch (err) {
+        next(err);
+    }
+}
+
+async function getTargets(req, res, next) {
+    try {
+
+    } catch (err) {
+        next(err);
+    }
+}
+
+async function getTargetEfficiencies(req, res, next) {
+    try {
+
+    } catch (err) {
+        next(err);
+    }
+}
+
+async function getOligos(req, res, next) {
+    try {
+
+    } catch (err) {
+        next(err);
+    }
+}
+
+async function getPrimers(req, res, next) {
+    try {
+
+    } catch (err) {
+        next(err);
     }
 }
