@@ -1,9 +1,9 @@
-const flybaseService = require('../services/flybaseService');
+const geneService = require('../services/geneService');
 
 async function getGene(req, res, next) {
     try {
       const geneName = req.params.name;
-      const geneData = await flybaseService.searchForGene(geneName);
+      const geneData = await geneService.searchForGene(geneName);
       res.json(geneData);
     } catch (err) {
       next(err);

@@ -2,7 +2,7 @@ const fs = require('fs');
 const db = require('../db/db');
 
 async function loadTSV() {
-    const data = fs.readFileSync('./fb_synonyms_January24.tsv', 'utf8');
+    const data = fs.readFileSync('../fb_synonyms_January24.tsv', 'utf8');
     const lines = data.split('\n');
     let inserted = 0;
   
@@ -11,9 +11,10 @@ async function loadTSV() {
   
       const cells = lines[i].split('\t');
       const primary_FBid = cells[0];
+      const organism_abbreviation = cells[1]
       const current_symbol = cells[2];
   
-        if (primary_FBid && primary_FBid.startsWith('FBgn')) {
+        if (primary_FBid && primary_FBid.startsWith('FBgn') && organism_abbreviation === "Dmel") {
             try {
                 console.log(`Inserting: FBid=${primary_FBid}, Symbol=${current_symbol}`);
                 await db.query(
@@ -23,7 +24,7 @@ async function loadTSV() {
                 );
                 inserted++;
             } catch (err) {
-                console.error(`Failed to insert ${primary_FBid}: ${err.message}`);
+                // console.error(`Failed to insert ${primary_FBid}: ${err.message}`);
             }
         }
     }
