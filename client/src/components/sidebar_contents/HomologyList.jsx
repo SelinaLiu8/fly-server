@@ -1,8 +1,9 @@
 import React, { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { setSelectedPrimers, setMenu, setHighlights} from '../../features/appState/appStateSlicer'
+import { setSelectedPrimers, setMenu, setHighlights, setPopup} from '../../features/appState/appStateSlicer'
 import { retrieveOligoInfo } from '../../features/appState/appStateThunks'
 import { getReverseComplement } from '../../utilities/Utilities'
+import HelperIcon from '../../assets/helper_icon.png'
 import '../../styles/SidebarContents.css'
 import '../../styles/Sequence.css'
 
@@ -125,7 +126,23 @@ const HomologyList = () => {
 
     const renderPrimerGroup = (primers, terminal, label, typeKey) => (
         <div>
-          <h5 className='homology-title'>{label}</h5>
+          <h5 className='homology-title'>
+            {label}
+            <img
+              src={HelperIcon}
+              alt="help"
+              onClick={() =>
+                dispatch(
+                  setPopup({
+                    type: "helper",
+                    question: "placeholder",
+                    stayOpen: true,
+                  })
+                )
+              }
+              className="helper-icon"
+            />
+          </h5>
           {(primers || []).map((primer, i) =>
             renderPrimerItem(primer, terminal, typeKey)
           )}

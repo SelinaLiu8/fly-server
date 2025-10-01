@@ -85,6 +85,20 @@
     color: var(--color-accent);
 }
 
+.helper-icon {
+    height: 1em;
+    margin-left: 0.25em;
+}
+
+.helper-icon:hover {
+    transform: scale(1.1);
+    transition: 0.3s;
+}
+
+.helper-icon:focus {
+    transform: scale(1);
+}
+
 /* download */
 .download-section {
     padding: 1rem 0;
