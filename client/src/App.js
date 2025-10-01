@@ -8,6 +8,7 @@ import QuestionPopup from './components/popups/QuestionPopUpScreen';
 import PrintPopUpScreen from './components/popups/PrintPopUpScreen';
 import UploadPopUpScreen from './components/popups/UploadPopUpScreen';
 import BugReportPopUpScreen from './components/popups/BugReportPopUpScreen';
+import HelperPopUpScreen from './components/popups/HelperPopUpScreen';
 import Sidebar from './components/Sidebar';
 import SequenceViewScreen from './components/SequenceViewScreen';
 import Footer from './components/Footer';
@@ -42,6 +43,7 @@ export default function App() {
             {popupVisible && popupType === 'question' && <QuestionPopup />}
             {popupVisible && popupType === 'print' && <PrintPopUpScreen />}
             {popupVisible && popupType === 'upload' && <UploadPopUpScreen />}
+            {popupVisible && popupType === 'helper' && <HelperPopUpScreen />}
           </>
         )}
         {/* other screens */}
