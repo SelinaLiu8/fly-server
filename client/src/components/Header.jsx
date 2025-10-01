@@ -84,6 +84,26 @@ const Header = ({ onOpenDesign, onSaveDesign, onFontMenuToggle }) => {
               <div>User Manual</div>
             </a>
           </div>
+          <div className="hamburger-item">
+            <a
+              href={manualPDF}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ textDecoration: 'none', color: 'inherit' }}
+            >
+              <div>Manual Script</div>
+            </a>
+          </div>
+          <div className="hamburger-item">
+            <a
+              href={manualPDF}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ textDecoration: 'none', color: 'inherit' }}
+            >
+              <div>Citation</div>
+            </a>
+          </div>
           <div className="hamburger-item" 
           onClick={() => dispatch(setPopup({
           type: 'bug',
