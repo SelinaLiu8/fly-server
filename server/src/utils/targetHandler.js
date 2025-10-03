@@ -46,10 +46,10 @@ async function searchForTargets(targetArea) {
 
     // click button
     await page.click('button[name="routingVar"]');
+    await page.click('button[name="routingVar"]');
 
     // wait for results
     await page.waitForSelector('.result', { timeout: 0 });
-
     // scrape results
     const isoForms = await page.$$eval('.result', els =>
       els.map(e => e.textContent.trim())
