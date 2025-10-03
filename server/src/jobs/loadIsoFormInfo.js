@@ -11,7 +11,7 @@ async function getAllGenes() {
 }
 
 async function getAllIsoforms() {
-    const [rows] = await db.query("SELECT FBppID FROM IsoformInfo");
+    const [rows] = await db.query("SELECT * FROM IsoformInfo");
     return rows;
 }
 
@@ -125,36 +125,94 @@ async function loadCDS() {
         console.error(`Error processing gene ${geneId}:`, err.message);
       }
     }
+    return;
+}
+
+async function fetchWithRetry(url, retries = 3, delay = 500) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const response = await fetch(url, {
+        headers: {
+          'Accept': 'application/json',
+          'User-Agent': 'Mozilla/5.0 (compatible; MyScript/1.0)',
+        }});
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      return await response.json();
+    } catch (err) {
+      if (i === retries - 1) throw err; // give up on last try
+      console.warn(`Retrying ${url} after error: ${err.message}`);
+      await new Promise(r => setTimeout(r, delay));
+    }
+  }
 }
 
 async function updateUpAndDownstream() {
-    const isoforms = await getAllIsoforms();
-  
-    console.log(`Found ${isoforms.length} isoforms, updating...`);
-  
-    const tasks = isoforms.map((isoform) =>
-      limit(async () => {
-        try {
-          await updateSingleIsoform(isoform);
-        } catch (err) {
-          console.error(`Error processing isoform ${isoform.FBppID}:`, err.message);
-        }
-      })
-    );
-  
-    await Promise.all(tasks);
-  
-    console.log("All isoforms processed");
+  const isoforms = await getAllIsoforms();
+  let counter = 0;
+  const total = isoforms.length;
+
+  console.log(`Found ${total} isoforms, updating...`);
+
+  for (const isoform of isoforms) {
+    try {
+      await updateSingleIsoform(isoform);
+      counter++;
+      if (counter % 10 === 0 || counter === total) {
+        console.log(`Processed ${counter}/${total} isoforms`);
+      }
+    } catch (err) {
+      console.error(`Error processing isoform ${isoform.FBppID}:`, err.message);
+      counter++;
+    }
   }
+
+  console.log("All isoforms processed");
+}
+
+async function updateMissingSequences() {
+  // Fetch only isoforms with empty upstream or downstream sequence
+  const [isoforms] = await db.execute(`
+    SELECT * FROM IsoformInfo
+    WHERE UpStreamSequence IS NULL
+       OR UpStreamSequence = ''
+       OR DownStreamSequence IS NULL
+       OR DownStreamSequence = ''
+  `);
+
+  const total = isoforms.length;
+  if (total === 0) {
+    console.log("No isoforms with missing sequences found.");
+    return;
+  }
+
+  console.log(`Found ${total} isoforms with missing sequences, updating...`);
+  let counter = 0;
+
+  for (const isoform of isoforms) {
+    try {
+      await updateSingleIsoform(isoform); // reuse your existing function
+    } catch (err) {
+      console.error(`Failed to update ${isoform.FBppID}: ${err.message}`);
+    }
+    counter++;
+    if (counter % 10 === 0 || counter === total) {
+      console.log(`Processed ${counter}/${total} isoforms`);
+    }
+    // optional small delay to avoid overwhelming FlyBase
+    await new Promise(r => setTimeout(r, 100));
+  }
+
+  console.log("All missing sequences updated.");
+  return;
+}
 
 async function updateSingleIsoform(isoform) {
   const location = `${isoform.LocDesc}:${isoform.LocStart}..${isoform.LocEnd}`;
   const strand = isoform.strand === "-" ? "minus" : "plus";
   const sequenceUrl = `${url}/region/dmel/${location}?strand=${strand}&padding=2000`;
+  // console.log(sequenceUrl);
 
-  const response = await fetch(sequenceUrl);
-  if (!response.ok) throw new Error(`API failed for ${isoform.FBppID}`);
-  const data = await response.json();
+  const data = await fetchWithRetry(sequenceUrl, 3, 1000);
 
   const sequence = data.resultset.result[0].sequence;
   const upstream = sequence.substring(0, 2000);
@@ -172,7 +230,8 @@ async function updateSingleIsoform(isoform) {
 }
 
 // loadCDS();
-updateUpAndDownstream();
+// updateUpAndDownstream();
+updateMissingSequences();
 
 module.exports = {
     loadCDS,

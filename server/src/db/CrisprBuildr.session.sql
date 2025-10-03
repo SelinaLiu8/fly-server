@@ -21,8 +21,6 @@
 
 -- SELECT * FROM TerminalType;
 
--- DROP TABLE GeneInfo;
-
 -- CREATE TABLE IsoformInfo (
 --     FBppID VARCHAR(50) PRIMARY KEY NOT NUlL,
 --     FBgnID VARCHAR(50) NOT NULL,
@@ -41,7 +39,27 @@
 -- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- SHOW CREATE TABLE GeneInfo;
--- DROP TABLE IsoformInfo;
 -- SELECT COUNT(*) FROM GeneInfo;
-SELECT * FROM IsoformInfo;
-SELECT * FROM gene_info WHERE isoForm = 'Snx27';
+SELECT * FROM IsoformInfo WHERE FBppID = 'FBpp0071716';
+-- SELECT * FROM gene_info WHERE isoForm = 'Snx27';
+
+-- CREATE TABLE GuideTargetInfo (
+--     GuideTargetID INT PRIMARY KEY NOT NULL,
+--     FBppID VARCHAR(50) NOT NULL,
+--     TerminalTypeID INT NOT NULL,
+--     TargetSequence TEXT,
+--     OffTarget INT,
+--     Distal TEXT,
+--     Proximal TEXT,
+--     Pam TEXT,
+--     Strand CHAR(1),
+--     Label VARCHAR(50),
+--     EfficiencyStore DECIMAL,
+--     CONSTRAINT fk_target_isoform FOREIGN KEY (FBppID)
+--         REFERENCES IsoformInfo(FBppID)
+--         ON DELETE CASCADE,
+--     CONSTRAINT fk_target_terminal FOREIGN KEY (TerminalTypeID)
+--         REFERENCES TerminalType(TerminalTypeID)
+-- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+SELECT * FROM GuideTargetInfo;
