@@ -35,6 +35,7 @@ export default function App() {
             <SearchScreen />
             {loading && <LoadingScreen message={loadingMessage} />}
             {popupVisible && popupType === 'question' && <QuestionPopup />}
+            {popupVisible && popupType === 'helper' && <HelperPopUpScreen />}
           </>
         ) : (
           <>

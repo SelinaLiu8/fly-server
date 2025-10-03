@@ -17,6 +17,15 @@ const Header = ({ onOpenDesign, onSaveDesign, onFontMenuToggle }) => {
   const themeColor = useSelector((state) => state.appState.themeColor);
   const hamburger = useSelector((state) => state.appState.hamburger);
 
+  const citationText = `Flybase: https://flybase.org/
+  flyCRISPR: https://flycrispr.org/
+  FlyCRISPR TargetFinder: http://targetfinder.flycrispr.neuro.brown.edu/
+  FlyRNAi Evaluate CRISPR Tool: https://www.flyrnai.org/evaluateCrispr/
+  Primer3: https://primer3.ut.ee/
+  
+  How to cite CrisprBuildr:
+  ...TBD...`;
+
   // const [showBugReport, setShowBugReport] = useState(false);
 
   // useEffect(() => {
@@ -61,14 +70,14 @@ const Header = ({ onOpenDesign, onSaveDesign, onFontMenuToggle }) => {
       {hamburger && (
         <div className="hamburger-menu">
           <div className="hamburger-item" onClick={() => dispatch(setScreen(1))}>
-            <div>Home</div>
+            <div className='hamburger-title'>Home</div>
           </div>
           <div className="hamburger-item" onClick={onFontMenuToggle}>
             <div className="font-size">
               <div className="small">A</div>
               <div className="large">A</div>
             </div>
-            <div>Font Size</div>
+            <div className='hamburger-title'>Font Size</div>
           </div>
           <div className="hamburger-item" onClick={() => dispatch(toggleThemeColor())}>
             <div className={`theme-color ${themeColor ? 'dark' : ''}`}></div>
@@ -81,7 +90,7 @@ const Header = ({ onOpenDesign, onSaveDesign, onFontMenuToggle }) => {
               rel="noopener noreferrer"
               style={{ textDecoration: 'none', color: 'inherit' }}
             >
-              <div>User Manual</div>
+              <div className='hamburger-title'>User Manual</div>
             </a>
           </div>
           <div className="hamburger-item">
@@ -91,26 +100,24 @@ const Header = ({ onOpenDesign, onSaveDesign, onFontMenuToggle }) => {
               rel="noopener noreferrer"
               style={{ textDecoration: 'none', color: 'inherit' }}
             >
-              <div>Manual Script</div>
+              <div className='hamburger-title'>Manual Script</div>
             </a>
           </div>
-          <div className="hamburger-item">
-            <a
-              href={manualPDF}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ textDecoration: 'none', color: 'inherit' }}
-            >
-              <div>Citation</div>
-            </a>
+          <div className="hamburger-item"
+          onClick={() => dispatch(setPopup({
+            type: 'helper',
+            question: citationText,
+            stayOpen: true
+            }))}>
+            <div className='hamburger-title'>Citation</div>
           </div>
           <div className="hamburger-item" 
           onClick={() => dispatch(setPopup({
-          type: 'bug',
-          stayOpen: true
+            type: 'bug',
+            stayOpen: true
           }))}
           >
-            <div>Bug Report</div>
+            <div className='hamburger-title'>Bug Report</div>
           </div>
         </div>
       )}

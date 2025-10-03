@@ -188,6 +188,10 @@ header .menu>img {
   background: #93e593
 }
 
+.hamburger-title {
+  cursor: pointer;
+}
+
 .theme-color {
   width: 20px;
   height: 20px;
@@ -584,6 +588,11 @@ header .menu>img {
 .close-btn:focus {
   background-color: transparent;
   color: var(--color-primary-light)
+}
+
+.helper-text {
+  white-space: pre-line;
+  text-align: start;
 }
 
 /* screens */

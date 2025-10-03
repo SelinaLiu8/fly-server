@@ -9,7 +9,7 @@ const HelperPopUpScreen = () => {
         <div className="popup-wrapper">
             <div className="popup upload-popup">
                 <button className='close-btn' onClick={() => dispatch(clearPopup())}>X</button>
-                <p className="popup-text">{question}</p>
+                <p className="popup-text helper-text">{question}</p>
               </div>
         </div>
     )

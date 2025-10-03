@@ -15,6 +15,9 @@ const HomologyList = () => {
     const sequence = useSelector((state) => state.appState.sequenceData.fullSequence)
     const selectedPrimers = useSelector((state) => state.appState.selectedPrimers);
 
+    const homologyHelperText = "Homology arm primers are used to PCR amplify the genomic region around the target site";
+    const sequenceHelperText = "Sequencing primers are used to sequence the genomic region around the target site"
+
     console.log("primerList:", primerList)
 
     const nullHighlightData = {
@@ -124,7 +127,7 @@ const HomologyList = () => {
         console.log("handle select primers:", selectedPrimers)
       };      
 
-    const renderPrimerGroup = (primers, terminal, label, typeKey) => (
+    const renderPrimerGroup = (primers, terminal, label, typeKey, question) => (
         <div>
           <h5 className='homology-title'>
             {label}
@@ -135,7 +138,7 @@ const HomologyList = () => {
                 dispatch(
                   setPopup({
                     type: "helper",
-                    question: "placeholder",
+                    question: question,
                     stayOpen: true,
                   })
                 )
@@ -157,10 +160,10 @@ const HomologyList = () => {
                 <div>
                     { operation === 'delete' && <h5 className='terminal-title'>N Terminal Primers</h5>}
                     <div className="target-section">
-                        {renderPrimerGroup(primerList.n.hom5, 'n', "N Forward Homology Arm Primer", 'hom5')}
-                        {renderPrimerGroup(primerList.n.hom3, 'n', "N Reverse Homology Arm Primer", 'hom3')}
-                        {renderPrimerGroup(primerList.n.seq5, 'n', "N Forward Sequencing Primer", 'seq5')}
-                        {renderPrimerGroup(primerList.n.seq3, 'n', "N Reverse Sequencing Primer", 'seq3')}
+                        {renderPrimerGroup(primerList.n.hom5, 'n', "N Forward Homology Arm Primer", 'hom5', homologyHelperText)}
+                        {renderPrimerGroup(primerList.n.hom3, 'n', "N Reverse Homology Arm Primer", 'hom3', homologyHelperText)}
+                        {renderPrimerGroup(primerList.n.seq5, 'n', "N Forward Sequencing Primer", 'seq5', sequenceHelperText)}
+                        {renderPrimerGroup(primerList.n.seq3, 'n', "N Reverse Sequencing Primer", 'seq3', sequenceHelperText)}
                     </div>
                 </div>
             )}
@@ -168,10 +171,10 @@ const HomologyList = () => {
                 <div>
                     { operation === 'delete' && <h5 className='terminal-title'>C Terminal Primers</h5>}
                     <div className="target-section">
-                        {renderPrimerGroup(primerList.c.hom5, 'c', "C Forward Homology Arm Primer", 'hom5')}
-                        {renderPrimerGroup(primerList.c.hom3, 'c', "C Reverse Homology Arm Primer", 'hom3')}
-                        {renderPrimerGroup(primerList.c.seq5, 'c', "C Forward Sequencing Primer", 'seq5')}
-                        {renderPrimerGroup(primerList.c.seq3, 'c', "C Reverse Sequencing Primer", 'seq3')}
+                        {renderPrimerGroup(primerList.c.hom5, 'c', "C Forward Homology Arm Primer", 'hom5', homologyHelperText)}
+                        {renderPrimerGroup(primerList.c.hom3, 'c', "C Reverse Homology Arm Primer", 'hom3', homologyHelperText)}
+                        {renderPrimerGroup(primerList.c.seq5, 'c', "C Forward Sequencing Primer", 'seq5', sequenceHelperText)}
+                        {renderPrimerGroup(primerList.c.seq3, 'c', "C Reverse Sequencing Primer", 'seq3', sequenceHelperText)}
                     </div>
                 </div>
             )}
