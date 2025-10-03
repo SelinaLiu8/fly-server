@@ -40,7 +40,7 @@
 
 -- SHOW CREATE TABLE GeneInfo;
 -- SELECT COUNT(*) FROM GeneInfo;
-SELECT * FROM IsoformInfo WHERE FBppID = 'FBpp0071716';
+-- SELECT * FROM IsoformInfo WHERE FBppID = 'FBpp0071716';
 -- SELECT * FROM gene_info WHERE isoForm = 'Snx27';
 
 -- CREATE TABLE GuideTargetInfo (
