@@ -17,14 +17,19 @@ const Header = ({ onOpenDesign, onSaveDesign, onFontMenuToggle }) => {
   const themeColor = useSelector((state) => state.appState.themeColor);
   const hamburger = useSelector((state) => state.appState.hamburger);
 
-  const citationText = `Flybase: https://flybase.org/
+  const citationText = 
+  `CrisprBuildr uses the following tools and databases:
+
+  Flybase: https://flybase.org/
   flyCRISPR: https://flycrispr.org/
   FlyCRISPR TargetFinder: http://targetfinder.flycrispr.neuro.brown.edu/
   FlyRNAi Evaluate CRISPR Tool: https://www.flyrnai.org/evaluateCrispr/
   Primer3: https://primer3.ut.ee/
   
+  
   How to cite CrisprBuildr:
-  ...TBD...`;
+
+  Horsley, N., Sythoff, A. von B., Delgado, M., Liu, S. & Cabernard, C. CrisprBuildr: an open-source application for CRISPR-mediated genome engineering in Drosophila melanogaster (2025). bioRxiv 2025.02.28.640916 (2025) doi:10.1101/2025.02.28.640916.`;
 
   // const [showBugReport, setShowBugReport] = useState(false);
 
@@ -100,7 +105,7 @@ const Header = ({ onOpenDesign, onSaveDesign, onFontMenuToggle }) => {
               rel="noopener noreferrer"
               style={{ textDecoration: 'none', color: 'inherit' }}
             >
-              <div className='hamburger-title'>Manual Script</div>
+              <div className='hamburger-title'>Manuscript</div>
             </a>
           </div>
           <div className="hamburger-item"
