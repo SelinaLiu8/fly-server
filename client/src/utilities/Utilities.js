@@ -239,7 +239,11 @@ export const generateGuideFile = async(sense, label, fileName, inputFile, output
            `                     width 5 offset 0\n`;
   };
 
-  const u6EndMatch = templateText.match(/misc_feature\s+(\d+)\.\.(\d+)\n\s+\/locus_tag="u6 promoter"/);
+  // const u6EndMatch = templateText.match(/(?:misc_feature|promoter)\s+(\d+)\.\.(\d+)[\s\S]*?\/locus_tag=".*u6.*promoter.*"/i);
+  const u6EndMatch = templateText.match(
+    /(misc_feature|promoter)\s+(complement\([^)]*\)|join\([^)]*\)|\d+\.\.\d+)[\s\S]*?\/locus_tag="[^"]*u6[^"]*promoter[^"]*"/i
+  );
+  console.log('u6EndMatch: ',u6EndMatch);
   const u6EndPosition = u6EndMatch ? parseInt(u6EndMatch[2]) : null;
 
   if (!u6EndPosition) {
