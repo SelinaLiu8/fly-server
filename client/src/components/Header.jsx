@@ -95,7 +95,7 @@ const Header = ({ onOpenDesign, onSaveDesign, onFontMenuToggle }) => {
           </div>
           <div className="hamburger-item">
             <a
-              href={manualPDF}
+              href="https://www.biorxiv.org/content/10.1101/2025.02.28.640916v1"
               target="_blank"
               rel="noopener noreferrer"
               style={{ textDecoration: 'none', color: 'inherit' }}
