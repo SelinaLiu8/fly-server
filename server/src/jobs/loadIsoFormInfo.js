@@ -244,7 +244,7 @@ async function updateSingleIsoform(isoform) {
     return;
 }
 
-loadCDS("FBgn0065242");
+loadCDS("FBgn0261238");
 // updateUpAndDownstream();
 // updateMissingSequences();
 
