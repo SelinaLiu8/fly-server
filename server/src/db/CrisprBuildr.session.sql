@@ -44,7 +44,7 @@
 -- SELECT * FROM gene_info WHERE isoForm = 'Snx27';
 
 -- CREATE TABLE GuideTargetInfo (
---     GuideTargetID INT PRIMARY KEY NOT NULL,
+--     GuideTargetID INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
 --     FBppID VARCHAR(50) NOT NULL,
 --     TerminalTypeID INT NOT NULL,
 --     TargetSequence TEXT,
@@ -62,4 +62,8 @@
 --         REFERENCES TerminalType(TerminalTypeID)
 -- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-SELECT * FROM GuideTargetInfo;
+-- ALTER TABLE GuideTargetInfo 
+-- ADD UNIQUE KEY unique_target (FBppID, GuideTargetID);
+
+-- SELECT * FROM GuideTargetInfo;
+SELECT * FROM IsoformInfo WHERE FBppID='FBpp0089351';

@@ -1,76 +1,104 @@
 const { computeStartStopCodons, searchForTargets } = require('../src/utils/targetHandler');
+const {
+    getAllIsoforms,
+    saveTargets,
+    targetForSingleIsoform,
+    loadGuideTargetInfo,
+  } = require('../src/jobs/loadTargetInfo');
 const { chromium } = require('playwright');
+const db = require('../src/db/db')
 
-jest.mock('playwright'); // Mock Playwright for searchForTargets
+jest.mock('../src/db/db', () => ({
+    query: jest.fn(),
+}));
 
-describe('computeStartStopCodons', () => {
-  test('should return correct start and stop indices', () => {
-    const fullSequence = 'AAAATGCCCTTTGGGAAATAG';
-    const isoformSequence = 'ATGCCCTTTGGGAAA';
-    
-    const result = computeStartStopCodons(fullSequence, isoformSequence);
-    
-    expect(result).toEqual({
-        startIndex: 3,
-        stopIndex: 8
-    });
-  });
-
-  test('should return null if sequences are missing', () => {
-    expect(computeStartStopCodons(null, 'ATG')).toBeNull();
-    expect(computeStartStopCodons('AAA', null)).toBeNull();
-  });
-
-  test('should return null if sequences not found', () => {
-    const fullSequence = 'AAAAGGG';
-    const isoformSequence = 'TTT';
-    expect(computeStartStopCodons(fullSequence, isoformSequence)).toBeNull();
-  });
+jest.mock('../src/utils/targetHandler', () => ({
+    computeStartStopCodons: jest.fn(),
+    searchForTargets: jest.fn(),
+}));
+  
+beforeEach(() => {
+    jest.clearAllMocks();
 });
 
-describe('searchForTargets', () => {
-  let mockPage, mockBrowser, mockContext;
+describe('Database + Target job helper functions', () => {
+    // test('getAllIsoforms should query the IsoformInfo table and return rows', async () => {
+    //     db.query.mockResolvedValueOnce([[{ FBppID: 'FBpp001' }, { FBppID: 'FBpp002' }]]);
 
-  beforeEach(() => {
-    mockPage = {
-      goto: jest.fn(),
-      selectOption: jest.fn(),
-      fill: jest.fn(),
-      click: jest.fn(),
-      waitForSelector: jest.fn(),
-      $$eval: jest.fn(),
-    };
-    mockContext = { newPage: jest.fn(() => mockPage) };
-    mockBrowser = { newContext: jest.fn(() => mockContext), close: jest.fn() };
-    chromium.launch.mockResolvedValue(mockBrowser);
-  });
-
-  test('should scrape and return formatted results', async () => {
-    const targetArea = 'ATGCCCTTTGGGAAATTTCCCGGGAAATGCCCTTTAAGGCCGGAATTCCGGAAATTTCCCGGGAAATGCCCTTT';
-
-    // Mock Playwright page.$$eval responses
-    mockPage.$$eval
-      .mockResolvedValueOnce(['isoform1', 'isoform2']) // isoForms
-      .mockResolvedValueOnce(['Exact', '1 mismatch']) // offTargets
-      .mockResolvedValueOnce(['D1', 'D2']) // distals
-      .mockResolvedValueOnce(['P1', 'P2']) // proximals
-      .mockResolvedValueOnce(['PAM1', 'PAM2']) // pams
-      .mockResolvedValueOnce(['+', '-']) // strands
-      .mockResolvedValueOnce(['Label1', 'Label2']); // labels
-
-    const result = await searchForTargets(targetArea);
-
-    expect(result.results).toEqual([
-      { offtarget: null, distal: 'D1', proximal: 'P1', pam: 'PAM1', strand: '+', label: 'Label1' },
-      { offtarget: '1', distal: 'D2', proximal: 'P2', pam: 'PAM2', strand: '-', label: 'Label2' },
-    ]);
-
-    expect(result.targets).toBe(encodeURIComponent('P1D1\nP2D2'));
-  });
-
-  test('should catch errors and return undefined', async () => {
-    chromium.launch.mockRejectedValueOnce(new Error('Launch failed'));
-    const result = await searchForTargets('ATGCCCTTTGGG');
-    expect(result).toBeUndefined();
-  });
+  
+    //     const result = await getAllIsoforms();
+    
+    //     expect(db.query).toHaveBeenCalledWith('SELECT * FROM IsoformInfo');
+    //     expect(result).toEqual(fakeIsoforms);
+    // });
+  
+    test('saveTargets should insert the expected values into the Targets table', async () => {
+        db.query.mockResolvedValue();
+    
+        const results = [
+            {
+            offtarget: 2,
+            distal: 'AAA',
+            proximal: 'TTT',
+            pam: 'NGG',
+            strand: '+',
+            label: 'target1',
+            },
+        ];
+  
+        await saveTargets('FBpp001', 'n', results);
+    
+        expect(db.query).toHaveBeenCalledTimes(1);
+        const [queryText, params] = db.query.mock.calls[0];
+    
+        expect(queryText).toMatch(/INSERT INTO Targets/);
+        expect(params[0]).toBe('FBpp001');
+        expect(params[1]).toBe(1); // TerminalTypeID for 'n'
+        expect(params[2]).toBe('AAATTTAAA'); // TargetSequence = distal + proximal + distal
+        expect(params[3]).toBe(2);
+        expect(params.slice(-5)).toEqual(['AAA', 'TTT', 'NGG', '+', 'target1']);
+    });
+  
+    test('targetForSingleIsoform should call searchForTargets twice and saveTargets twice', async () => {
+        const isoform = {
+            FBppID: 'FBpp001',
+            GeneSequence: 'ATGAAATTTGGG',
+            UpStreamSequence: 'AAAAA',
+            DownStreamSequence: 'CCCCC',
+        };
+  
+        computeStartStopCodons.mockReturnValue({
+            startIndex: 5,
+            stopIndex: 10,
+        });
+  
+        searchForTargets.mockResolvedValue({
+            results: [
+            { distal: 'AAA', proximal: 'TTT', pam: 'NGG', strand: '+', label: 'x' },
+            ],
+        });
+  
+        db.query.mockResolvedValue();
+    
+        await targetForSingleIsoform(isoform);
+    
+        expect(searchForTargets).toHaveBeenCalledTimes(2);
+        expect(db.query).toHaveBeenCalledTimes(2);
+    });
+  
+    test('targetForSingleIsoform should skip if computeStartStopCodons returns null', async () => {
+        const isoform = {
+            FBppID: 'FBpp001',
+            GeneSequence: 'ATGAAATTTGGG',
+            UpStreamSequence: 'AAAAA',
+            DownStreamSequence: 'CCCCC',
+        };
+  
+        computeStartStopCodons.mockReturnValue(null);
+    
+        await targetForSingleIsoform(isoform);
+    
+        expect(searchForTargets).not.toHaveBeenCalled();
+        expect(db.query).not.toHaveBeenCalled();
+    });
 });

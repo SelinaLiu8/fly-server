@@ -37,9 +37,8 @@ function parseIsoform(result, geneId) {
   
     let locStrand = description.includes("complement") ? "-" : "+";
   
-    // Extract loc=...
     let locInfo = description.includes("loc=")
-      ? description.split("loc=")[1].split(";")[0] // get until next semicolon
+      ? description.split("loc=")[1].split(";")[0]
       : null;
   
     let locDesc = null;
@@ -50,15 +49,19 @@ function parseIsoform(result, geneId) {
       // Example: "3L:complement(14094810..14097803)"
       locDesc = locInfo.split(":")[0];
   
-      // Strip complement/join wrappers
       let coordsPart = locInfo.split(":")[1];
-      coordsPart = coordsPart.replace("complement(", "").replace("join(", "").replace(")", "");
+      coordsPart = coordsPart.replace(/complement\(|join\(|\)/g, "");
   
-      // Now coordsPart should look like "14094810..14097803"
       if (coordsPart.includes("..")) {
-        let [start, end] = coordsPart.split("..");
-        locStart = parseInt(start);
-        locEnd = parseInt(end);
+        const segments = coordsPart.split(",");
+      
+        const coords = segments.map(seg => {
+          const [start, end] = seg.split("..").map(Number);
+          return { start, end };
+        });
+      
+        locStart = Math.min(...coords.map(c => c.start));
+        locEnd = Math.max(...coords.map(c => c.end));
       }
     }
   
@@ -112,57 +115,55 @@ async function insertIsoform(isoform) {
     console.log(`Inserted isoform ${isoform.fbppId} for gene ${isoform.geneId}`);
 }
 
-async function loadCDS() {
-    const genes = await getAllGenes();
-    for (const { FBgnID: geneId } of genes) {
-      try {
-        const results = await fetchIsoformResponse(geneId);
-        for (const result of results) {
-          const isoform = parseIsoform(result, geneId);
-          await insertIsoform(isoform);
-        }
-      } catch (err) {
-        console.error(`Error processing gene ${geneId}:`, err.message);
-      }
-    }
-    return;
-}
+async function loadCDS(startFrom = null) {
+  const genes = await getAllGenes();
+  let startIndex = 0;
 
-async function fetchWithRetry(url, retries = 3, delay = 500) {
-  for (let i = 0; i < retries; i++) {
+  // If a starting gene is provided, find its index
+  if (startFrom) {
+    startIndex = genes.findIndex(g => g.FBgnID === startFrom);
+    if (startIndex === -1) {
+      console.error(`Gene ${startFrom} not found in list.`);
+      return;
+    }
+  }
+
+  const total = genes.length;
+  console.log(`Starting from index ${startIndex + 1} of ${total} total genes.`);
+
+  for (let i = startIndex; i < genes.length; i++) {
+    const { FBgnID: geneId } = genes[i];
     try {
-      const response = await fetch(url, {
-        headers: {
-          'Accept': 'application/json',
-          'User-Agent': 'Mozilla/5.0 (compatible; MyScript/1.0)',
-        }});
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      return await response.json();
+      const results = await fetchIsoformResponse(geneId);
+      for (const result of results) {
+        const isoform = parseIsoform(result, geneId);
+        await insertIsoform(isoform);
+      }
+      console.log(`[${i + 1}/${total}] Processed gene ${geneId}`);
     } catch (err) {
-      if (i === retries - 1) throw err; // give up on last try
-      console.warn(`Retrying ${url} after error: ${err.message}`);
-      await new Promise(r => setTimeout(r, delay));
+      console.error(`[${i + 1}/${total}] Error processing gene ${geneId}: ${err.message}`);
     }
   }
 }
 
+
 async function updateUpAndDownstream() {
   const isoforms = await getAllIsoforms();
-  let counter = 0;
   const total = isoforms.length;
+  let counter = 0;
 
   console.log(`Found ${total} isoforms, updating...`);
 
   for (const isoform of isoforms) {
     try {
       await updateSingleIsoform(isoform);
-      counter++;
-      if (counter % 10 === 0 || counter === total) {
-        console.log(`Processed ${counter}/${total} isoforms`);
-      }
     } catch (err) {
-      console.error(`Error processing isoform ${isoform.FBppID}:`, err.message);
-      counter++;
+      console.error(`Error processing isoform ${isoform.FBppID}: ${err.message}`);
+    }
+
+    counter++;
+    if (counter % 10 === 0 || counter === total) {
+      console.log(`Processed ${counter}/${total} isoforms`);
     }
   }
 
@@ -207,31 +208,45 @@ async function updateMissingSequences() {
 }
 
 async function updateSingleIsoform(isoform) {
-  const location = `${isoform.LocDesc}:${isoform.LocStart}..${isoform.LocEnd}`;
-  const strand = isoform.strand === "-" ? "minus" : "plus";
-  const sequenceUrl = `${url}/region/dmel/${location}?strand=${strand}&padding=2000`;
-  // console.log(sequenceUrl);
+    const location = `${isoform.LocDesc}:${isoform.LocStart}..${isoform.LocEnd}`;
+    const strand = isoform.strand === "-" ? "minus" : "plus";
+    const sequenceUrl = `${url}/region/dmel/${location}?strand=${strand}&padding=2000`;
 
-  const data = await fetchWithRetry(sequenceUrl, 3, 1000);
+    const response = await fetch(sequenceUrl, {
+      headers: {
+        'Accept': 'application/json',
+        'User-Agent': 'Mozilla/5.0 (compatible; MyScript/1.0)',
+      }
+    });
 
-  const sequence = data.resultset.result[0].sequence;
-  const upstream = sequence.substring(0, 2000);
-  const downstream = sequence.substring(sequence.length - 2000);
-  const trimmed = sequence.substring(2000, sequence.length - 2000);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    debugger;
 
-  await db.execute(
-    `UPDATE IsoformInfo
-     SET UpStreamSequence=?, GeneSequence=?, DownStreamSequence=?
-     WHERE FBppID=?`,
-    [upstream, trimmed, downstream, isoform.FBppID]
-  );
+    const data = await response.json();
+    const sequence = data.resultset.result[0].sequence;
 
-  console.log(`Updated isoform ${isoform.FBppID}`);
+    const upstream = sequence.substring(0, 2000);
+    const downstream = sequence.substring(sequence.length - 2000);
+    const trimmed = sequence.substring(2000, sequence.length - 2000);
+
+    console.log("Gene Sequence: ", trimmed);
+
+
+    await db.execute(
+      `UPDATE IsoformInfo
+      SET UpStreamSequence=?, GeneSequence=?, DownStreamSequence=?
+      WHERE FBppID=?`,
+      [upstream, trimmed, downstream, isoform.FBppID]
+    );
+
+    console.log(`Updated isoform ${isoform.FBppID}`);
+
+    return;
 }
 
-// loadCDS();
+loadCDS("FBgn0065242");
 // updateUpAndDownstream();
-updateMissingSequences();
+// updateMissingSequences();
 
 module.exports = {
     loadCDS,
