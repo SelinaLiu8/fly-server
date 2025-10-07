@@ -66,4 +66,4 @@
 -- ADD UNIQUE KEY unique_target (FBppID, GuideTargetID);
 
 -- SELECT * FROM GuideTargetInfo;
-SELECT * FROM IsoformInfo WHERE FBppID='FBpp0089351';
+SELECT * FROM IsoformInfo;
