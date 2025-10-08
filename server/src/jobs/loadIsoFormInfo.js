@@ -146,65 +146,37 @@ async function loadCDS(startFrom = null) {
   }
 }
 
-
-async function updateUpAndDownstream() {
-  const isoforms = await getAllIsoforms();
-  const total = isoforms.length;
-  let counter = 0;
-
-  console.log(`Found ${total} isoforms, updating...`);
-
-  for (const isoform of isoforms) {
-    try {
-      await updateSingleIsoform(isoform);
-    } catch (err) {
-      console.error(`Error processing isoform ${isoform.FBppID}: ${err.message}`);
-    }
-
-    counter++;
-    if (counter % 10 === 0 || counter === total) {
-      console.log(`Processed ${counter}/${total} isoforms`);
-    }
-  }
-
-  console.log("All isoforms processed");
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function updateMissingSequences() {
-  // Fetch only isoforms with empty upstream or downstream sequence
-  const [isoforms] = await db.execute(`
-    SELECT * FROM IsoformInfo
-    WHERE UpStreamSequence IS NULL
-       OR UpStreamSequence = ''
-       OR DownStreamSequence IS NULL
-       OR DownStreamSequence = ''
-  `);
-
+async function updateUpAndDownstream(startFrom = null) {
+  const isoforms = await getAllIsoforms();
   const total = isoforms.length;
-  if (total === 0) {
-    console.log("No isoforms with missing sequences found.");
-    return;
+  let startIndex = 0;
+
+  if (startFrom) {
+    startIndex = isoforms.findIndex(i => i.FBppID === startFrom);
+    console.log(`Resuming from isoform ${startFrom} (index ${startIndex + 1} of ${total})`);
+  } else {
+    console.log(`Starting from the beginning (1 of ${total} total isoforms)`);
   }
 
-  console.log(`Found ${total} isoforms with missing sequences, updating...`);
-  let counter = 0;
-
-  for (const isoform of isoforms) {
+  for (let i = startIndex; i < total; i++) {
+    const isoform = isoforms[i];
     try {
-      await updateSingleIsoform(isoform); // reuse your existing function
+      await updateSingleIsoform(isoform);
+      console.log(`[${i + 1}/${total}] Updated isoform ${isoform.FBppID}`);
     } catch (err) {
-      console.error(`Failed to update ${isoform.FBppID}: ${err.message}`);
+      console.error(`[${i + 1}/${total}] Error processing isoform ${isoform.FBppID}: ${err.message}`);
     }
-    counter++;
-    if (counter % 10 === 0 || counter === total) {
-      console.log(`Processed ${counter}/${total} isoforms`);
+    if ((i + 1) % 10 === 0 || i + 1 === total) {
+      console.log(`Progress: ${i + 1}/${total} isoforms processed`);
     }
-    // optional small delay to avoid overwhelming FlyBase
-    await new Promise(r => setTimeout(r, 100));
+    await sleep(500);
   }
 
-  console.log("All missing sequences updated.");
-  return;
+  console.log("🏁 All isoforms processed");
 }
 
 async function updateSingleIsoform(isoform) {
@@ -244,9 +216,8 @@ async function updateSingleIsoform(isoform) {
     return;
 }
 
-loadCDS("FBgn0261238");
-// updateUpAndDownstream();
-// updateMissingSequences();
+// loadCDS("FBgn0261238");
+updateUpAndDownstream('FBpp0306180');
 
 module.exports = {
     loadCDS,

@@ -1,5 +1,10 @@
 const { chromium } = require('playwright');
 
+async function getAllIsoforms() {
+    const [rows] = await db.query("SELECT * FROM IsoformInfo");
+    return rows;
+}
+
 function computeStartStopCodons(fullSequence, isoformSequence) {
     if (!fullSequence || !isoformSequence) {
       console.error("Missing sequence or isoform sequence for highlighting");
@@ -96,7 +101,8 @@ async function searchForTargets(targetArea) {
   }
 }
 
-module.exports = { 
+module.exports = {
+    getAllIsoforms, 
     computeStartStopCodons,
     searchForTargets
 }
