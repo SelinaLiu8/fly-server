@@ -71,34 +71,29 @@
 -- CREATE TABLE HomologyType (
 --     HomologyTypeID VARCHAR(10) PRIMARY KEY,
 --     HomologyType VARCHAR(100) NOT NULL
--- );
-
--- INSERT INTO HomologyType (HomologyTypeID, HomologyType)
--- VALUES
---     ('hom5', 'Forward Homology Arm Primer'),
---     ('hom3', 'Reverse Homology Arm Primer'),
---     ('seq5', 'Forward Sequencing Primer'),
---     ('seq3', 'Reverse Sequencing Primer');
+-- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- SELECT * FROM HomologyType;
 
-CREATE TABLE PrimerInfo (
-    PrimerID INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
-    FBppID VARCHAR(50) NOT NULL,
-    TerminalTypeID INT NOT NULL,
-    HomologyTypeID VARCHAR(10) NOT NULL,
-    PrimerSequence TEXT,
-    Tm DECIMAL(5,2),
-    GCPercent DECIMAL(5,2),
-    AnyValue VARCHAR(50),
-    ThreePrime VARCHAR(50),
-    CONSTRAINT fk_primer_isoform FOREIGN KEY (FBppID)
-        REFERENCES IsoformInfo(FBppID)
-        ON DELETE CASCADE,
-    CONSTRAINT fk_primer_terminal FOREIGN KEY (TerminalTypeID)
-        REFERENCES TerminalType(TerminalTypeID)
-        ON DELETE CASCADE,
-    CONSTRAINT fk_primer_homology FOREIGN KEY (HomologyTypeID)
-        REFERENCES HomologyType(HomologyTypeID)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- CREATE TABLE PrimerInfo (
+--     PrimerID INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+--     FBppID VARCHAR(50) NOT NULL,
+--     TerminalTypeID INT NOT NULL,
+--     HomologyTypeID VARCHAR(10) NOT NULL,
+--     PrimerSequence TEXT,
+--     Tm DECIMAL(5,2),
+--     GCPercent DECIMAL(5,2),
+--     AnyValue VARCHAR(50),
+--     ThreePrime VARCHAR(50),
+--     CONSTRAINT fk_primer_isoform FOREIGN KEY (FBppID)
+--         REFERENCES IsoformInfo(FBppID)
+--         ON DELETE CASCADE,
+--     CONSTRAINT fk_primer_terminal FOREIGN KEY (TerminalTypeID)
+--         REFERENCES TerminalType(TerminalTypeID)
+--         ON DELETE CASCADE,
+--     CONSTRAINT fk_primer_homology FOREIGN KEY (HomologyTypeID)
+--         REFERENCES HomologyType(HomologyTypeID)
+-- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+SELECT * FROM PrimerInfo;
+SELECT * FROM GuideTargetInfo;

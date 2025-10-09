@@ -62,26 +62,36 @@ async function targetForSingleIsoform(isoform) {
     }
 }
 
-async function loadGuideTargetInfo() {
+async function loadGuideTargetInfo(startFrom = 0) {
     const isoforms = await getAllIsoforms();
-    let counter =  0;
+    let counter =  startFrom;
     const total = isoforms.length;
-    debugger;
-    for (const isoform of isoforms) {
-        try {
-            await targetForSingleIsoform(isoform)
-            counter++;
-        } catch (err) {
-            console.error(`Error processing isoform ${isoform.FBppID}:`, err.message);
-            counter++;
+    const concurrent = 5;
+    const chunkSize = 500;
+    
+    for (let i = startFrom; i < total; i += chunkSize) {
+        const chunk = isoforms.slice(i, i + chunkSize);
+        
+        for(let j = 0; j < chunk.length; j += concurrent) {
+            const batch = chunk.slice(j, j + concurrent);
+            await Promise.all(batch.map(async (isoform) => {
+                try {
+                    await targetForSingleIsoform(isoform);
+                    counter++;
+                    console.log(`Processed ${counter}/${total} (${isoform.FBppID})`);
+                } catch (err) {
+                    console.error(`Error processing isoform ${isoform.FBppID}:`, err.message);
+                    counter++;
+                }
+            }));
         }
-        console.log(`Proceeded ${counter} out of ${total} isoforms`);
+        console.log(`Finished chunk ${Math.floor(i / chunkSize) + 1}/${Math.ceil(total / chunkSize)}`);
     }
     console.log("All targets processed");
     return;
 }
 
-loadGuideTargetInfo();
+loadGuideTargetInfo(160);
 
 module.exports = {
   getAllIsoforms,

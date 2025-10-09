@@ -51,8 +51,14 @@ async function searchForTargets(targetArea) {
 
     console.log('Submitting form...');
     await page.waitForSelector('button[name="routingVar"]');
-    await page.click('button[name="routingVar"]');
-    await page.click('button[name="routingVar"]');
+    await Promise.allSettled([
+      page.click('button[name="routingVar"]', { timeout: 60000 }),
+      page.waitForTimeout(2000),
+    ]);
+    await Promise.allSettled([
+      page.click('button[name="routingVar"]', { timeout: 60000 }),
+      page.waitForTimeout(2000),
+    ]);
 
     // Wait for results to load
     console.log('Waiting for results...');

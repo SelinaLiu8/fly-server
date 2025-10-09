@@ -1,15 +1,28 @@
-const { searchForPrimers } = require('../src/utils/homologyUtils')
+const { chromium } = require('playwright');
+const { searchForPrimers, parsePrimersFromText, processPrimerType} = require('../src/utils/homologyUtils')
+
 
 async function searchForPrimersTest() {
     const primerData = {
-        "5' Homology": "ATGCGTACGTTGATCGTACGCTTAGGCTTAGCGTAGCTTAGGCTAGCTTACG",
-        "5' Sequence": "GCTAGCATGCTAGCTTAGCTAGCATGCTAGCTAGCTTAGCGTAGCTAGCTAG",
-        "3' Sequence": "TTGCGATCGATCGTAGCTTAGCTTAGCTAGCTGATCGTAGCTAGCTAGCTAA",
-        "3' Homology": "CGTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCATCGATCGATCGAT"
+        "5' Homology": "TGGCAAAAGCAAATGAAAGCTTGAATTCAGCTGTTGGTAGGCAATTTGATGGGTTTGCAACAATTCGATTCTCATTCCAGATGACGCGCTACAAGCAGACCGAATTCACGGAGGACGACTCGAGTTCCAT",
+        "5' Sequence": "CGTTTGGGACGGGTTGAGTACGACGGGCGTTGCTTGGGTGGGGTTGAGTGGGCGGTTCAGTCCAAAGGAGCTCACTTGAGAGCAGCCTTGTTCTTCAGCGGCAGGAATGCGGCCATAAAGC",
+        "3' Sequence": "TAGACAAACAGGGGCGCGACCGGGAGCGGCGAGGAGGAGCTGCGGCAGGGAGCTTTAGAGGATTAATGTTACTGTACAATAGGTGAACAAATGTAAAT",
+        "3' Homology": "TGACGTGATGCTGATGCTGATGCTGCTGATGCTGCGGCGGAGGAGGCGGCGCTGGGAGAGGCGGAGGCGGAGGCGGAGGCGGAGGCGGAGGCGGAGGCGGAGGCG"
     };
     const result = await searchForPrimers(primerData);
     console.log(result);
 }
 
-searchForPrimersTest();
+async function processPrimerTest() {
+    const browser = await chromium.launch({
+            headless: false,
+            args: ['--no-sandbox', '--disable-gpu'],
+    });
+    hom5Area = 'TGGCAAAAGCAAATGAAAGCTTGAATTCAGCTGTTGGTAGGCAATTTGATGGGTTTGCAACAATTCGATTCTCATTCCAGATGACGCGCTACAAGCAGACCGAATTCACGGAGGACGACTCGAGTTCCAT';
+    const result = await processPrimerType(browser, hom5Area, 'hom5');
+    console.log(result);
+}
+
+// searchForPrimersTest();
+processPrimerTest();
 

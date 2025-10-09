@@ -1,130 +1,159 @@
 const { chromium } = require('playwright');
 
 async function searchForPrimers(primerArea) {
-  console.log('Primer sections received:', primerArea);
+    console.log('Primer sections received:', primerArea);
 
-  if (!primerArea || !primerArea["5' Homology"]) {
-    console.error('Missing required primer sections data');
-    return null;
-  }
+    // Validate required primer sections
+    const requiredSections = ["5' Homology", "5' Sequence", "3' Sequence", "3' Homology"];
+    for (const key of requiredSections) {
+        if (!primerArea[key] || primerArea[key].length < 20) {
+        console.error(`Missing or invalid primer section for: ${key}`);
+        return null;
+        }
+    }
 
-  const processed = await processAllPrimers(primerArea);
-  return trimPrimerResults(processed);
-}
+    const browser = await chromium.launch({
+        headless: false,
+        args: ['--no-sandbox', '--disable-gpu'],
+    });
 
-async function processAllPrimers(primerArea) {
-  const url = 'https://primer3.ut.ee/';
-  const browser = await chromium.launch({
-    headless: false,
-    args: ['--no-sandbox', '--disable-gpu'],
-  });
+    // Store results in structured key-value pairs
+    const primers = {};
 
-  const context = await browser.newContext({
-    userAgent:
-      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36',
-  });
+    try {
+        for (const type of requiredSections) {
+        console.log(`Processing ${type}...`);
+        const primerResult = await processPrimerType(browser, primerArea[type], type);
 
-  const primers = {
-    hom5: null,
-    seq5: null,
-    seq3: null,
-    hom3: null,
-  };
-
-  try {
-    for (const type of ["5' Homology", "5' Sequence", "3' Sequence", "3' Homology"]) {
-      if (!primerArea[type] || primerArea[type].length < 20) {
-        console.error(`Invalid or missing primer section for ${type}`);
-        continue;
-      }
-
-      console.log(`Processing ${type}...`);
-      const primerResult = await getPrimerFromWeb(context, url, primerArea[type], type);
-
-      if (primerResult) {
+        // Map results to a clean key
         if (type === "5' Homology") primers.hom5 = primerResult;
         else if (type === "5' Sequence") primers.seq5 = primerResult;
         else if (type === "3' Sequence") primers.seq3 = primerResult;
         else if (type === "3' Homology") primers.hom3 = primerResult;
-      }
+        }
+    } catch (err) {
+        console.error('Error during primer processing:', err);
+    } finally {
+        await browser.close();
     }
-  } catch (err) {
-    console.error('Error processing primers:', err);
-  } finally {
-    await browser.close();
-  }
 
-  return primers;
+    return primers;
 }
 
-async function getPrimerFromWeb(context, url, primerSection, primerType) {
-  const page = await context.newPage();
+async function processPrimerType(browser, primerSequence, primerType) {
+    const url = 'https://primer3.ut.ee/';
+    const context = await browser.newContext({
+        userAgent:
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36',
+    });
+    const page = await context.newPage();
 
-  try {
-    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
-    await page.waitForSelector('textarea[name="SEQUENCE_TEMPLATE"]');
+    try {
+        await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForSelector('textarea[name="SEQUENCE_TEMPLATE"]');
 
-    await page.fill('textarea[name="SEQUENCE_TEMPLATE"]', primerSection);
+        // Fill in the sequence text
+        await page.fill('textarea[name="SEQUENCE_TEMPLATE"]', primerSequence);
 
-    const sideSelector =
-      primerType === "3' Homology" || primerType === "3' Sequence"
-        ? 'input[name="MUST_XLATE_PRIMER_PICK_LEFT_PRIMER"]'
-        : 'input[name="MUST_XLATE_PRIMER_PICK_RIGHT_PRIMER"]';
+        // Choose correct side based on type
+        const sideSelector =
+        primerType.includes("3'")
+            ? 'input[name="MUST_XLATE_PRIMER_PICK_LEFT_PRIMER"]'
+            : 'input[name="MUST_XLATE_PRIMER_PICK_RIGHT_PRIMER"]';
 
-    await page.click(sideSelector);
-    await page.click('input[name="Pick Primers"]');
-    await page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.click(sideSelector);
 
-    const primersText = await extractPrimerText(page);
-    const parsedPrimers = parsePrimersFromText(primersText);
+        // Submit form
+        await page.click('input[name="Pick Primers"]');
+        console.log('form submitted')
 
-    console.log(`✅ Found ${parsedPrimers.length} primer(s) for ${primerType}`);
-    return parsedPrimers;
-  } catch (err) {
-    console.error(`❌ Failed to process ${primerType}:`, err.message);
-    return null;
-  } finally {
-    await page.close();
-  }
+        // Extract and parse text
+        const primersText = await extractPrimerText(page);
+        const parsedPrimers = parsePrimersFromText(primersText);
+        console.log(primersText);
+
+        console.log(`Found ${Object.keys(parsedPrimers).length} primers for ${primerType}`);
+        return parsedPrimers;
+    } catch (err) {
+        console.error(`Failed to process ${primerType}:`, err.message);
+        return null;
+    } finally {
+        await page.close();
+    }
 }
 
 async function extractPrimerText(page) {
-  return await page.$eval('pre:first-of-type', el => el.innerText);
+    await page.waitForSelector('pre', { timeout: 15000 }); 
+    return await page.$eval('pre', el => el.innerText);
 }
 
 function parsePrimersFromText(primersText) {
-  const primerStart = [];
-  let stop = 0, finalStop = 0;
+  // Clean up text first
+  const cleanText = primersText
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/\r?\n|\r/g, "\n")
+    .trim();
 
-  for (let i = 0; i < primersText.length; i++) {
-    if (primersText.slice(i, i + 6) === 'PRIMER') primerStart.push(i);
-    else if (primersText.slice(i, i + 13) === 'SEQUENCE SIZE') stop = i;
-    else if (primersText.slice(i, i + 10) === 'Statistics') finalStop = i;
+  const primers = {};
+
+  // Match both primary and additional primer lines
+  const primerRegex =
+    /(?:(\d+)\s+)?(LEFT_PRIMER|RIGHT_PRIMER)\s+(\d+)\s+(\d+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([ACGT]+)/g;
+
+  let match;
+  let index = 1;
+  while ((match = primerRegex.exec(cleanText)) !== null) {
+    const id = match[1] ? parseInt(match[1]) : index++;
+    const key = `${match[2]}_${id}`;
+
+    primers[key] = {
+      type: match[2],
+      start: parseInt(match[3]),
+      length: parseInt(match[4]),
+      tm: parseFloat(match[5]),
+      gcPercent: parseFloat(match[6]),
+      anyTh: parseFloat(match[7]),
+      threeTh: parseFloat(match[8]),
+      hairpin: parseFloat(match[9]),
+      sequence: match[10],
+    };
   }
 
-  if (primerStart.length === 0) return [];
+  // Extract SEQUENCE SIZE
+  const seqSizeMatch = cleanText.match(/SEQUENCE SIZE:\s*(\d+)/);
+  const sequenceSize = seqSizeMatch ? parseInt(seqSizeMatch[1]) : null;
 
-  const allPrimers = [];
-  for (let i = 0; i < primerStart.length; i++) {
-    const segment = primersText.slice(
-      primerStart[i],
-      primerStart[i + 1] ? primerStart[i + 1] : finalStop
-    );
-    const clean = segment.replace(/[\n\r]/g, '').split(' ').filter(Boolean);
-    allPrimers.push(clean);
-  }
+  // Extract statistics summary
+  const statsSection = cleanText.split("Statistics")[1] || "";
+  const statsMatch = statsSection.match(/Right\s+([\d\s]+)/);
+  const stats = statsMatch
+    ? statsMatch[1].trim().split(/\s+/).map(Number)
+    : [];
 
-  return allPrimers;
+  return {
+    primers,
+  };
 }
 
-function trimPrimerResults(primerData) {
-  const result = {};
-  for (const [key, value] of Object.entries(primerData)) {
-    result[key] = Array.isArray(value) ? value.slice(2) : [];
+function trimPrimerResults(primers) {
+  if (!Array.isArray(primers)) {
+    console.error("Invalid primers input:", primers);
+    return [];
   }
-  return result;
+
+  return primers.map(p => ({
+    PrimerSequence: p[0],
+    Tm: p[1],
+    GCPercent: p[2],
+    AnyValue: p[3],
+    ThreePrime: p[4]
+  }));
 }
 
 module.exports = {
-    searchForPrimers
+    searchForPrimers,
+    parsePrimersFromText,
+    trimPrimerResults,
+    processPrimerType
 }
