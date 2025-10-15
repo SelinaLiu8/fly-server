@@ -1,3 +1,5 @@
+const db = require('../db/db')
+
 async function getAllIsoforms() {
     const [rows] = await db.query("SELECT * FROM IsoformInfo");
     return rows;

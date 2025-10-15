@@ -23,6 +23,6 @@ async function processPrimerTest() {
     console.log(result);
 }
 
-// searchForPrimersTest();
-processPrimerTest();
+searchForPrimersTest();
+// processPrimerTest();
 

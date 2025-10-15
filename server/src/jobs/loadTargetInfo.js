@@ -1,10 +1,41 @@
 const fs = require('fs');
+const pLimit = require('p-limit');
 const db = require('../db/db')
 const { computeStartStopCodons, searchForTargets } = require('../utils/targetHandler')
+const { getAllIsoforms } = require('../utils/utils')
 
-async function getAllIsoforms() {
-    const [rows] = await db.query("SELECT * FROM IsoformInfo");
-    return rows;
+const limit = pLimit(3);
+const CHUNK_SIZE = 200;
+
+// ---------- Utility: checkpoint + failed state ----------
+
+function saveCheckpoint(index) {
+  fs.writeFileSync('checkpoint.json', JSON.stringify({ index }, null, 2));
+}
+
+function loadCheckpoint() {
+  if (fs.existsSync('checkpoint.json')) {
+    return JSON.parse(fs.readFileSync('checkpoint.json')).index;
+  }
+  return 0;
+}
+
+function loadFailed() {
+  if (fs.existsSync('failed.json')) {
+    return new Set(JSON.parse(fs.readFileSync('failed.json')));
+  }
+  return new Set();
+}
+
+function saveFailed(failedSet) {
+  fs.writeFileSync('failed.json', JSON.stringify(Array.from(failedSet), null, 2));
+}
+
+// ---------- DB Helpers ----------
+
+async function getProcessedIsoforms() {
+  const [rows] = await db.query('SELECT DISTINCT FBppID FROM GuideTargetInfo');
+  return new Set(rows.map(r => r.FBppID));
 }
 
 async function saveTargets(isoformId, terminal, results) {
@@ -29,6 +60,8 @@ async function saveTargets(isoformId, terminal, results) {
       console.log(`${targetSequence} inserted/updated successfully!`);
   }
 }
+
+// ---------- Processing logic ----------
 
 async function targetForSingleIsoform(isoform) {
     const fullSequence =
@@ -62,36 +95,65 @@ async function targetForSingleIsoform(isoform) {
     }
 }
 
-async function loadGuideTargetInfo(startFrom = 0) {
+async function loadGuideTargetInfo() {
     const isoforms = await getAllIsoforms();
-    let counter =  startFrom;
-    const total = isoforms.length;
-    const concurrent = 5;
+    const processed = await getProcessedIsoforms();
+    const failed = loadFailed();
+    const concurrent = 10;
     const chunkSize = 500;
+
+    const startFrom = loadCheckpoint();
+    let counter = startFrom;
+    const total = isoforms.length;
+
+    const failedIsoforms = isoforms.filter(i => failed.has(i.FBppID));
+    const remainingIsoforms = isoforms
+      .slice(startFrom)
+      .filter(i => !processed.has(i.FBppID) && !failed.has(i.FBppID));
+    const toProcess = failedIsoforms.length > 0 ? failedIsoforms : remainingIsoforms;
+
+    console.log(
+      `Resuming from index ${startFrom}, remaining ${toProcess.length}, failed to retry: ${failedIsoforms.length}`
+    );
     
-    for (let i = startFrom; i < total; i += chunkSize) {
-        const chunk = isoforms.slice(i, i + chunkSize);
-        
-        for(let j = 0; j < chunk.length; j += concurrent) {
-            const batch = chunk.slice(j, j + concurrent);
-            await Promise.all(batch.map(async (isoform) => {
-                try {
-                    await targetForSingleIsoform(isoform);
-                    counter++;
-                    console.log(`Processed ${counter}/${total} (${isoform.FBppID})`);
-                } catch (err) {
-                    console.error(`Error processing isoform ${isoform.FBppID}:`, err.message);
-                    counter++;
+    for (let i = 0; i < toProcess.length; i += CHUNK_SIZE) {
+        const chunk = toProcess.slice(i, i + CHUNK_SIZE);
+
+        await Promise.all(
+          chunk.map(isoform =>
+            limit(async () => {
+              try {
+                const success = await targetForSingleIsoform(isoform);
+                if (success === false) {
+                  // searchForTargets returned null
+                  console.warn(`No targets found for ${isoform.FBppID}`);
+                  failed.add(isoform.FBppID);
+                  saveFailed(failed);
+                } else {
+                  counter++;
+                  failed.delete(isoform.FBppID);
+                  saveFailed(failed);
+                  saveCheckpoint(counter);
+                  console.log(`Processed ${counter}/${total} (${isoform.FBppID})`);
                 }
-            }));
-        }
-        console.log(`Finished chunk ${Math.floor(i / chunkSize) + 1}/${Math.ceil(total / chunkSize)}`);
-    }
+              } catch (err) {
+                console.error(`Failed ${isoform.FBppID}: ${err.message}`);
+                failed.add(isoform.FBppID);
+                saveFailed(failed);
+              }
+            })
+          )
+        );
+
+        console.log(
+          `🔹 Finished chunk ${Math.floor(i / CHUNK_SIZE) + 1}/${Math.ceil(toProcess.length / CHUNK_SIZE)}`
+        );
+      }
     console.log("All targets processed");
     return;
 }
 
-loadGuideTargetInfo(160);
+loadGuideTargetInfo();
 
 module.exports = {
   getAllIsoforms,
