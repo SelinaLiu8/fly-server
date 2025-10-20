@@ -1,0 +1,3 @@
+SELECT * FROM IsoformInfo;
+
+-- SHOW TABLES;
